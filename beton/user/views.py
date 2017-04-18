@@ -27,7 +27,7 @@ def me():
         next(x for x in all_advertisers if x['advertiserName'] ==
              current_user.username)
     except StopIteration:
-        logging.warning(current_user.username)
+        logging.warning("Created user: ", current_user.username)
         r.ox.addAdvertiser(sessionid, { 'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
                                        'advertiserName': current_user.username,
                                        'emailAddress': current_user.email,
@@ -51,3 +51,23 @@ def me():
 
     # Render the page and quit
     return render_template('users/members.html', zonestats=zonestats)
+
+
+@blueprint.route('/offer')
+@login_required
+def offer():
+    """Get and display all possible websites and zones in them."""
+    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                  verbose=False)
+    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
+                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+
+    # get zones from Revive
+    allzones = r.ox.getZoneListByPublisherId(sessionid,
+                                             current_app.config.get('REVIVE_AGENCY_ID'))
+
+    # Logout from Revive
+    r.ox.logoff(sessionid)
+
+    # Render the page and quit
+    return render_template('users/offer.html', allzones=allzones)
