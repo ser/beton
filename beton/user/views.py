@@ -45,12 +45,15 @@ def me():
 
     # Get all possible current data related to the user from Revive
     zonestats = r.ox.advertiserZoneStatistics(sessionid, advertiser_id) # TODO
+    campstats = r.ox.advertiserCampaignStatistics(sessionid, advertiser_id) # TODO
 
     # Logout from Revive
     r.ox.logoff(sessionid)
 
     # Render the page and quit
-    return render_template('users/members.html', zonestats=zonestats)
+    return render_template('users/members.html',
+                           zonestats=zonestats,
+                           campstats=campstats)
 
 
 @blueprint.route('/offer')
@@ -71,3 +74,26 @@ def offer():
 
     # Render the page and quit
     return render_template('users/offer.html', allzones=allzones)
+
+@blueprint.route('/campaign')
+@login_required
+def campaign():
+    """Get and display all camapigns belonging to user"""
+    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                  verbose=False)
+    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
+                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+
+    all_advertisers = r.ox.getAdvertiserListByAgencyId( sessionid,
+                                                       current_app.config.get('REVIVE_AGENCY_ID') )
+    advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
+                current_user.username)['advertiserId'])
+
+    all_campaigns = r.ox.getCampaignListByAdvertiserId( sessionid, advertiser_id )
+
+    # Logout from Revive
+    r.ox.logoff( sessionid )
+
+    # Render the page and quit
+    return render_template( 'users/campaign.html',
+                           all_campaigns=all_campaigns )
