@@ -48,7 +48,7 @@ class AddBannerForm(Form):
 
     banner_url = StringField('URL to your advertised page',
                              validators=[DataRequired(), Length(min=10, max=2000)])
-    banner_comment = StringField('Comments (optional)')
+    banner_comments = StringField('Comments (optional)')
     banner_image = FileField('Banner image file',
                              validators=[FileRequired(), FileAllowed(images, 'Images only!')])
 

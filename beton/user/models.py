@@ -70,7 +70,7 @@ class Banner(SurrogatePK, Model):
 
     __tablename__ = 'banners'
     filename = Column(db.String(), unique=True, nullable=False)
-    owner = Column(db.Integer(), unique=True, nullable=False)
+    owner = Column(db.Integer(), unique=False, nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     image_url = Column(db.String(2083), nullable=False)
     url = Column(db.String(2083), nullable=False)

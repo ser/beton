@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """User views."""
+import datetime
 import logging
 import xmlrpc.client
 
@@ -74,13 +75,14 @@ def add_bannerz():
             # get the width and height
             with Image.open(images.path(filename)) as img:
                 width, height = img.size
-            Banner.create(filename=filename, owner=current_user.id, image_url=images.url,
-                          url=form.banner_url.data,
+            Banner.create(filename=filename, owner=current_user.id,
+                          image_url=current_app.config.get('UPLOADED_IMAGES_URL') + filename,
+                          url=form.banner_url.data, created_at=datetime.datetime.utcnow(),
                           width=width, height=height,
                           comments=form.banner_comments.data)
             # flash(str(width)+' '+str(height), 'success')
-            flash('Your banner was uploaded sucessfully.', 'success')
-            return redirect(url_for('user.me'))
+            flash('Your banner was uploaded sucessfully.', 'success')  # TODO:size
+            return redirect(url_for('user.bannerz'))
         else:
             flash_errors(form)
     return render_template('users/upload_bannerz.html', form=form)
@@ -90,7 +92,8 @@ def add_bannerz():
 @login_required
 def bannerz():
     """See the banners."""
-    return render_template('users/bannerz.html')
+    all_banners = Banner.query.filter_by(owner=current_user.id).all()
+    return render_template('users/bannerz.html', all_banners=all_banners)
 
 
 @blueprint.route('/offer')
