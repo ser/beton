@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from flask_uploads import UploadSet, IMAGES, configure_uploads
 
 bcrypt = Bcrypt()
 csrf_protect = CSRFProtect()
@@ -15,3 +16,5 @@ db = SQLAlchemy()
 migrate = Migrate()
 cache = Cache()
 debug_toolbar = DebugToolbarExtension()
+images = UploadSet('images', IMAGES)
+#configure_uploads = configure_uploads

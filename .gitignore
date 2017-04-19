@@ -6,6 +6,7 @@ bin/
 include/
 lib/
 share/
+beton/bannerz/
 dev.db
 
 # Byte-compiled / optimized / DLL files

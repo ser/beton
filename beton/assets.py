@@ -12,6 +12,9 @@ css = Bundle(
 js = Bundle(
     'libs/jQuery/dist/jquery.js',
     'libs/bootstrap/dist/js/bootstrap.js',
+    'libs/jQuery-File-Upload/js/jquery.fileupload.js',
+    'libs/jQuery-File-Upload/js/jquery.fileupload-process.js',
+    'libs/jQuery-File-Upload/js/jquery.fileupload-ui.js',
     'js/plugins.js',
     filters='jsmin',
     output='public/js/common.js'

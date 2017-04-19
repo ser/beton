@@ -4,7 +4,7 @@ from flask import Flask, render_template
 
 from beton import commands, public, user
 from beton.assets import assets
-from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, login_manager, migrate
+from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, login_manager, migrate, images, configure_uploads
 from beton.settings import ProdConfig
 
 
@@ -33,6 +33,7 @@ def register_extensions(app):
     login_manager.init_app(app)
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
+    configure_uploads(app, images)
     return None
 
 
