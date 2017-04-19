@@ -1,9 +1,11 @@
 
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Your banners, {{ current_user.username }}</h1>
-    <h2><button><a href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></button></h2>
-    <table>
+    <div class="jumbotron">
+        <h1>Your banners, {{ current_user.username }}</h1>
+        <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
+    </div>
+    <table class="table">
     {% for banner in all_banners %}
     <tr>
         <td>{{ banner.id }}</td>
@@ -12,7 +14,7 @@
         <td>{{ banner.height }}</td>
         <td>{{ banner.width }}</td>
         <td>{{ banner.comment }}</td>
-        <td>{{ banner.filename }}</td>
+        <td><div class="img-thumbnail"><img src="{{ banner.image_url }}"></div></td>
     </tr>
     {% endfor %}
     </table>

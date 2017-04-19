@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Public section, including homepage and signup."""
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
 from flask_login import login_required, login_user, logout_user
 
 from beton.extensions import login_manager
@@ -61,3 +61,9 @@ def about():
     """About page."""
     form = LoginForm(request.form)
     return render_template('public/about.html', form=form)
+
+
+# TODO: this must be served directly via nginx in production
+@blueprint.route('/banners/<path:filename>')
+def download_file(filename):
+    return send_from_directory(current_app.config.get('UPLOADED_IMAGES_DEST'), filename)
