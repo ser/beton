@@ -76,7 +76,6 @@ def add_bannerz():
             with Image.open(images.path(filename)) as img:
                 width, height = img.size
             Banner.create(filename=filename, owner=current_user.id,
-                          image_url=current_app.config.get('UPLOADED_IMAGES_URL') + filename,
                           url=form.banner_url.data, created_at=datetime.datetime.utcnow(),
                           width=width, height=height,
                           comments=form.banner_comments.data)
@@ -93,7 +92,12 @@ def add_bannerz():
 def bannerz():
     """See the banners."""
     all_banners = Banner.query.filter_by(owner=current_user.id).all()
-    return render_template('users/bannerz.html', all_banners=all_banners)
+    all_urls = []
+    for x in all_banners:
+        url = images.url(x.filename)
+        all_urls.append([x.id, url])
+    return render_template('users/bannerz.html', all_banners=all_banners,
+                           all_urls=all_urls)
 
 
 @blueprint.route('/offer')

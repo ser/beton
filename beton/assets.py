@@ -12,9 +12,13 @@ css = Bundle(
 js = Bundle(
     'libs/jQuery/dist/jquery.js',
     'libs/bootstrap/dist/js/bootstrap.js',
-    'libs/jQuery-File-Upload/js/jquery.fileupload.js',
-    'libs/jQuery-File-Upload/js/jquery.fileupload-process.js',
-    'libs/jQuery-File-Upload/js/jquery.fileupload-ui.js',
+    #   'libs/jQuery-File-Upload/js/jquery.fileupload.js',
+    #   'libs/jQuery-File-Upload/js/jquery.fileupload-process.js',
+    #   'libs/jQuery-File-Upload/js/jquery.fileupload-ui.js',
+    #   'static/libs/salvattore/dist/salvattore.min.js',
+    #   'libs/media-match/media.match.js',
+    'libs/enquire/dist/enquire.js',
+    'libs/savvior/dist/savvior.js',
     'js/plugins.js',
     filters='jsmin',
     output='public/js/common.js'

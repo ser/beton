@@ -5,18 +5,29 @@
         <h1>Your banners, {{ current_user.username }}</h1>
         <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
     </div>
-    <table class="table">
-    {% for banner in all_banners %}
-    <tr>
-        <td>{{ banner.id }}</td>
-        <td>{{ banner.created_at }}</td>
-        <td>{{ banner.url }}</td>
-        <td>{{ banner.height }}</td>
-        <td>{{ banner.width }}</td>
-        <td>{{ banner.comment }}</td>
-        <td><div class="img-thumbnail"><img src="{{ banner.image_url }}"></div></td>
-    </tr>
-    {% endfor %}
-    </table>
+    <div id="grid" class="grid">
+        {% for banner in all_banners %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Banner #{{ banner.id }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="thumbnail">
+                        {% for url in all_urls %}
+                            {% if url[0] == banner.id %}
+                            <img src="{{ url[1] }}" class="img-responsive">
+                            {% endif %}
+                        {% endfor %}
+                        <div class="caption">
+                            <div id="created_at">{{ banner.created_at }}</div>
+                            <div id="url">{{ banner.url }}</div>
+                            <div id="size">{{ banner.width }} x {{ banner.height }}</div>
+                            <div id="comment">{{ banner.comment }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}
 

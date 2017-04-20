@@ -72,18 +72,16 @@ class Banner(SurrogatePK, Model):
     filename = Column(db.String(), unique=True, nullable=False)
     owner = Column(db.Integer(), unique=False, nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    image_url = Column(db.String(2083), nullable=False)
     url = Column(db.String(2083), nullable=False)
     height = Column(db.Integer(), nullable=False)
     width = Column(db.Integer(), nullable=False)
     comments = Column(db.String(512), nullable=True)
 
-    def __init__(self, filename, owner, created_at, image_url, url, height, width, comments):
+    def __init__(self, filename, owner, created_at, url, height, width, comments):
         """Create instance."""
         self.filename = filename
         self.owner = owner
         self.created_at = created_at
-        self.image_url = image_url
         self.url = url
         self.height = height
         self.width = width
@@ -91,8 +89,8 @@ class Banner(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<filename: {}, owner: {}, created_at: {}, image_url: {}, url: {}, height: {},\
+        return '<filename: {}, owner: {}, created_at: {}, url: {}, height: {},\
                 width: {}, comment: {}>'.format(self.filename, self.owner,
-                                                self.created_at, self.image_url,
+                                                self.created_at,
                                                 self.url, self.height,
                                                 self.width, self.comments)
