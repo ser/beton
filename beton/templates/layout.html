@@ -68,12 +68,16 @@
 <!-- end scripts -->
 {% endblock %}
     <script>
+        $(document).ready(function() {
             savvior.init('#grid', {
-                'screen and (max-width: 400px)': { columns: 1 },
-                'screen and (min-width: 400px) and (max-width: 800px)': { columns: 2 },
-                'screen and (min-width: 800px) and (max-width: 1000px)': { columns: 3 },
+                "screen and (max-width: 30em)": { columns: 1 },
+                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
+                "screen and (min-width: 60em) and (max-width: 80em)": {
+                      columns: 3 },
+                "screen and (min-width: 80em)": { columns: 4 },
             });
             console.log(savvior.ready());
+            });
      </script>
 </body>
 </html>

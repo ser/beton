@@ -55,7 +55,6 @@ textarea {
    More info at http://salvattore.com
  */
 
-/*
 
 #grid {
   width: 90%;
@@ -73,6 +72,7 @@ textarea {
   padding: 10px;
   font: 1em normal Menlo, Consolas, monospace;
 }
+/*
 #grid[data-columns="1"]::before {
       content: "'screen and (max-width: 600px)': { columns: 1 }";
 }

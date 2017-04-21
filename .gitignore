@@ -8,6 +8,8 @@ lib/
 share/
 beton/banners/
 beton/static/libs/
+beton/static/css/common.css
+beton/static/js/common.js
 dev.db
 
 # Byte-compiled / optimized / DLL files

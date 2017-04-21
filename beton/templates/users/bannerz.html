@@ -5,7 +5,7 @@
         <h1>Your banners, {{ current_user.username }}</h1>
         <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
     </div>
-    <div id="grid" class="grid">
+    <div id="grid">
         {% for banner in all_banners %}
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -15,7 +15,8 @@
                     <div class="thumbnail">
                         {% for url in all_urls %}
                             {% if url[0] == banner.id %}
-                            <img src="{{ url[1] }}" class="img-responsive">
+                                <img src="{{ url[1] }}" class="img-responsive">
+                                {#% break %#}
                             {% endif %}
                         {% endfor %}
                         <div class="caption">
