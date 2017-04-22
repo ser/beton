@@ -4,6 +4,8 @@ from flask_assets import Bundle, Environment
 
 css = Bundle(
     'libs/bootstrap/dist/css/bootstrap.css',
+    'libs/bootstrap-calendar/css/calendar.css',
+    'libs/Monthly/css/monthly.css',
     'css/style.css',
     filters='cssmin',
     output='public/css/common.css'
@@ -17,6 +19,9 @@ js = Bundle(
     #   'libs/jQuery-File-Upload/js/jquery.fileupload-ui.js',
     #   'static/libs/salvattore/dist/salvattore.min.js',
     #   'libs/media-match/media.match.js',
+    'libs/underscore/underscore.js',
+    'libs/bootstrap-calendar/js/calendar.js',
+#    'libs/Monthly/js/monthly.js',
     'libs/enquire/dist/enquire.js',
     'libs/savvior/dist/savvior.js',
     'js/plugins.js',

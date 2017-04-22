@@ -94,3 +94,25 @@ class Banner(SurrogatePK, Model):
                                                 self.created_at,
                                                 self.url, self.height,
                                                 self.width, self.comments)
+
+
+class Zone2Campaign(Model):
+    """Relation from original DB, a quick hack."""
+
+    __bind_key__ = 'revive'
+    __tablename__ = 'rv_placement_zone_assoc'
+    placement_zone_assoc_id = Column(db.Integer(), unique=True,
+                                     primary_key=True, nullable=False)
+    zone_id = Column(db.Integer(), nullable=True, unique=False)
+    placement_id = Column(db.Integer(), nullable=True, unique=False)
+
+    def __init__(self, zone_id, placement_id):
+        """Create instance."""
+        self.zone_id = zone_id
+        self.placement_id = placement_id
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        # return '<zone_id: {}, placement_id: {}>'.format(self.zone_id,
+        #                                                self.placement_id)
+        return '<zone_id: {}>'.format(self.zone_id)

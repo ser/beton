@@ -77,6 +77,11 @@
                 "screen and (min-width: 80em)": { columns: 4 },
             });
             console.log(savvior.ready());
+            $('#calendar').calendar(
+                {
+                    events_source: "/me/api/all_campaigns.json",
+                    tmpl_path: "/static/libs/bootstrap-calendar/tmpls/"
+                });
             });
      </script>
 </body>

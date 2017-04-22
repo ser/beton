@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 """User views."""
-import datetime
+
 import logging
 import xmlrpc.client
+from datetime import datetime
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+import names
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm
-from beton.user.models import Banner
+from beton.user.models import Banner, Zone2Campaign
 from beton.utils import flash_errors
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -76,7 +78,7 @@ def add_bannerz():
             with Image.open(images.path(filename)) as img:
                 width, height = img.size
             Banner.create(filename=filename, owner=current_user.id,
-                          url=form.banner_url.data, created_at=datetime.datetime.utcnow(),
+                          url=form.banner_url.data, created_at=datetime.utcnow(),
                           width=width, height=height,
                           comments=form.banner_comments.data)
             # flash(str(width)+' '+str(height), 'success')
@@ -149,3 +151,40 @@ def campaign():
     return render_template('users/campaign.html',
                            all_campaigns=all_campaigns,
                            banners=banners)
+
+
+@blueprint.route('/api/all_campaigns.json')
+@login_required
+def api_all_campaigns():
+    """JSON."""
+    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                  verbose=False)
+    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
+                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+
+    all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
+                                                       current_app.config.get('REVIVE_AGENCY_ID'))
+    ac = []
+    for x in all_advertisers:
+        fullname = names.get_full_name()
+        for y in r.ox.getCampaignListByAdvertiserId(sessionid, x['advertiserId']):
+            z2c = Zone2Campaign.query.filter_by(placement_id=y['campaignId']).first()
+            tasks = {}
+            tasks['id'] = y['campaignId']
+            tasks['title'] = fullname
+            if z2c:
+                tasks['zone'] = int(z2c.zone_id)
+            # calendar['url'] = ''
+            # calendar['class'] = ''
+            starttime = datetime.strptime(y['startDate'].value,
+                                          '%Y%m%dT%H:%M:%S')
+            endtime = datetime.strptime(y['endDate'].value,
+                                        '%Y%m%dT%H:%M:%S')
+            tasks['start'] = 1000*int(starttime.timestamp())
+            tasks['end'] = 1000*int(endtime.timestamp())
+            ac.append(tasks)
+    a = {}
+    a['success'] = 1
+    a['result'] = ac
+
+    return jsonify(a)
