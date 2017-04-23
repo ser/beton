@@ -1,18 +1,40 @@
 
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Welcome {{ current_user.username }}</h1>
-    <h3>This is the members-only page.</h3>
+    <h1>Hey, {{ current_user.username }} <i class="fa fa-gratipay"
+            aria-hidden="true"></i></h1>
+    <h3>This is an overview of all current campaigns on our websites</h3>
     <div id="calendar"></div>
-    {% for campaign in all_campaigns %}
-        <p>{{ campaign }}</p>
-        {% for banner in banners %}
-            {% if campaign.campaignId == banner[0] %}
-                {% if banner[1] %}
-                    <p>{{ banner[1] }}</p>
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-    {% endfor %}
+    <h3>Your campaigns as follow<h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Start</th>
+                    <th>end</th>
+                    <th>Banner</th>
+                </tr>
+                <tbody>
+                        {% for campaign in all_campaigns %}
+                            <tr>
+                                <td>{{ campaign['campaignId'] }}</td>
+                                <td>{{ campaign['campaignName'] }}</td>
+                                <td>{{ campaign['startDate'] }}</td>
+                                <td>{{ campaign['endDate'] }}</td>
+                                {% for banner in banners %}
+                                    {% if campaign['campaignId'] == banner[0] %}
+                                        {% if banner[1] %}
+                                        <td>{{ banner[1][0]['imageURL'] }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                </tbody>
+        </table>
+<script>
+    var events_source = "/me/api/all_campaigns_in_zone/0";
+</script>
 {% endblock %}
 

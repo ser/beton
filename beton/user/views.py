@@ -153,9 +153,9 @@ def campaign():
                            banners=banners)
 
 
-@blueprint.route('/api/all_campaigns.json')
+@blueprint.route('/api/all_campaigns_in_zone/<int:zone_id>')
 @login_required
-def api_all_campaigns():
+def api_all_campaigns(zone_id):
     """JSON."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
@@ -164,25 +164,33 @@ def api_all_campaigns():
 
     all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
                                                        current_app.config.get('REVIVE_AGENCY_ID'))
+    advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
+                        current_user.username)['advertiserId'])
     ac = []
     for x in all_advertisers:
         fullname = names.get_full_name()
         for y in r.ox.getCampaignListByAdvertiserId(sessionid, x['advertiserId']):
             z2c = Zone2Campaign.query.filter_by(placement_id=y['campaignId']).first()
-            tasks = {}
-            tasks['id'] = y['campaignId']
-            tasks['title'] = fullname
             if z2c:
-                tasks['zone'] = int(z2c.zone_id)
+                if zone_id == int(z2c.zone_id) or zone_id == 0:
+                    tasks = {}
+                    tasks['id'] = y['campaignId']
+                    if x['advertiserId'] == advertiser_id:
+                        tasks['title'] = y['campaignName']
+                        tasks['class'] = 'event-info'
+                    else:
+                        tasks['title'] = fullname
+                    tasks['zone'] = int(z2c.zone_id)
             # calendar['url'] = ''
             # calendar['class'] = ''
-            starttime = datetime.strptime(y['startDate'].value,
-                                          '%Y%m%dT%H:%M:%S')
-            endtime = datetime.strptime(y['endDate'].value,
-                                        '%Y%m%dT%H:%M:%S')
-            tasks['start'] = 1000*int(starttime.timestamp())
-            tasks['end'] = 1000*int(endtime.timestamp())
-            ac.append(tasks)
+                    starttime = datetime.strptime(y['startDate'].value,
+                                                  '%Y%m%dT%H:%M:%S')
+                    endtime = datetime.strptime(y['endDate'].value,
+                                                '%Y%m%dT%H:%M:%S')
+                    tasks['start'] = 1000*int(starttime.timestamp())
+                    tasks['end'] = 1000*int(endtime.timestamp())
+                    ac.append(tasks)
+
     a = {}
     a['success'] = 1
     a['result'] = ac
