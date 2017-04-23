@@ -147,10 +147,26 @@ def campaign():
     # Logout from Revive
     r.ox.logoff(sessionid)
 
+    all_campaigns_standardized = []
+
+    for campaign in all_campaigns:
+        tasks = {}
+        tasks['campaignId'] = campaign['campaignId']
+        tasks['campaignName'] = campaign['campaignName']
+        starttime = datetime.strptime(campaign['startDate'].value,
+                                      '%Y%m%dT%H:%M:%S')
+        endtime = datetime.strptime(campaign['endDate'].value,
+                                    '%Y%m%dT%H:%M:%S')
+        tasks['startDate'] = starttime
+        tasks['endDate'] = endtime
+
+        all_campaigns_standardized.append(tasks)
+
     # Render the page and quit
     return render_template('users/campaign.html',
-                           all_campaigns=all_campaigns,
-                           banners=banners)
+                           all_campaigns=all_campaigns_standardized,
+                           banners=banners,
+                           now=datetime.utcnow())
 
 
 @blueprint.route('/api/all_campaigns_in_zone/<int:zone_id>')

@@ -46,3 +46,4 @@ Flask-DebugToolbar==0.10.1
 # Other
 names>=0.3.0
 pymysql
+flask-admin

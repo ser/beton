@@ -25,7 +25,7 @@
                                 {% for banner in banners %}
                                     {% if campaign['campaignId'] == banner[0] %}
                                         {% if banner[1] %}
-                                        <td>{{ banner[1][0]['imageURL'] }}</td>
+                                        <td><img src="{{ banner[1][0]['imageURL'] }}"></td>
                                         {% endif %}
                                     {% endif %}
                                 {% endfor %}

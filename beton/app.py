@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
+from flask_moment import Moment
 
 from beton import commands, public, user
 from beton.assets import assets
-from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, login_manager, migrate, images, configure_uploads
+from beton.extensions import bcrypt, cache, configure_uploads, csrf_protect
+from beton.extensions import db, debug_toolbar, images, login_manager, migrate
 from beton.settings import ProdConfig
 
+moment = Moment()
 
 def create_app(config_object=ProdConfig):
     """An application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
@@ -34,6 +37,7 @@ def register_extensions(app):
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
     configure_uploads(app, images)
+    moment.init_app(app)
     return None
 
 
