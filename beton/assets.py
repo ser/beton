@@ -5,7 +5,7 @@ from flask_assets import Bundle, Environment
 css = Bundle(
     'libs/bootstrap/dist/css/bootstrap.css',
     'libs/bootstrap-calendar/css/calendar.css',
-    'libs/Monthly/css/monthly.css',
+    'libs/daterangepicker/demo/css/picker.css',
     'css/style.css',
     filters='cssmin',
     output='public/css/common.css'
@@ -21,6 +21,8 @@ js = Bundle(
     #   'libs/media-match/media.match.js',
     'libs/underscore/underscore.js',
     'libs/moment/moment.js',
+    'libs/moment-timezone/moment-timezone.js',
+    'libs/daterangepicker/lib/daterangepicker/daterangepicker.js',
     'libs/bootstrap-calendar/js/calendar.js',
     'libs/enquire/dist/enquire.js',
     'libs/savvior/dist/savvior.js',

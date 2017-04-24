@@ -37,7 +37,8 @@
 <header>{% block header %}{% endblock %}</header>
 <div class="{% block content_class %}container-fluid{% endblock content_class %}">
 
-  <div role="main">
+  <div id="loading"></div>
+  <div id="content" role="main">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="row">
@@ -77,6 +78,22 @@
                 "screen and (min-width: 80em)": { columns: 4 },
             });
             console.log(savvior.ready());
+            var start = moment();
+            var end = moment().add(1, 'month');
+            function cb(start, end) {
+                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - '
+                + end.format('MMMM D, YYYY'));
+            }
+            $('input[name="daterange"]').daterangepicker({
+                startDate: start,
+                endDate: end
+            }, cb);
+            cb(start,end);
+            //function preloader(){
+            //    document.getElementById("loading").style.display = "none";
+            //    document.getElementById("content").style.display = "block";
+            //
+            // window.onload = preloader;
             });
         $('#calendar').calendar(
             {

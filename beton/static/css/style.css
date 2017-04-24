@@ -72,21 +72,7 @@ textarea {
   padding: 10px;
   font: 1em normal Menlo, Consolas, monospace;
 }
-/*
-#grid[data-columns="1"]::before {
-      content: "'screen and (max-width: 600px)': { columns: 1 }";
-}
-#grid[data-columns="2"]::before {
-    content: "'screen and (min-width: 600px) and (max-width: 800px)': { columns: 2 }";
-}
-#grid[data-columns="3"]::before {
-    content: "'screen and (min-width: 800px) and (max-width: 1000px)': { columns: 3 }";
-}
-#grid[data-columns="4"]::before {
-    content: "'screen and (min-width: 1000px)': { columns: 4 }";
-}
-*/
-/* Base styles */
+
 .column {
     float: left;
 }
@@ -100,6 +86,28 @@ textarea {
     width: 50%;
 }
 
+/* loading
+
+div#content {
+    display: none;
+}
+
+div#loading {
+    top: 200 px;
+    margin: auto;
+    position: absolute;
+    z-index: 1000;
+    width: 160px;
+    height: 24px;
+    background: url(loadingimage.gif) no-repeat;
+    cursor: wait;
+}
+
+*/
+
+.thumbmax {
+    max-height: 150px;
+}
 
 /* footer */
 

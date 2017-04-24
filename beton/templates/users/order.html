@@ -1,0 +1,116 @@
+
+{% extends "layout.html" %}
+{% block content %}
+{% if step == 'chose-banner' %}
+    <div class="jumbotron">
+        <h1>Select a banner for your new campaign, {{ current_user.username }}</h1>
+        <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
+    </div>
+    <div id="grid">
+        {% for banner in all_banners %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Banner #{{ banner.id }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="thumbnail">
+                        {% for url in all_urls %}
+                            {% if url[0] == banner.id %}
+                                <img src="{{ url[1] }}" class="img-responsive">
+                            {% endif %}
+                        {% endfor %}
+                        <div class="caption">
+                            <div id="created_at">{{ banner.created_at }}</div>
+                            <div id="url">{{ banner.url }}</div>
+                            <div id="size">{{ banner.width }} x {{ banner.height }}</div>
+                            <div id="comment">{{ banner.comment }}</div>
+                        </div>
+                        <form action="{{ url_for('user.order') }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="banner_id" value="{{ banner.id }}">
+                            <input type="hidden" name="step" value="chose-zone">
+                            <button type="submit" value="chose-zone" class="btn
+                                btn-primary">Chose this banner</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% elif step == "chose-zone" %}
+    <div class="jumbotron">
+        <h1>Select the zone, {{ current_user.username }}</h1>
+        <h3>In which zone do you want to display this banner?</h3>
+        <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+    </div>
+    {% if all_zones %}
+        <div id="grid">
+            {% for zone in all_zones %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Zone #{{ zone.zoneId }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="zonename">{{ zone.zoneName }}</div>
+                        <div id="zonesize">{{ zone.width}} x {{ zone.height }}</div>
+                        <form action="{{ url_for('user.order') }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <input type="hidden" name="banner_id" value="{{ banner.id }}" />
+                            <input type="hidden" name="zone_id" value="{{ zone.zoneId }}" />
+                            <input type="hidden" name="step" value="chose-date" />
+                            <button type="submit" name="submit" value="chose-date" class="btn
+                                btn-primary">Choose this zone</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>There are no zones able to fit your banner. Check 
+            <a href="{{ url_for('user.offer') }}">our offer</a> again, please.</p>
+    {% endif %}
+    <form action="{{ url_for('user.order') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit" name="submit" class="btn
+            btn-danger" value="cancel">Cancel this campaign</button>
+    </form>
+{% elif step == "chose-date" %}
+    <div class="jumbotron">
+        <h1>Select dates, {{ current_user.username }}</h1>
+        <h3>Please select time period for your advert</h3>
+        <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+    </div>
+    <form action="{{ url_for('user.order') }}" method="post">
+        <input type="text" name="daterange" value="" />
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="banner_id" value="{{ banner_id }}" />
+        <input type="hidden" name="zone_id" value="{{ zone_id }}" />
+        <input type="hidden" name="step" value="pay" />
+        <button type="submit" name="submit" value="pay" class="btn
+            btn-primary">Confirm and pay</button>
+    </form>
+    <form action="{{ url_for('user.order')  }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" name="submit" value="cancel" class="btn
+             btn-danger">Cancel this campaign</button>
+    </form>
+    <h3>All currently active campaigns in this zone, for your conveniance</h3>
+    <div id="calendar"></div>
+    <script>
+        var events_source = "/me/api/all_campaigns_in_zone/{{ zone_id }}";
+    </script>
+{% elif step == "pay" %}
+    <div class="jumbotron">
+        <h1>Just pay, {{ current_user.username }}</h1>
+        <h3>Carefully check your order and pay.</h3>
+    </div>
+    <p>I want to have a campaign with banner #{{ banner_id }} <img class="img-thumbnail thumbmax" src="{{ image_url }}"> with period {{ daterange }}.</p>
+    <form action="{{ url_for('user.order')  }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit" name="submit" class="btn btn-danger"
+            value="cancel">Cancel this campaign</button>
+    </form>
+
+{% endif %}
+{% endblock %}
+

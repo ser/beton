@@ -2,9 +2,9 @@
   "name": "beton",
   "dependencies": {
     "bootstrap": "",
-    "jQuery": "",
+    "jQuery": ">=1.6",
     "savvior": "",
     "bootstrap-calendar": "",
-    "monthly": ""
+    "daterangepicker": ""
   }
 }

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-"""User views."""
-
 import logging
 import xmlrpc.client
 from datetime import datetime
@@ -212,3 +209,64 @@ def api_all_campaigns(zone_id):
     a['result'] = ac
 
     return jsonify(a)
+
+
+@blueprint.route('/order', methods=['get', 'post'])
+@login_required
+def order():
+    """Order a campaign."""
+    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                  verbose=False)
+    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
+                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+
+    if ('step' not in request.form) or \
+            ('submit' in request.form.values() and request.form['submit'] == 'cancel'):
+        all_banners = Banner.query.filter_by(owner=current_user.id).all()
+        all_urls = []
+        for x in all_banners:
+            url = images.url(x.filename)
+            all_urls.append([x.id, url])
+        return render_template('users/order.html', all_banners=all_banners,
+                               all_urls=all_urls, step='chose-banner')
+
+    elif request.form['step'] == 'chose-zone':
+        """Get and display all possible websites and zones in them."""
+        # Get banner height and width
+        banner_id = int(request.form['banner_id'])
+        banner = Banner.query.filter_by(id=banner_id).first()
+        image_url = images.url(banner.filename)
+        # Get zones from Revive
+        all_zones = []
+        allzones = r.ox.getZoneListByPublisherId(sessionid,
+                                                 current_app.config.get('REVIVE_AGENCY_ID'))
+        for zone in allzones:
+            zone_width = zone['width']
+            zone_height = zone['height']
+            if zone_width >= banner.width and zone_height >= banner.height:
+                all_zones.append(zone)
+        return render_template('users/order.html', banner=banner,
+                               image_url=image_url,
+                               all_zones=all_zones, step='chose-zone')
+
+    elif request.form['step'] == 'chose-date':
+        banner_id = int(request.form['banner_id'])
+        banner = Banner.query.filter_by(id=banner_id).first()
+        image_url = images.url(banner.filename)
+        zone_id = int(request.form['zone_id'])
+        return render_template('users/order.html', banner_id=banner_id,
+                               zone_id=zone_id, image_url=image_url,
+                               step='chose-date')
+
+    elif request.form['step'] == 'pay':
+        banner_id = int(request.form['banner_id'])
+        banner = Banner.query.filter_by(id=banner_id).first()
+        image_url = images.url(banner.filename)
+        zone_id = int(request.form['zone_id'])
+        daterange = request.form['daterange']
+        return render_template('users/order.html', banner_id=banner_id,
+                               daterange=daterange, image_url=image_url,
+                               zone_id=zone_id, step='pay')
+
+    # Logout from Revive
+    r.ox.logoff(sessionid)
