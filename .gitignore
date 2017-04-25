@@ -6,6 +6,7 @@ bin/
 include/
 lib/
 share/
+migrations/
 beton/banners/
 beton/static/libs/
 beton/static/css/common.css
