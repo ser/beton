@@ -108,15 +108,25 @@ def offer():
     sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
                            current_app.config.get('REVIVE_MASTER_PASSWORD'))
 
-    # get zones from Revive
-    allzones = r.ox.getZoneListByPublisherId(sessionid,
-                                             current_app.config.get('REVIVE_AGENCY_ID'))
+    # Get all publishers (websites)
+    publishers = r.ox.getPublisherListByAgencyId(sessionid, 
+                                    current_app.config.get('REVIVE_AGENCY_ID'))
+
+    all_zones = []
+    for website in publishers:
+
+        # get zones from Revive
+        allzones = r.ox.getZoneListByPublisherId(sessionid,
+                                                 website['publisherId'])
+
+        all_zones.append(allzones)
 
     # Logout from Revive
     r.ox.logoff(sessionid)
 
     # Render the page and quit
-    return render_template('users/offer.html', allzones=allzones)
+    return render_template('users/offer.html', allzones=all_zones,
+                           publishers=publishers)
 
 
 @blueprint.route('/campaign')

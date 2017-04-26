@@ -1,8 +1,21 @@
 
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Welcome {{ current_user.username }}</h1>
-    <h3>This is the members-only page.</h3>
-    <p>{{ allzones }}</p>
+    <div class="jumbotron">
+        <h1>This is it, {{ current_user.username  }}</h1>
+        <p>These are all zones in our offer. When you are decided, order.</p>
+    </div>
+    {% for website in publishers %}
+        <h2>{{ website.publisherName }}</h2>
+            <div id="grid">
+            {% for zone in allzones %}
+                {% if zone|length > 0 %}<br>
+                    {% if zone[0].publisherId == website.publisherId %}
+                    <div>{{ zone[0] }}</div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            </div>
+    {% endfor %}
 {% endblock %}
 
