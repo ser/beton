@@ -9,11 +9,16 @@
         <h2>{{ website.publisherName }}</h2>
             <div id="grid">
             {% for zone in allzones %}
-                {% if zone|length > 0 %}<br>
-                    {% if zone[0].publisherId == website.publisherId %}
-                    <div>{{ zone[0] }}</div>
+                {% if zone.publisherId == website.publisherId %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">{{ zone.zoneName }}</h3>
+                        </div>
+                        <div class="panel-body">
+                            {{ zone }}
+                        </div>
+                    </div>
                     {% endif %}
-                {% endif %}
             {% endfor %}
             </div>
     {% endfor %}

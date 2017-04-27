@@ -9,7 +9,7 @@ from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm
-from beton.user.models import Banner, Zone2Campaign
+from beton.user.models import Banner, Prices, Zone2Campaign
 from beton.utils import flash_errors
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -99,7 +99,7 @@ def bannerz():
                            all_urls=all_urls)
 
 
-@blueprint.route('/offer')
+@blueprint.route('/offer', methods=['GET', 'POST'])
 @login_required
 def offer():
     """Get and display all possible websites and zones in them."""
@@ -114,12 +114,24 @@ def offer():
 
     all_zones = []
     for website in publishers:
+        print(website)
 
         # get zones from Revive
         allzones = r.ox.getZoneListByPublisherId(sessionid,
                                                  website['publisherId'])
+        for zone in allzones:
+            print(zone)
+            price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
-        all_zones.append(allzones)
+            tmpdict = {}
+            tmpdict['price'] = price
+            tmpdict['publisherId'] = zone['publisherId']
+            tmpdict['zoneName'] = zone['zoneName']
+            tmpdict['width'] = zone['width']
+            tmpdict['height'] = zone['height']
+            tmpdict['zoneId'] = zone['zoneId']
+            tmpdict['comments'] = zone['comments']
+            all_zones.append(tmpdict)
 
     # Logout from Revive
     r.ox.logoff(sessionid)

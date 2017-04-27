@@ -96,6 +96,24 @@ class Banner(SurrogatePK, Model):
                                                 self.width, self.comments)
 
 
+class Prices(SurrogatePK, Model):
+    """Zone prices"""
+
+    __tablename__ = 'zoneprice'
+    zoneid = Column(db.Integer(), unique=True, nullable=False)
+    dayprice = Column(db.Integer(), unique=False, nullable=False)
+
+    def __init__(self,zoneid, dayprice):
+        """Create instance."""
+        self.zoneid = zoneid
+        self.dayprice = dayprice
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return '<zoneid: {}, dayprice: {}>'.format(self.zoneid,
+                                                   self.dayprice)
+
+
 class Zone2Campaign(Model):
     """Relation from original DB, a quick hack."""
 
