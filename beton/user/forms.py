@@ -2,7 +2,7 @@
 """User forms."""
 from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
-from wtforms import PasswordField, StringField
+from wtforms import IntegerField, PasswordField, StringField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 from beton.extensions import images
@@ -57,3 +57,13 @@ class AddBannerForm(Form):
         super(AddBannerForm, self).__init__(*args, **kwargs)
 
     # TODO: validate if size of the image is not bigger than 500kb
+
+class ChangeOffer(Form):
+    """Modify zone prices."""
+    zoneprice = IntegerField('Price per day')
+    zoneid = IntegerField('Zone ID')
+
+    def __init__(self, *args, **kwargs):
+        """Create instance."""
+        super(ChangeOffer, self).__init__(*args, **kwargs)
+

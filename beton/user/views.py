@@ -8,7 +8,7 @@ from flask_login import current_user, login_required
 from PIL import Image
 
 from beton.extensions import images
-from beton.user.forms import AddBannerForm
+from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Prices, Zone2Campaign
 from beton.utils import flash_errors
 
@@ -103,6 +103,7 @@ def bannerz():
 @login_required
 def offer():
     """Get and display all possible websites and zones in them."""
+    form = ChangeOffer()
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
     sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
@@ -113,18 +114,17 @@ def offer():
                                     current_app.config.get('REVIVE_AGENCY_ID'))
 
     all_zones = []
+        
     for website in publishers:
-        print(website)
 
         # get zones from Revive
         allzones = r.ox.getZoneListByPublisherId(sessionid,
-                                                 website['publisherId'])
+                                                website['publisherId'])
         for zone in allzones:
-            print(zone)
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
             tmpdict = {}
-            tmpdict['price'] = price
+            tmpdict['price'] = price.dayprice
             tmpdict['publisherId'] = zone['publisherId']
             tmpdict['zoneName'] = zone['zoneName']
             tmpdict['width'] = zone['width']
@@ -133,12 +133,25 @@ def offer():
             tmpdict['comments'] = zone['comments']
             all_zones.append(tmpdict)
 
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            for zone in all_zones:
+                if form.zoneid.data == zone['zoneId']:
+                    if zone['price'] == None:
+                        Prices.create(zoneid=form.zoneid.data,
+                                      dayprice=form.zoneprice.data)
+                    else:
+                        Prices.query.filter_by(zoneid=form.zoneid.data).update({"dayprice": form.zoneprice.data})
+                        #stmt = update(Prices.__table__).where(zoneid==form.zoneid.data).values(dayprice=form.zoneprice.data)
+                        #print(form.zoneprice.data)
+
+        return redirect(url_for('user.offer'))
     # Logout from Revive
     r.ox.logoff(sessionid)
 
     # Render the page and quit
     return render_template('users/offer.html', allzones=all_zones,
-                           publishers=publishers)
+                           publishers=publishers, form=form)
 
 
 @blueprint.route('/campaign')

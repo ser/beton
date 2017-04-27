@@ -12,7 +12,7 @@ from flask_uploads import UploadSet, IMAGES, configure_uploads
 bcrypt = Bcrypt()
 csrf_protect = CSRFProtect()
 login_manager = LoginManager()
-db = SQLAlchemy()
+db = SQLAlchemy(session_options={'autocommit': True})
 migrate = Migrate()
 cache = Cache()
 debug_toolbar = DebugToolbarExtension()

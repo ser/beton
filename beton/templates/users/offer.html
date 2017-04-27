@@ -15,7 +15,15 @@
                             <h3 class="panel-title">{{ zone.zoneName }}</h3>
                         </div>
                         <div class="panel-body">
-                            {{ zone }}
+                            <div id="widthheight">{{ zone.width }}x{{ zone.height }}</div>
+                            <div id="comments"> {{ zone.comments }}</div>
+                            <div id="price"> {{ zone.price }}</div>
+                            <form action="{{ url_for('user.offer') }}" method="post">
+                                {{ form.csrf_token }}
+                                {{ form.zoneprice(size=5) }}
+                                <input type="hidden" name="zoneid" value="{{ zone.zoneId }}">
+                                <input type="submit" value="Change">
+                            </form>
                         </div>
                     </div>
                     {% endif %}
