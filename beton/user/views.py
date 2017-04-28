@@ -305,8 +305,49 @@ def order():
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
+        width = banner.width
+        height = banner.height
+        url = banner.url
         zone_id = int(request.form['zone_id'])
         daterange = request.form['daterange']
+
+        # We are booking the campaign in Revive, but turning off by default
+        # until payment is confirmed
+        all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
+                                                       current_app.config.get('REVIVE_AGENCY_ID'))
+        advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
+                        current_user.username)['advertiserId'])
+
+        begin=datetime.strptime(daterange.split('-')[0].strip(),
+                                "%d %b %Y")
+        enddate=datetime.strptime(daterange.split('-')[1].strip(),
+                              "%d %b %Y")
+        print(begin, enddate)
+        diki = {}
+        diki['advertiserId'] = advertiser_id
+        diki['campaignName'] = "TEST"
+        diki['startDate'] = begin
+        diki['endDate']= enddate
+        campaign = r.ox.addCampaign(sessionid, diki)
+
+        # Now we are adding our banner to campaign
+        diki = {}
+        diki['campaignId'] = campaign
+        diki['bannerName'] = str(banner_id)
+        diki['imageURL'] = image_url
+        diki['width'] = width
+        diki['height'] = height
+        diki['url'] = url
+        diki['storageType'] = 'url'
+        banno = r.ox.addBanner(sessionid, diki)
+
+        # Finally, link campaign
+        diki = {}
+        diki['sessionId']= sessionid
+        diki['zoneId'] = zone_id
+        diki['campaignId'] = campaign
+        linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
+ 
         return render_template('users/order.html', banner_id=banner_id,
                                daterange=daterange, image_url=image_url,
                                zone_id=zone_id, step='pay')
