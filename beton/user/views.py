@@ -271,15 +271,23 @@ def order():
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
+
+
+        # Get all publishers (websites)
+        publishers = r.ox.getPublisherListByAgencyId(sessionid,
+                                                     current_app.config.get('REVIVE_AGENCY_ID'))
+
         # Get zones from Revive
         all_zones = []
-        allzones = r.ox.getZoneListByPublisherId(sessionid,
-                                                 current_app.config.get('REVIVE_AGENCY_ID'))
-        for zone in allzones:
-            zone_width = zone['width']
-            zone_height = zone['height']
-            if zone_width >= banner.width and zone_height >= banner.height:
-                all_zones.append(zone)
+
+        for website in publishers:
+            allzones = r.ox.getZoneListByPublisherId(sessionid,
+                                                     website['publisherId'])
+            for zone in allzones:
+                zone_width = zone['width']
+                zone_height = zone['height']
+                if zone_width >= banner.width and zone_height >= banner.height:
+                    all_zones.append(zone)
         return render_template('users/order.html', banner=banner,
                                image_url=image_url,
                                all_zones=all_zones, step='chose-zone')
