@@ -20,7 +20,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='libs/font-awesome4/css/font-awesome.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='libs/font-awesome/css/font-awesome.min.css') }}">
   {% assets "css_all" %}
     <link rel="stylesheet" href="{{ ASSET_URL }}">
   {% endassets %}
@@ -29,6 +29,7 @@
 
 </head>
 <body class="{% block body_class %}{% endblock %}">
+        <div id="loader"></div>
 {% block body %}
 {% with form=form  %}
 {% include "nav.html" %}
@@ -37,7 +38,6 @@
 <header>{% block header %}{% endblock %}</header>
 <div class="{% block content_class %}container-fluid{% endblock content_class %}">
 
-  <div id="loading"></div>
   <div id="content" role="main">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -89,17 +89,14 @@
                 endDate: end
             }, cb);
             cb(start,end);
-            //function preloader(){
-            //    document.getElementById("loading").style.display = "none";
-            //    document.getElementById("content").style.display = "block";
-            //
-            // window.onload = preloader;
-            });
+            $("#loader").fadeOut(1000);
+        });
         $('#calendar').calendar(
             {
                 events_source: events_source,
                 tmpl_path: "/static/libs/bootstrap-calendar/tmpls/"
-        });
+            }
+        );
      </script>
 </body>
 </html>

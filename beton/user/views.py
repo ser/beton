@@ -1,4 +1,7 @@
 import logging
+import json
+import requests
+import uuid
 import xmlrpc.client
 from datetime import datetime
 
@@ -311,6 +314,8 @@ def order():
         zone_id = int(request.form['zone_id'])
         daterange = request.form['daterange']
 
+        price = Prices.query.filter_by(zoneid=zone_id).first()
+
         # We are booking the campaign in Revive, but turning off by default
         # until payment is confirmed
         all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
@@ -322,7 +327,7 @@ def order():
                                 "%d %b %Y")
         enddate=datetime.strptime(daterange.split('-')[1].strip(),
                               "%d %b %Y")
-        print(begin, enddate)
+        totaltime = enddate - begin
         diki = {}
         diki['advertiserId'] = advertiser_id
         diki['campaignName'] = "TEST"
@@ -347,10 +352,38 @@ def order():
         diki['zoneId'] = zone_id
         diki['campaignId'] = campaign
         linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
- 
+
+        # ask kraken for rate
+        krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
+        krkr = requests.get(krkuri)
+        json_data = krkr.text
+        fj = json.loads(json_data)
+        exrate = fj["result"]['XXBTZEUR']["c"][0]
+        totalcurrencyprice = price.dayprice*totaltime.days
+        totalbtcprice = totalcurrencyprice / float(exrate)
+
+        # kindly ask miss electrum for an invoice
+        headers = {'content-type': 'application/json'}
+        params = {
+            "amount": totalbtcprice,
+            "expiration": 1212
+        }
+        payload = {
+            "id": str(uuid.uuid4()),
+            "method": "addrequest",
+            "params": params
+        }
+
+        electrum_url = current_app.config.get('ELECTRUM_RPC')
+        electrum = requests.post(electrum_url, json=payload).json()
+        result = electrum['result']
+
         return render_template('users/order.html', banner_id=banner_id,
                                daterange=daterange, image_url=image_url,
-                               zone_id=zone_id, step='pay')
+                               zone_id=zone_id, days=totaltime.days,
+                               exrate=exrate, dayprice=price.dayprice,
+                               btctotal=totalbtcprice, electrum=result,
+                               step='pay')
 
     # Logout from Revive
     r.ox.logoff(sessionid)

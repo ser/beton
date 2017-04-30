@@ -19,6 +19,7 @@ js = Bundle(
     #   'libs/jQuery-File-Upload/js/jquery.fileupload-ui.js',
     #   'static/libs/salvattore/dist/salvattore.min.js',
     #   'libs/media-match/media.match.js',
+    'libs/gasparesganga-jquery-loading-overlay/src/loadingoverlay.js',
     'libs/underscore/underscore.js',
     'libs/moment/moment.js',
     'libs/moment-timezone/moment-timezone.js',

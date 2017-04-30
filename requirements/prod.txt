@@ -47,3 +47,4 @@ Flask-DebugToolbar==0.10.1
 names>=0.3.0
 pymysql
 flask-admin
+requests

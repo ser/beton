@@ -1,22 +1,24 @@
 
 {% extends "layout.html" %}
 {% block content %}
+    <div class="jumbotron">
     <h1>Hey, {{ current_user.username }} <i class="fa fa-gratipay"
             aria-hidden="true"></i></h1>
-    <h3>This is an overview of all current campaigns on our websites</h3>
-    <div id="calendar"></div>
-    <h3>Your campaigns as follow<h3>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Start</th>
-                    <th>end</th>
-                    <th>Banner</th>
-                </tr>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h3>Your campaigns as follow<h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Start</th>
+                        <th>end</th>
+                        <th>Banner</th>
+                    </tr>
                 <tbody>
-                        {% for campaign in all_campaigns %}
+                    {% for campaign in all_campaigns %}
                             <tr>
                                 <td>{{ campaign['campaignId'] }}</td>
                                 <td>{{ campaign['campaignName'] }}</td>
@@ -25,14 +27,21 @@
                                 {% for banner in banners %}
                                     {% if campaign['campaignId'] == banner[0] %}
                                         {% if banner[1] %}
-                                        <td><img src="{{ banner[1][0]['imageURL'] }}"></td>
+                                        <td><img class="img-thumbnail thumbmax" 
+                                            src="{{ banner[1][0]['imageURL'] }}"></td>
                                         {% endif %}
                                     {% endif %}
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
+                    {% endfor %}
                 </tbody>
-        </table>
+            </table>
+        </div>
+        <div class="col-sm-6">
+            <h3>This is an overview of all recent campaigns on our websites</h3>
+            <div id="calendar"></div>
+        </div>
+    </div>
 <script>
     var events_source = "/me/api/all_campaigns_in_zone/0";
 </script>

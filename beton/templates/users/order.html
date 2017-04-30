@@ -77,39 +77,66 @@
 {% elif step == "chose-date" %}
     <div class="jumbotron">
         <h1>Select dates, {{ current_user.username }}</h1>
-        <h3>Please select time period for your advert</h3>
+        <h3>Please select time period for this banner</h3>
         <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
     </div>
-    <form action="{{ url_for('user.order') }}" method="post">
-        <input type="text" name="daterange" value="" />
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <input type="hidden" name="banner_id" value="{{ banner_id }}" />
-        <input type="hidden" name="zone_id" value="{{ zone_id }}" />
-        <input type="hidden" name="step" value="pay" />
-        <button type="submit" name="submit" value="pay" class="btn
-            btn-primary">Confirm and pay</button>
-    </form>
-    <form action="{{ url_for('user.order')  }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" name="submit" value="cancel" class="btn
-             btn-danger">Cancel this campaign</button>
-    </form>
-    <h3>All currently active campaigns in this zone, for your conveniance</h3>
-    <div id="calendar"></div>
+    <div class="row">
+        <div class="col-sm-6 col-xs-12">
+            <form action="{{ url_for('user.order') }}" method="post">
+                <input type="text" name="daterange" value="" />
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" name="banner_id" value="{{ banner_id }}" />
+                <input type="hidden" name="zone_id" value="{{ zone_id }}" />
+                <input type="hidden" name="step" value="pay" />
+                <button type="submit" name="submit" value="pay" class="btn
+                    btn-primary">Confirm and go to payment details</button>
+            </form>
+            <div class="pull-right">
+            <form action="{{ url_for('user.order') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" name="submit" value="cancel" class="btn
+                     btn-danger">Cancel this campaign</button>
+            </form>
+        </div>
+        </div>
+        <div class="col-sm-6 col-xs-12">
+            <h3>All recent campaigns in this zone, for your conveniance</h3>
+            <div id="calendar"></div>
+        </div>
+    </div>
     <script>
         var events_source = "/me/api/all_campaigns_in_zone/{{ zone_id }}";
     </script>
 {% elif step == "pay" %}
     <div class="jumbotron">
         <h1>Just pay, {{ current_user.username }}</h1>
-        <h3>Carefully check your order and pay.</h3>
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <h3>Carefully check your order and please pay.</h3>
+            </div>
+            <div class="col-sm-6 col-xs-12">
+                <h4>Alternatively</h4>
+                <form action="{{ url_for('user.order')  }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <button type="submit" name="submit" class="btn btn-danger"
+                        value="cancel">Cancel this campaign</button>
+                </form>
+            </div>
+        </div>
     </div>
-    <p>I want to have a campaign with banner #{{ banner_id }} <img class="img-thumbnail thumbmax" src="{{ image_url }}"> with period {{ daterange }}.</p>
-    <form action="{{ url_for('user.order')  }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <button type="submit" name="submit" class="btn btn-danger"
-            value="cancel">Cancel this campaign</button>
-    </form>
+    <div class="row">
+        <div class="col-sm-6 col-xs-12">
+            <p>I want to have a campaign with banner #{{ banner_id }}</p>
+            <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+            <p>for period: {{ daterange }}.</p>
+            <p>It's {{ days }} day(s) alltogether, each day for: {{ dayprice }}.</p>
+            <p>1 BTC if now for {{ exrate }}</p>
+            <p>Total is: {{ btctotal }}.</p>
+        </div>
+        <div class="col-sm-6 col-xs-12">
+            <p>{{ electrum }}</p>
+        </div>
+    </div>
 
 {% endif %}
 {% endblock %}
