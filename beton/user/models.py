@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """User and other DB models."""
+import uuid
 import datetime as dt
 
 from flask_login import UserMixin
@@ -112,6 +113,38 @@ class Prices(SurrogatePK, Model):
         """Represent instance as a unique string."""
         return '<zoneid: {}, dayprice: {}>'.format(self.zoneid,
                                                    self.dayprice)
+
+
+class Orders(SurrogatePK, Model):
+    """All orders"""
+
+    __tablename__ = 'orders'
+    secret = Column(db.String(), unique=True, nullable=False)
+    campaigno = Column(db.Integer(), unique=True, nullable=False)
+    ispaid = Column(db.Boolean(), default=False, nullable=False)
+    created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    amount_btc = Column(db.Numeric)
+    btcaddress = Column(db.String(), unique=True, nullable=False)
+
+    def __init__(self, secret, campaigno, ispaid, created_at, amount_btc,
+                 btcaddress):
+        """Create instance."""
+        self.secret = secret
+        self.campaigno = campaigno
+        self.ispaid = ispaid
+        self.created_at = created_at
+        self.amount_btc = amount_btc
+        self.btcaddress = btcaddress
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return '<secret: {}, campaigno: {}, ispaid: {}, created_at: {},\
+    amount_btc: {}, btcaddress: {}>'.format(self.secret,
+                                            self.campaigno,
+                                            self.ispaid,
+                                            self.created_at,
+                                            self.amount_btc,
+                                            self.btcaddress)
 
 
 class Zone2Campaign(Model):

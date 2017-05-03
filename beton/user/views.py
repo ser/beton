@@ -12,7 +12,7 @@ from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Prices, Zone2Campaign
+from beton.user.models import Banner, Orders, Prices, Zone2Campaign
 from beton.utils import flash_errors
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -127,7 +127,10 @@ def offer():
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
             tmpdict = {}
-            tmpdict['price'] = price.dayprice
+            if price:
+                tmpdict['price'] = price.dayprice
+            else:
+                tmpdict['price'] = 0
             tmpdict['publisherId'] = zone['publisherId']
             tmpdict['zoneName'] = zone['zoneName']
             tmpdict['width'] = zone['width']
@@ -140,13 +143,12 @@ def offer():
         if form.validate_on_submit():
             for zone in all_zones:
                 if form.zoneid.data == zone['zoneId']:
-                    if zone['price'] == None:
+                    if zone['price']:
+                        Prices.query.filter_by(zoneid=form.zoneid.data).update({"dayprice": form.zoneprice.data})
+                        Prices.commit()  # TODO: it should use .update
+                    else:
                         Prices.create(zoneid=form.zoneid.data,
                                       dayprice=form.zoneprice.data)
-                    else:
-                        Prices.query.filter_by(zoneid=form.zoneid.data).update({"dayprice": form.zoneprice.data})
-                        #stmt = update(Prices.__table__).where(zoneid==form.zoneid.data).values(dayprice=form.zoneprice.data)
-                        #print(form.zoneprice.data)
 
         return redirect(url_for('user.offer'))
     # Logout from Revive
@@ -362,7 +364,7 @@ def order():
         totalcurrencyprice = price.dayprice*totaltime.days
         totalbtcprice = totalcurrencyprice / float(exrate)
 
-        # kindly ask miss electrum for an invoice
+        # kindly ask miss electrum for an invoice which expires in 20 mionutes
         headers = {'content-type': 'application/json'}
         params = {
             "amount": totalbtcprice,
@@ -377,6 +379,27 @@ def order():
         electrum_url = current_app.config.get('ELECTRUM_RPC')
         electrum = requests.post(electrum_url, json=payload).json()
         result = electrum['result']
+        btcaddr = result['address']
+        secret = str(uuid.uuid4())
+
+        Orders.create(secret=secret,
+                     campaigno=campaign,
+                     amount_btc=totalbtcprice,
+                     created_at=datetime.utcnow(),
+                     ispaid=False,
+                     btcaddress=btcaddr)
+
+        #  kindly ask miss electrum for a ping when our address changes
+        params = {
+            "address": btcaddr,
+            "URL": current_app.config.get('OUR_URL')+'ipn/'+secret
+        }
+        payload = {
+            "id": str(uuid.uuid4()),
+            "method": "notify",
+            "params": params
+        }
+        print(requests.post(electrum_url, json=payload).json())
 
         return render_template('users/order.html', banner_id=banner_id,
                                daterange=daterange, image_url=image_url,

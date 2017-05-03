@@ -35,6 +35,10 @@ class CRUDMixin(object):
         db.session.delete(self)
         return commit and db.session.commit()
 
+    def commit():
+        """TODO: this should be removed with update."""
+        return db.session.commit()
+
 
 class Model(CRUDMixin, db.Model):
     """Base model class that includes CRUD convenience methods."""
