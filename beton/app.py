@@ -2,12 +2,15 @@
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
 from flask_moment import Moment
+from flask_user import UserManager, SQLAlchemyAdapter
 
 from beton import commands, public, user
 from beton.assets import assets
 from beton.extensions import bcrypt, cache, configure_uploads, csrf_protect
-from beton.extensions import db, debug_toolbar, images, login_manager, migrate
+from beton.extensions import db, debug_toolbar, images, login_manager, mail, migrate
 from beton.settings import ProdConfig
+
+from beton.user.models import User
 
 moment = Moment()
 
@@ -38,6 +41,9 @@ def register_extensions(app):
     migrate.init_app(app, db)
     configure_uploads(app, images)
     moment.init_app(app)
+    mail.init_app(app)
+    db_adapter = SQLAlchemyAdapter(db, User)
+    user_manager = UserManager(db_adapter, app)
     return None
 
 

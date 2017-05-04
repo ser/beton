@@ -37,7 +37,7 @@
     </ul>
     {% elif form %}
     <ul class="nav navbar-nav navbar-right">
-      <li><a href="{{ url_for('public.register') }}">Create account</a></li>
+      <li><a href="/user/register">Create account</a></li>
     </ul>
     <form id="loginForm" method="POST" class="navbar-form form-inline navbar-right" action="/" role="login">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

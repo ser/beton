@@ -3,7 +3,7 @@
 import uuid
 import datetime as dt
 
-from flask_login import UserMixin
+from flask_user import UserMixin
 
 from beton.database import Column, Model, SurrogatePK, db, reference_col, relationship
 from beton.extensions import bcrypt
