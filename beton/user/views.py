@@ -36,7 +36,7 @@ def me():
         next(x for x in all_advertisers if x['advertiserName'] ==
              current_user.username)
     except StopIteration:
-        logging.warning('Created user: ', current_user.username)
+        # logging.warning('Created user: ', current_user.username)
         r.ox.addAdvertiser(sessionid, {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
                                        'advertiserName': current_user.username,
                                        'emailAddress': current_user.email,
@@ -361,7 +361,7 @@ def order():
         json_data = krkr.text
         fj = json.loads(json_data)
         exrate = fj["result"]['XXBTZEUR']["c"][0]
-        totalcurrencyprice = price.dayprice*totaltime.days
+        totalcurrencyprice = price.dayprice/100*totaltime.days
         totalbtcprice = totalcurrencyprice / float(exrate)
 
         # kindly ask miss electrum for an invoice which expires in 20 mionutes

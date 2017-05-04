@@ -129,9 +129,9 @@
             <p>I want to have a campaign with banner #{{ banner_id }}</p>
             <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
             <p>for period: {{ daterange }}.</p>
-            <p>It's {{ days }} day(s) alltogether, each day for: {{ dayprice }}.</p>
+            <p>It's {{ days }} day(s) alltogether, each day for: {{ dayprice/100 }}.</p>
             <p>1 BTC if now for {{ exrate }}</p>
-            <p>Total is: {{ btctotal }}.</p>
+            <p>Total is: {{ btctotal }} ---- {{ dayprice/100*days }} EUR.</p>
         </div>
         <div class="col-sm-6 col-xs-12">
             <p>{{ electrum }}</p>
