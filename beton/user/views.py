@@ -348,12 +348,12 @@ def order():
         diki['storageType'] = 'url'
         banno = r.ox.addBanner(sessionid, diki)
 
-        # Finally, link campaign
-        diki = {}
-        diki['sessionId']= sessionid
-        diki['zoneId'] = zone_id
-        diki['campaignId'] = campaign
-        linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
+        # Finally, link campaign is in done via an IPN
+        #diki = {}
+        #diki['sessionId']= sessionid
+        #diki['zoneId'] = zone_id
+        #diki['campaignId'] = campaign
+        #linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
 
         # ask kraken for rate
         krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
@@ -364,7 +364,7 @@ def order():
         totalcurrencyprice = price.dayprice/100*totaltime.days
         totalbtcprice = totalcurrencyprice / float(exrate)
 
-        # kindly ask miss electrum for an invoice which expires in 20 mionutes
+        # kindly ask miss electrum for an invoice which expires in 20 minutes
         headers = {'content-type': 'application/json'}
         params = {
             "amount": totalbtcprice,
@@ -379,6 +379,11 @@ def order():
         electrum_url = current_app.config.get('ELECTRUM_RPC')
         electrum = requests.post(electrum_url, json=payload).json()
         result = electrum['result']
+        # more debug if needed
+        # print(electrum_url)
+        # print(result)
+        # print(params)
+        # print(payload)
         btcaddr = result['address']
         secret = str(uuid.uuid4())
 

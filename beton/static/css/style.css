@@ -104,6 +104,55 @@ textarea {
     max-height: 150px;
 }
 
+.progress {
+        height: 4.0vw !important;
+}
+.progress-bar {
+}
+.progress .progressbar-back-text {
+        font-size: 3.0vw;
+        line-height: 4.0vw;
+        color: #fff;
+        background-color: #2B3E50;
+}
+.progress .progressbar-front-text {
+        font-size: 3.0vw;
+        line-height: 4.0vw;
+        color: #000000;
+}
+.progress .progress-bar {
+        line-height: 40px;
+}
+.six-sec-ease-in-out {
+        -webkit-transition: width 6s ease-in-out;
+        -moz-transition: width 6s ease-in-out;
+        -ms-transition: width 6s ease-in-out;
+        -o-transition: width 6s ease-in-out;
+        transition: width 6s ease-in-out;
+}
+/* https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/ */
+#address {
+
+        /* These are technically the same, but use both */
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+
+        -ms-word-break: break-all;
+        /* This is the dangerous one in WebKit, as it breaks things wherever */
+        word-break: break-all;
+        /* Instead use this non-standard one: */
+        word-break: break-word;
+
+        /* Adds a hyphen where the word breaks, if supported (No Blink) */
+        -ms-hyphens: auto;
+        -moz-hyphens: auto;
+        -webkit-hyphens: auto;
+        hyphens: auto;
+}
+.navbar-right {
+        color: white;
+}
+
 /* footer */
 
 footer {

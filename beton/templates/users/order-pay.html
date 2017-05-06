@@ -1,0 +1,69 @@
+<script type="text/javascript">
+
+new QRious({
+	element: document.getElementById('qrcode'),
+	value: payuri,
+	background: "white",
+	foreground: "black",
+	level: "L",
+	size: 100 // It is automatically scaled down by CSS
+});
+
+if (payid) {
+            $('.progress .progress-bar').progressbar();
+            var $pb = $('.progress .progress-bar');
+            jQuery.timeago.settings.allowFuture = true;
+            $(function () {
+                var current;
+                var initial = paytime;
+                var duration = payexp;
+                if(duration){
+                  function update() {
+                    var current = 100 - (100 * (Math.floor(Date.now()/1000) - initial)/duration);
+                    $pb.attr('data-transitiongoal', current).progressbar({
+                        display_text: 'center',
+                        use_percentage: false,
+                        amount_format: function(amount_part) {
+                                        if (current > 0) {
+                                                return "Expires in: " + jQuery.timeago(new Date(initial * 1000 + duration *1000));
+                                        }},
+                    });
+                    if (current <= 0) {
+                        $("div.progress").replaceWith('<div class="alert alert-danger" role="alert">This payment request has expired, do not try pay it anymore!</div>');
+                        $("p#btcpay").replaceWith('<p>You were about to pay:</p>');
+                        $("p#reqpaid").replaceWith('');
+                        $("p#btcdesc").replaceWith('');
+                        $("p#btcinfo").replaceWith('<p>to the bitcoin address:</p>');
+                    }
+                  };
+                  var interval = setInterval(update, 3000);
+                 }
+            });
+            console.log("Opening WSS: " + wssaddr);
+            var ws = new WebSocket(wssaddr);
+            ws.onopen = function() {
+                ws.send('id:' + payid);
+            };
+            ws.onmessage = function (evt) {
+                var received_msg = evt.data;
+                if (received_msg == 'paid') {
+                        $("div.progress").replaceWith('<div class="alert alert-success" role="alert"><p>This payment has been received! Thank you. <a href="javascript: history.go(-2)">Please go back to the shopping area.</a></p></div>');
+                        $("p#reqpaid").replaceWith('<p><span class="badge">PAID</span> to address:</p>');
+                        $("p#btcpay").replaceWith('<h2>&nbsp;</h2>');
+                        $("p#btcinfo").replaceWith('');
+                        $("p#btcstar").replaceWith('');
+                        $("p#btcdesc").replaceWith('');
+                }
+                else alert("Message is received:"+ received_msg);
+            };
+};
+
+
+// See http://stackoverflow.com/questions/29186154/chrome-clicking-mailto-links-closes-websocket-connection
+$(document).on('click', 'a[href^="bitcoin:"]', function (e) {
+    e.preventDefault();
+    var btcWindow = window.open($(e.currentTarget).attr('href'));
+    btcWindow.close();
+    return false;
+});
+</script>

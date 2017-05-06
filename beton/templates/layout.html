@@ -78,26 +78,8 @@
                       columns: 3 },
                 "screen and (min-width: 80em)": { columns: 4 },
             });
-            console.log(savvior.ready());
-            var start = moment();
-            var end = moment().add(1, 'month');
-            function cb(start, end) {
-                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - '
-                + end.format('MMMM D, YYYY'));
-            }
-            $('input[name="daterange"]').daterangepicker({
-                startDate: start,
-                endDate: end
-            }, cb);
-            cb(start,end);
             $("#loader").fadeOut(1000);
         });
-        $('#calendar').calendar(
-            {
-                events_source: events_source,
-                tmpl_path: "/static/libs/bootstrap-calendar/tmpls/"
-            }
-        );
      </script>
 </body>
 </html>

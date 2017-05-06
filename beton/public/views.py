@@ -54,3 +54,13 @@ def about():
 @blueprint.route('/banners/<path:filename>')
 def download_file(filename):
     return send_from_directory(current_app.config.get('UPLOADED_IMAGES_DEST'), filename)
+
+
+@blueprint.route('/ipn/',  methods=['post'])
+def ipn():
+    """Quasi-IPN service. Electrum sends us pings when something related to oe
+    og pur payments changes. We have an opportunity to register it and for
+    example link a campaign to a zone."""
+
+    # Linking the campaigna because it's paid!
+    linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
