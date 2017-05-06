@@ -158,12 +158,13 @@
     </div>
     <div class="row">
         <div class="col-sm-6 col-xs-12">
-            <p>I want to have a campaign with banner #{{ banner_id }}</p>
+            <h3>Statement of facts</h3>
+            <p>You want to have a campaign with banner #{{ banner_id }}</p>
             <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
             <p>for period: {{ daterange }}.</p>
-            <p>It's {{ days }} day(s) alltogether, each day for: {{ dayprice/100 }}.</p>
+            <p>It's {{ days }} day(s) alltogether, each day for: {{ dayprice/100 }} EUR.</p>
             <p>1 BTC if now for {{ exrate }}</p>
-            <p>Total is: {{ btctotal }} ---- {{ dayprice/100*days }} EUR.</p>
+            <p>Total is: {{ btctotal }} BTC /  {{ dayprice/100*days }} EUR.</p>
         </div>
         <div class="col-sm-6 col-xs-12">
             <div class="row">
@@ -183,7 +184,7 @@
                     <p class="dont-break-out"><kbd class="dont-break-out" id="address">{{ electrum['address'] }}</kbd></p>
                 </div>
             </div>
-            <br/>
+            <br/><br/>
             <div class="row">
                 <div class="col-xs-12">
                     <div class="progress progress-striped active right">
