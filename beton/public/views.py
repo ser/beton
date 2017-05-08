@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 """Public section, including homepage and signup."""
+import logging
+import requests
+import uuid
+import xmlrpc
 from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
 from flask_login import login_required, login_user, logout_user
 
-from beton.extensions import login_manager
+from beton.extensions import csrf_protect, login_manager
 from beton.public.forms import LoginForm
 from beton.user.forms import RegisterForm
-from beton.user.models import User
+from beton.user.models import Orders, User
 from beton.utils import flash_errors
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
@@ -56,11 +60,55 @@ def download_file(filename):
     return send_from_directory(current_app.config.get('UPLOADED_IMAGES_DEST'), filename)
 
 
-@blueprint.route('/ipn/',  methods=['post'])
+@csrf_protect.exempt
+@blueprint.route('/ipn', methods=['POST'])
 def ipn():
     """Quasi-IPN service. Electrum sends us pings when something related to oe
     og pur payments changes. We have an opportunity to register it and for
     example link a campaign to a zone."""
+    electrum_url = current_app.config.get('ELECTRUM_RPC')
 
-    # Linking the campaigna because it's paid!
-    linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
+    # Log in into Revive
+    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                  verbose=False)
+    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
+                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+
+
+    # Get the content of the IPN from Electrum
+    json = request.get_json()
+
+    # loading order datails from the database
+    ipndb = Orders.query.filter_by(btcaddress=json['address']).first()
+    print(ipndb)
+    previous_status = ipndb['ispaid']
+
+    if previous_status != True: # If our invoice is already paid, do not bother
+
+        # Let us usk Electrum back about the address
+        headers = {'content-type': 'application/json'}
+        params = {
+            "key": json['address']
+        }
+        payload = {
+            "id": str(uuid.uuid4()),
+            "method": "getrequest",
+            "params": params
+        }
+        e_please = requests.post(electrum_url, json=payload, headers=headers).json()
+        e_results = e_please['result']
+        current_status = e_results['status']
+
+        if current_status == 'Paid':
+            # Linking the campaigna because it's paid!
+            linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
+            # Next two lines smell, TODO: make it properly
+            Orders.query.filter_by(btcaddress=json['address']).update({"ispaid":
+                                                                       True})
+            Orders.commit()
+
+    # Logout from Revive
+    r.ox.logoff(sessionid)
+
+    # Return a redirect to main page
+    return redirect(url_for('public.home'))

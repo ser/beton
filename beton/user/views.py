@@ -385,11 +385,10 @@ def order():
         # print(params)
         # print(payload)
         btcaddr = result['address']
-        secret = str(uuid.uuid4())
 
-        Orders.create(secret=secret,
-                     campaigno=campaign,
+        Orders.create(campaigno=campaign,
                      amount_btc=totalbtcprice,
+                     zoneid=zone_id,
                      created_at=datetime.utcnow(),
                      ispaid=False,
                      btcaddress=btcaddr)
@@ -397,14 +396,15 @@ def order():
         #  kindly ask miss electrum for a ping when our address changes
         params = {
             "address": btcaddr,
-            "URL": current_app.config.get('OUR_URL')+'ipn/'+secret
+            "URL": current_app.config.get('OUR_URL')+'ipn'
         }
         payload = {
             "id": str(uuid.uuid4()),
             "method": "notify",
             "params": params
         }
-        print(requests.post(electrum_url, json=payload).json())
+        ipn_please = requests.post(electrum_url, json=payload).json()
+        print(ipn_please)
 
         return render_template('users/order.html', banner_id=banner_id,
                                daterange=daterange, image_url=image_url,

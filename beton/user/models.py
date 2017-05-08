@@ -70,7 +70,7 @@ class Banner(SurrogatePK, Model):
     """Banner files."""
 
     __tablename__ = 'banners'
-    filename = Column(db.String(), unique=True, nullable=False)
+    filename = Column(db.String(256), unique=True, nullable=False)
     owner = Column(db.Integer(), unique=False, nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     url = Column(db.String(2083), nullable=False)
@@ -119,18 +119,18 @@ class Orders(SurrogatePK, Model):
     """All orders"""
 
     __tablename__ = 'orders'
-    secret = Column(db.String(), unique=True, nullable=False)
     campaigno = Column(db.Integer(), unique=True, nullable=False)
+    zoneid = Column(db.Integer(), unique=False, nullable=False)
     ispaid = Column(db.Boolean(), default=False, nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    amount_btc = Column(db.Numeric)
-    btcaddress = Column(db.String(), unique=True, nullable=False)
+    amount_btc = Column(db.Numeric(16,8))
+    btcaddress = Column(db.String(35), unique=True, nullable=False)
 
-    def __init__(self, secret, campaigno, ispaid, created_at, amount_btc,
-                 btcaddress):
+    def __init__(self, campaigno, zoneid, ispaid,
+                 created_at, amount_btc, btcaddress):
         """Create instance."""
-        self.secret = secret
         self.campaigno = campaigno
+        self.zoneid = zoneid
         self.ispaid = ispaid
         self.created_at = created_at
         self.amount_btc = amount_btc
@@ -138,9 +138,10 @@ class Orders(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<secret: {}, campaigno: {}, ispaid: {}, created_at: {},\
-    amount_btc: {}, btcaddress: {}>'.format(self.secret,
+        return '<campaigno: {}, zpneid: {}, ispaid: {}, created_at: {},\
+                amount_btc: {}, btcaddress: {}>'.format(
                                             self.campaigno,
+                                            self.zoneid,
                                             self.ispaid,
                                             self.created_at,
                                             self.amount_btc,
