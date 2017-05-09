@@ -8,7 +8,6 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for,
 from flask_login import login_required, login_user, logout_user
 
 from beton.extensions import csrf_protect, login_manager
-from beton.public.forms import LoginForm
 from beton.user.forms import RegisterForm
 from beton.user.models import Orders, User
 from beton.utils import flash_errors
@@ -22,20 +21,10 @@ def load_user(user_id):
     return User.get_by_id(int(user_id))
 
 
-@blueprint.route('/', methods=['GET', 'POST'])
+@blueprint.route('/', methods=['GET'])
 def home():
     """Home page."""
-    form = LoginForm(request.form)
-    # Handle logging in
-    if request.method == 'POST':
-        if form.validate_on_submit():
-            login_user(form.user)
-            flash('You are logged in.', 'success')
-            redirect_url = request.args.get('next') or url_for('user.me')
-            return redirect(redirect_url)
-        else:
-            flash_errors(form)
-    return render_template('public/home.html', form=form)
+    return render_template('public/home.html')
 
 
 @blueprint.route('/logout/')
@@ -50,11 +39,10 @@ def logout():
 @blueprint.route('/about/')
 def about():
     """About page."""
-    form = LoginForm(request.form)
-    return render_template('public/about.html', form=form)
+    return render_template('public/about.html')
 
 
-# TODO: this must be served directly via nginx in production
+# TODO: this should be served directly via nginx in production
 @blueprint.route('/banners/<path:filename>')
 def download_file(filename):
     return send_from_directory(current_app.config.get('UPLOADED_IMAGES_DEST'), filename)
