@@ -18,54 +18,6 @@ from beton.utils import flash_errors
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
 
 
-@blueprint.route('/')
-@login_required
-def me():
-    """Check if currently logged in user exists in Revive and if not, create it.
-
-    Later display a current information from Revive.
-    """
-    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'), verbose=False)
-    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
-                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
-                                                       current_app.config.get('REVIVE_AGENCY_ID'))
-    # Try to find out if the customer is already registered in Revive, if not,
-    # register him
-    try:
-        next(x for x in all_advertisers if x['advertiserName'] ==
-             current_user.username)
-    except StopIteration:
-        # logging.warning('Created user: ', current_user.username)
-        r.ox.addAdvertiser(sessionid, {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
-                                       'advertiserName': current_user.username,
-                                       'emailAddress': current_user.email,
-                                       # 'contactName': current_user.first_name+"
-                                       # "+current_user.lastname, # TODO: check if values are set
-                                       'contactName': current_user.username,
-                                       'comments': 'beton'
-                                       })
-    # We are now sure that we have a user in Revive, so now get his ID over there
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
-                                                       current_app.config.get('REVIVE_AGENCY_ID'))
-    advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
-                        current_user.username)['advertiserId'])
-
-    # TODO: update email address of the user in Revice to the current flask database
-
-    # Get all possible current data related to the user from Revive
-    zonestats = r.ox.advertiserZoneStatistics(sessionid, advertiser_id)  # TODO
-    campstats = r.ox.advertiserCampaignStatistics(sessionid, advertiser_id)  # TODO
-
-    # Logout from Revive
-    r.ox.logoff(sessionid)
-
-    # Render the page and quit
-    return render_template('users/members.html',
-                           zonestats=zonestats,
-                           campstats=campstats)
-
-
 @blueprint.route('/add_bannerz', methods=['GET', 'POST'])
 @login_required
 def add_bannerz():
@@ -170,6 +122,24 @@ def campaign():
 
     all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
                                                        current_app.config.get('REVIVE_AGENCY_ID'))
+    # Try to find out if the customer is already registered in Revive, if not,
+    # register him
+    try:
+        next(x for x in all_advertisers if x['advertiserName'] ==
+             current_user.username)
+    except StopIteration:
+        # logging.warning('Created user: ', current_user.username)
+        r.ox.addAdvertiser(sessionid, {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
+                                       'advertiserName': current_user.username,
+                                       'emailAddress': current_user.email,
+                                       # 'contactName': current_user.first_name+"
+                                       # "+current_user.lastname, # TODO: check if values are set
+                                       'contactName': current_user.username,
+                                       'comments': 'beton'
+                                       })
+
+    all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
+                                                       current_app.config.get('REVIVE_AGENCY_ID'))
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                         current_user.username)['advertiserId'])
 
@@ -187,6 +157,8 @@ def campaign():
     all_campaigns_standardized = []
 
     for campaign in all_campaigns:
+        # check orders what do we know about that campaign
+        orderinfo = Orders.query.filter_by(campaigno=campaign['campaignId']).first()
         tasks = {}
         tasks['campaignId'] = campaign['campaignId']
         tasks['campaignName'] = campaign['campaignName']
@@ -196,6 +168,9 @@ def campaign():
                                     '%Y%m%dT%H:%M:%S')
         tasks['startDate'] = starttime
         tasks['endDate'] = endtime
+        tasks['amount_btc'] = orderinfo.amount_btc
+        tasks['ispaid'] = orderinfo.ispaid
+        tasks['btc_address'] = orderinfo.btcaddress
 
         all_campaigns_standardized.append(tasks)
 
@@ -307,6 +282,7 @@ def order():
                                step='chose-date')
 
     elif request.form['step'] == 'pay':
+        randomname = names.get_full_name()
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
@@ -332,7 +308,7 @@ def order():
         totaltime = enddate - begin
         diki = {}
         diki['advertiserId'] = advertiser_id
-        diki['campaignName'] = "TEST"
+        diki['campaignName'] = randomname
         diki['startDate'] = begin
         diki['endDate']= enddate
         campaign = r.ox.addCampaign(sessionid, diki)
@@ -347,13 +323,6 @@ def order():
         diki['url'] = url
         diki['storageType'] = 'url'
         banno = r.ox.addBanner(sessionid, diki)
-
-        # Finally, link campaign is in done via an IPN
-        #diki = {}
-        #diki['sessionId']= sessionid
-        #diki['zoneId'] = zone_id
-        #diki['campaignId'] = campaign
-        #linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
 
         # ask kraken for rate
         krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"

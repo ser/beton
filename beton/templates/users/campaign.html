@@ -7,14 +7,17 @@
     </div>
     <div class="row">
         <div class="col-sm-6">
-            <h3>Your campaigns as follow<h3>
+            <h3>Your campaigns as follow</h3>
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Name</th>
+                        <th>Nickname</th>
                         <th>Start</th>
-                        <th>end</th>
+                        <th>End</th>
+                        <th>Price</th>
+                        <th>BTC Addr</th>
+                        <th>Paid?</th>
                         <th>Banner</th>
                     </tr>
                 <tbody>
@@ -24,6 +27,11 @@
                                 <td>{{ campaign['campaignName'] }}</td>
                                 <td>{{ campaign['startDate'] }}</td>
                                 <td>{{ campaign['endDate'] }}</td>
+                                <td>{{ campaign['amount_btc'] }}</td>
+                                <td><a href="https://webbtc.com/address/{{ campaign['btc_address'] }}">
+                                    <i class="fa fa-indent fa-fw"
+                                        aria-hidden="true"></i></a></td>
+                                <td>{{ campaign['ispaid'] }}</td>
                                 {% for banner in banners %}
                                     {% if campaign['campaignId'] == banner[0] %}
                                         {% if banner[1] %}
@@ -38,12 +46,19 @@
             </table>
         </div>
         <div class="col-sm-6">
-            <h3>This is an overview of all recent campaigns on our websites</h3>
+            <h3>This is an overview of all recent and ongoing campaigns on our websites</h3>
             <div id="calendar"></div>
         </div>
     </div>
+{% endblock %}
+{% block js %}
 <script>
     var events_source = "/me/api/all_campaigns_in_zone/0";
+    $('#calendar').calendar(
+            {
+                events_source: events_source,
+                tmpl_path: "/static/libs/bootstrap-calendar/tmpls/"
+            }
+    );
 </script>
 {% endblock %}
-

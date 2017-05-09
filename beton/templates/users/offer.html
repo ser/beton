@@ -15,9 +15,10 @@
                             <h3 class="panel-title">{{ zone.zoneName }}</h3>
                         </div>
                         <div class="panel-body">
-                            <div id="widthheight">{{ zone.width }}x{{ zone.height }}</div>
+                            <div id="widthheight"><img src="https://placehold.it/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                             <div id="comments"> {{ zone.comments }}</div>
-                            <div id="price"> {{ zone.price }}</div>
+                            <div id="price"> {{ zone.price / 100 }}<i class="fa
+                                    fa-eur fa-fw" aria-hidden="true"></i> /day</div>
                             <form action="{{ url_for('user.offer') }}" method="post">
                                 {{ form.csrf_token }}
                                 {{ form.zoneprice(size=5) }}
