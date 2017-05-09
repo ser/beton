@@ -77,6 +77,8 @@
                     </div>
                     <div class="panel-body">
                         <div id="zonename">{{ zone.zoneName }}</div>
+                        <div id="zonesizetxt"><p>size: {{ zone.width }}x{{ zone.height }}; price: {{ zone.price.dayprice / 100 }}<i
+                                    class="fa fa-eur fa-fw" aria-hidden="true"></i>/day</p></div>
                         <div id="zonesize"><img src="https://placehold.it/{{ zone.width}}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                         <form action="{{ url_for('user.order') }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -115,13 +117,33 @@
     <div class="row">
         <div class="col-sm-6 col-xs-12">
             <form action="{{ url_for('user.order') }}" method="post">
-                <input type="text" name="daterange" value="" />
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <input type="hidden" name="banner_id" value="{{ banner_id }}" />
-                <input type="hidden" name="zone_id" value="{{ zone_id }}" />
-                <input type="hidden" name="step" value="pay" />
-                <button type="submit" name="submit" value="pay" class="btn
-                    btn-primary">Confirm and go to payment details</button>
+                <div class="row">
+                    <div class="col-sm-6 col-xs-12"><p>Start:</p>
+                        <div class="input-group">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                        <input type="text" id="datestart" name="datestart" value="" />
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xs-12"><p>Finish:</p>
+                        <div class="input-group">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                        <input type="text" id="datend" name="datend" value="" />
+                        </div>
+                    </div>
+                </div>
+                <br/><br/>
+                <div class="row">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <input type="hidden" name="banner_id" value="{{ banner_id }}" />
+                    <input type="hidden" name="zone_id" value="{{ zone_id }}" />
+                    <input type="hidden" name="step" value="pay" />
+                    <button type="submit" name="submit" value="pay" class="btn
+                        btn-primary">Confirm and go to payment details</button>
+                </div>
             </form>
         </div>
         <div class="col-sm-6 col-xs-12">
@@ -161,10 +183,12 @@
             <h3>Statement of facts</h3>
             <p>You want to have a campaign with banner #{{ banner_id }}</p>
             <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
-            <p>for period: {{ daterange }}.</p>
-            <p>It's {{ days }} day(s) alltogether, each day for: {{ dayprice/100 }} EUR.</p>
+            <p>for period: {{ datestart }} -  {{ datend }}.</p>
+            <h3>Calculations</h3>
+            <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fa fa-eur fa-fw" aria-hidden="true"></i>.</p>
             <p>1 BTC if now for {{ exrate }}</p>
-            <p>Total is: {{ btctotal }} BTC /  {{ dayprice/100*days }} EUR.</p>
+            <p>Total is: {{ btctotal }} BTC /  {{ dayprice/100*(days+1) }} 
+                <i class="fa fa-eur fa-fw" aria-hidden="true"></i>.</p>
         </div>
         <div class="col-sm-6 col-xs-12">
             <div class="row">

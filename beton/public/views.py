@@ -68,8 +68,7 @@ def ipn():
 
     # loading order datails from the database
     ipndb = Orders.query.filter_by(btcaddress=json['address']).first()
-    print(ipndb)
-    previous_status = ipndb['ispaid']
+    previous_status = ipndb.ispaid
 
     if previous_status != True: # If our invoice is already paid, do not bother
 

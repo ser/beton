@@ -17,6 +17,8 @@
     <ul class="nav navbar-nav">
       {% if current_user and current_user.is_authenticated %}
         <li><a href="{{ url_for('user.offer') }}">Offer</a></li>
+        <li><a href="{{ url_for('user.order') }}"><i class="fa fa-plus-square fa-spin fa-fw"
+                    aria-hidden="true"></i> Order a new campaign</a></li>
       {% endif %}
     </ul>
     {% if current_user and current_user.is_authenticated %}

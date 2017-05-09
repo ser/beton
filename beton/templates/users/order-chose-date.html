@@ -1,17 +1,16 @@
     <script>
         $(document).ready(function() {
-            var start = moment();
-            var end = moment().add(1, 'month');
-            function cb(start, end) {
-                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - '
-                + end.format('MMMM D, YYYY'));
-            }
-            $('input[name="daterange"]').daterangepicker({
-                startDate: start,
-                endDate: end
-            }, cb);
-            cb(start,end);
-            $("#loader").fadeOut(1000);
+            var date_input1=$('input[name="datestart"]'); //our date input has the name "date"
+            var date_input2=$('input[name="datend"]'); //our date input has the name "date"
+            var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";
+            var options={
+                format: 'dd/mm/yyyy',
+                container: container,
+                todayHighlight: true,
+                autoclose: true,
+            };
+            date_input1.datepicker(options);
+            date_input2.datepicker(options);
         });
         $('#calendar').calendar(
             {

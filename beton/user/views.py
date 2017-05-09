@@ -264,8 +264,10 @@ def order():
             allzones = r.ox.getZoneListByPublisherId(sessionid,
                                                      website['publisherId'])
             for zone in allzones:
+                price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
                 zone_width = zone['width']
                 zone_height = zone['height']
+                zone['price'] = price
                 if zone_width >= banner.width and zone_height >= banner.height:
                     all_zones.append(zone)
         return render_template('users/order.html', banner=banner,
@@ -290,7 +292,8 @@ def order():
         height = banner.height
         url = banner.url
         zone_id = int(request.form['zone_id'])
-        daterange = request.form['daterange']
+        datestart = request.form['datestart']
+        datend = request.form['datend']
 
         price = Prices.query.filter_by(zoneid=zone_id).first()
 
@@ -301,10 +304,8 @@ def order():
         advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                         current_user.username)['advertiserId'])
 
-        begin=datetime.strptime(daterange.split('-')[0].strip(),
-                                "%d %b %Y")
-        enddate=datetime.strptime(daterange.split('-')[1].strip(),
-                              "%d %b %Y")
+        begin=datetime.strptime(datestart, "%d/%m/%Y")
+        enddate=datetime.strptime(datend, "%d/%m/%Y")
         totaltime = enddate - begin
         diki = {}
         diki['advertiserId'] = advertiser_id
@@ -330,7 +331,7 @@ def order():
         json_data = krkr.text
         fj = json.loads(json_data)
         exrate = fj["result"]['XXBTZEUR']["c"][0]
-        totalcurrencyprice = price.dayprice/100*totaltime.days
+        totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
         totalbtcprice = totalcurrencyprice / float(exrate)
 
         # kindly ask miss electrum for an invoice which expires in 20 minutes
@@ -376,7 +377,7 @@ def order():
         print(ipn_please)
 
         return render_template('users/order.html', banner_id=banner_id,
-                               daterange=daterange, image_url=image_url,
+                               datestart=datestart, datend=datend, image_url=image_url,
                                zone_id=zone_id, days=totaltime.days,
                                exrate=exrate, dayprice=price.dayprice,
                                btctotal=totalbtcprice, electrum=result,

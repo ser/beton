@@ -5,11 +5,11 @@
     "jQuery": ">=1.6",
     "savvior": "",
     "bootstrap-calendar": "",
-    "daterangepicker": "",
+    "bootstrap-datepicker": "",
     "gasparesganga-jquery-loading-overlay": "",
     "qrious": "",
     "bootstrap-progressbar": "",
     "jquery-timeago": "",
-    "font-awesome": "",
+    "font-awesome": ""
   }
 }

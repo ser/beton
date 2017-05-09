@@ -5,11 +5,12 @@
 /* universal */
 
 html {
-  overflow-y: scroll;
+    overflow-y: scroll;
 }
 
 body {
-  padding-top: 60px;
+    padding-top: 60px;
+    font-family: 'Tauri', sans-serif;
 }
 
 section {
