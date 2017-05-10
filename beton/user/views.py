@@ -168,9 +168,15 @@ def campaign():
                                     '%Y%m%dT%H:%M:%S')
         tasks['startDate'] = starttime
         tasks['endDate'] = endtime
-        tasks['amount_btc'] = orderinfo.amount_btc
-        tasks['ispaid'] = orderinfo.ispaid
-        tasks['btc_address'] = orderinfo.btcaddress
+        try:
+            tasks['amount_btc'] = orderinfo.amount_btc
+        except: tasks['amount_btc'] = 0
+        try:
+            tasks['ispaid'] = orderinfo.ispaid
+        except: tasks['ispaid'] = False
+        try:
+            tasks['btc_address'] = orderinfo.btcaddress
+        except: tasks['btc_address'] = "deadbeef"
 
         all_campaigns_standardized.append(tasks)
 

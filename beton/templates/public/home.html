@@ -4,28 +4,34 @@
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
 
-  <h1>Welcome to Beton</h1>
+  <h1>Welcome</h1>
 
-  <p>This is a starter Flask template. It includes Bootstrap 3, jQuery 2, Flask-SQLAlchemy, WTForms, and various testing utilities out of the box.</p>
-  <p><a href="https://github.com/sloria/cookiecutter-flask" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+  <p>This is a place, where you can manage web adverts.
 </div><!-- /.jumbotron -->
 
 <div class="body-content">
   <div class="row">
     <div class="col-lg-4">
-      <h2><i class="fa fa-code"></i> Bootstrap 3</h2>
-      <p>Sleek, intuitive, and powerful mobile-first front-end framework for faster and easier web development.</p>
-      <p><a class="btn btn-default" href="http://getbootstrap.com/">Official website &raquo;</a></p>
+    {% if not current_user or not current_user.is_authenticated %}
+      <h2><i class="fa fa-user-o fa-2x"></i> Create an account</h2>
+      <p>Sleek, intuitive - just three steps. First, create an account.</p>
+      <p><a href="user/register" class="btn btn-default">Create an account &raquo;</a></p>
+    {% else %}
+    <h2><i class="fa fa-newspaper-o fa-2x"></i> Check all zones and prices</h2>
+    <p>There is only one rule: your banner must fit into a zone :-)</p>
+    <p><a href="{{ url_for('user.offer') }}" class="btn btn-default">Check the
+            offer &raquo;</a></p>
+    {% endif %}
     </div>
     <div class="col-lg-4">
-      <h2><i class="fa fa-flask"></i> SQLAlchemy</h2>
-      <p>SQLAlchemy is the Python SQL toolkit and Object Relational Mapper that gives application developers the full power and flexibility of SQL.</p>
-      <p><a href="http://www.sqlalchemy.org/" class="btn btn-default">Official website &raquo;</a></p>
+      <h2><i class="fa fa-arrow-circle-o-up fa-2x"></i> Upload your banner</h2>
+      <p>Upload your banner. Of course please check our full offer first.
+      <p><a href="{{ url_for('user.bannerz') }}" class="btn btn-default">Your banners &raquo;</a></p>
    </div>
     <div class="col-lg-4">
-      <h2><i class="fa fa-edit"></i> WTForms</h2>
-      <p>WTForms is a flexible forms validation and rendering library for python web development.</p>
-      <p><a href="http://wtforms.simplecodes.com/" class="btn btn-default">Official website &raquo;</a></p>
+      <h2><i class="fa fa-credit-card fa-2x"></i> Select your zone and pay</h2>
+      <p>Next and last step is to select a zone and pay.
+          <p><a href="{{ url_for('user.order') }}" class="btn btn-default">Order a new campaign &raquo;</a></p>
     </div>
   </div><!-- /.row -->
 </div>

@@ -3,7 +3,7 @@
 {% block content %}
     <div class="jumbotron">
         <h1>This is it, {{ current_user.username  }}</h1>
-        <p>These are all zones in our offer. When you are decided, please <a href="{{ url_for('user.order') }}">order a new campaign</a>.</p>
+        <p>These are all zones in our offer. When you are decided, please <a class="btn btn-default"href="{{ url_for('user.order') }}">order a new campaign</a></p>
     </div>
     {% for website in publishers %}
         <h2>{{ website.publisherName }}</h2>
@@ -19,7 +19,7 @@
                             <div id="widthheight"><img src="https://placehold.it/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                             <div id="comments">{{ zone.comments }}</div>
                             <div id="price"><p>{{ zone.price / 100 }}<i class="fa
-                                        fa-eur fa-fw" aria-hidden="true"></i> /day</p></div>
+                                        fa-eur fa-fw" aria-hidden="true"></i>/day</p></div>
                             {% if current_user.username == "kfasik" %}
                             <form action="{{ url_for('user.offer') }}" method="post">
                                 {{ form.csrf_token }}
