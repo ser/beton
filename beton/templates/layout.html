@@ -8,9 +8,7 @@
   <meta charset="utf-8">
 
   <title>{% block page_title %}
-  
-    Beton
-  
+      {{ config.USER_APP_NAME }}
     {% endblock %}
   </title>
   <meta name="description" content="{% block meta_description %}{% endblock %}">
@@ -20,7 +18,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='libs/font-awesome/css/font-awesome.min.css') }}">
+  <link rel="stylesheet" href="{{ config.SUBDIR }}/static/libs/font-awesome/css/font-awesome.min.css">
   {% assets "css_all" %}
     <link rel="stylesheet" href="{{ ASSET_URL }}">
   {% endassets %}
@@ -34,7 +32,6 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
         <div id="loader"></div>
-        <div id="sloww">This server is slow, but works reliable. Please be patient.</div>
 {% block body %}
 {% with form=form  %}
 {% include "nav.html" %}

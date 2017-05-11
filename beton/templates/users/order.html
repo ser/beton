@@ -152,7 +152,7 @@
         </div>
     </div>
     <script>
-        var events_source = "/me/api/all_campaigns_in_zone/{{ zone_id }}";
+        var events_source = "{{ config.SUBDIR }}/api/all_campaigns_in_zone/{{ zone_id }}";
     </script>
 {% elif step == "pay" %}
     <script>
@@ -166,7 +166,9 @@
         <h1>Just pay, {{ current_user.username }}</h1>
         <div class="row">
             <div class="col-sm-6 col-xs-12">
-                <h3>Carefully check your order and please pay.</h3>
+                <p>Carefully check your order and please pay. After you pay, we
+                will automatically verify the payment and let you know it's
+                paid.</p>
             </div>
             <div class="col-sm-6 col-xs-12">
                 <h4>Alternatively</h4>
@@ -185,8 +187,9 @@
             <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
             <p>for period: {{ datestart }} -  {{ datend }}.</p>
             <h3>Calculations</h3>
-            <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fa fa-eur fa-fw" aria-hidden="true"></i>.</p>
-            <p>1 BTC if now for {{ exrate }}</p>
+            <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
+            <p>1 BTC if now for {{ exrate }} <i class="fa fa-eur fa-fw"
+                    aria-hidden="true"></i></p>
             <p>Total is: {{ btctotal }} BTC /  {{ dayprice/100*(days+1) }} 
                 <i class="fa fa-eur fa-fw" aria-hidden="true"></i>.</p>
         </div>

@@ -4,6 +4,7 @@
     <div class="jumbotron">
     <h1>Hey, {{ current_user.username }} <i class="fa fa-gratipay"
             aria-hidden="true"></i></h1>
+    <p>Here you able to see your past, current and future campaigns.</p>
     </div>
     <div class="row">
         <div class="col-sm-6">
@@ -53,11 +54,11 @@
 {% endblock %}
 {% block js %}
 <script>
-    var events_source = "/me/api/all_campaigns_in_zone/0";
+    var events_source = "{{ config.SUBDIR  }}/api/all_campaigns_in_zone/0";
     $('#calendar').calendar(
             {
                 events_source: events_source,
-                tmpl_path: "/static/libs/bootstrap-calendar/tmpls/"
+                tmpl_path: "{{ config.SUBDIR }}/static/libs/bootstrap-calendar/tmpls/"
             }
     );
 </script>

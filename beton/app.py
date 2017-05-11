@@ -36,7 +36,6 @@ def register_extensions(app):
     cache.init_app(app)
     db.init_app(app)
     csrf_protect.init_app(app)
-    #login_manager.init_app(app)
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
     configure_uploads(app, images)
@@ -49,8 +48,10 @@ def register_extensions(app):
 
 def register_blueprints(app):
     """Register Flask blueprints."""
-    app.register_blueprint(public.views.blueprint)
-    app.register_blueprint(user.views.blueprint)
+    app.register_blueprint(public.views.blueprint,
+                           url_prefix=app.config.get('SUBDIR'))
+    app.register_blueprint(user.views.blueprint,
+                           url_prefix=app.config.get('SUBDIR'))
     return None
 
 

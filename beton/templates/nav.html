@@ -30,8 +30,8 @@
     </ul>
     {% else %}
     <ul class="nav navbar-nav navbar-right">
-        <li><a href="/user/sign-in">Sign in</a></li>
-        <li><a href="/user/register">Create account</a></li>
+        <li><a href="{{ config.USER_LOGIN_URL }}">Sign in</a></li>
+        <li><a href="{{ config.USER_REGISTER_URL }}">Create account</a></li>
     </ul>
     {% endif %}
   </div><!-- /.navbar-collapse -->

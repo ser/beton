@@ -15,7 +15,7 @@
         $('#calendar').calendar(
             {
                 events_source: events_source,
-                tmpl_path: "/static/libs/bootstrap-calendar/tmpls/"
+                tmpl_path: "{{ config.SUBDIR }}/static/libs/bootstrap-calendar/tmpls/"
             }
         );
      </script>

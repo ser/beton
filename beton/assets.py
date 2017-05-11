@@ -3,7 +3,10 @@
 from flask_assets import Bundle, Environment
 
 css = Bundle(
-    'libs/bootstrap/dist/css/bootstrap.css',
+#    'libs/bootstrap/dist/css/bootstrap.css',
+#    'libs/bootswatch/sandstone/bootstrap.css',
+#    'libs/bootswatch/spacelab/bootstrap.css',
+    'libs/bootswatch/lumen/bootstrap.css',
     'libs/bootstrap-calendar/css/calendar.css',
     'libs/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css',
     'libs/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.css',
