@@ -65,9 +65,11 @@ def ipn():
 
     # Get the content of the IPN from Electrum
     json = request.get_json()
+    print(json)
 
     # loading order datails from the database
     ipndb = Orders.query.filter_by(btcaddress=json['address']).first()
+    print(ipndb)
     previous_status = ipndb.ispaid
 
     if previous_status != True: # If our invoice is already paid, do not bother
