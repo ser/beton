@@ -90,7 +90,7 @@ def ipn():
 
         if current_status == 'Paid':
             # Linking the campaigna because it's paid!
-            linkme = r.ox.linkCampaign(sessionid, zone_id, campaign)
+            linkme = r.ox.linkCampaign(sessionid, ipndb.zoneid, ipndb.campaigno)
             # Next two lines smell, TODO: make it properly
             Orders.query.filter_by(btcaddress=json['address']).update({"ispaid":
                                                                        True})
