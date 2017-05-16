@@ -20,19 +20,31 @@
                             <div id="comments">{{ zone.comments }}</div>
                             <div id="price"><p>{{ zone.price / 100 }}<i class="fa
                                         fa-eur fa-fw" aria-hidden="true"></i>/day</p></div>
-                            {% if current_user.username == "kfasik" %}
-                            <form action="{{ url_for('user.offer') }}" method="post">
-                                {{ form.csrf_token }}
-                                {{ form.zoneprice(size=5) }}
-                                <input type="hidden" name="zoneid" value="{{ zone.zoneId }}">
-                                <input type="submit" value="Change">
-                            </form>
+                            {% if isadmin == True %}
+                                <form action="{{ url_for('user.offer') }}" method="post">
+                                    {{ form.csrf_token }}
+                                    {{ form.zoneprice(size=5) }}
+                                    <input type="hidden" name="zoneid" value="{{ zone.zoneId }}">
+                                    <input type="submit" value="Change">
+                                </form>
                             {% endif %}
                         </div>
                     </div>
-                    {% endif %}
+                {% endif %}
             {% endfor %}
             </div>
     {% endfor %}
 {% endblock %}
-
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            savvior.init('#grid', {
+                "screen and (max-width: 30em)": { columns: 1 },
+                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
+                "screen and (min-width: 60em) and (max-width: 80em)": {
+                      columns: 3 },
+                "screen and (min-width: 80em)": { columns: 4 },
+            });
+        });
+     </script>
+{% endblock %}

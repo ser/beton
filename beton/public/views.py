@@ -70,6 +70,10 @@ def ipn():
     ipndb = Orders.query.filter_by(btcaddress=json['address']).first()
     previous_status = ipndb.ispaid
 
+    f = open("/tmp/a", 'a')
+    f.write(str(json))
+    f.write(str(ipndb))
+
     if previous_status != True: # If our invoice is already paid, do not bother
 
         # Let us usk Electrum back about the address
@@ -85,6 +89,7 @@ def ipn():
         e_please = requests.post(electrum_url, json=payload, headers=headers).json()
         e_results = e_please['result']
         current_status = e_results['status']
+        f.write(str(e_results))
 
         if current_status == 'Paid':
             # Linking the campaigna because it's paid!

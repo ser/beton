@@ -47,7 +47,7 @@ if (payid) {
             ws.onmessage = function (evt) {
                 var received_msg = evt.data;
                 if (received_msg == 'paid') {
-                        $("div.progress").replaceWith('<div class="alert alert-success" role="alert"><p>This payment has been received! Thank you.</p></div>');
+                    $("div.progress").replaceWith('<div class="alert alert-success" role="alert"><p>This payment has been sent! Thank you.</p><p>We will activate the campaign after receiving one confirmation from the bitcoin blockchain.</p></div>');
                         $("p#reqpaid").replaceWith('<p><span class="badge">PAID</span> to address:</p>');
                         $("p#btcpay").replaceWith('<h2>&nbsp;</h2>');
                         $("p#btcinfo").replaceWith('');

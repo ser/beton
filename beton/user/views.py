@@ -68,6 +68,10 @@ def offer():
     publishers = r.ox.getPublisherListByAgencyId(sessionid, 
                                     current_app.config.get('REVIVE_AGENCY_ID'))
 
+    if current_user.has_role('admin'):
+        isadmin = True
+    else: 
+        isadmin = False
     all_zones = []
         
     for website in publishers:
@@ -108,7 +112,8 @@ def offer():
 
     # Render the page and quit
     return render_template('users/offer.html', allzones=all_zones,
-                           publishers=publishers, form=form)
+                           publishers=publishers, isadmin=isadmin,
+                           form=form)
 
 
 @blueprint.route('/campaign')
@@ -135,7 +140,7 @@ def campaign():
                                        # 'contactName': current_user.first_name+"
                                        # "+current_user.lastname, # TODO: check if values are set
                                        'contactName': current_user.username,
-                                       'comments': 'beton'
+                                       'comments': current_app.config.get('USER_APP_NAME')
                                        })
 
     all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
@@ -143,14 +148,20 @@ def campaign():
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                         current_user.username)['advertiserId'])
 
-    all_campaigns = r.ox.getCampaignListByAdvertiserId(sessionid, advertiser_id)
+    # dirty auth hack, TODO to be rewritten
+    if current_user.has_role('admin'):
+        all_campaigns = []
+        for advertiser in all_advertisers:
+            all_campaigns = all_campaigns + r.ox.getCampaignListByAdvertiserId(sessionid, advertiser['advertiserId'])
+    else:
+        all_campaigns = r.ox.getCampaignListByAdvertiserId(sessionid, advertiser_id)
 
     # find all banners related to campaigns
     banners = []
     if len(all_campaigns) > 0:
         for x in all_campaigns:
-            banners.append([x['campaignId'], r.ox.getBannerListByCampaignId(sessionid, x['campaignId'])])
-
+            banners.append([x['campaignId'], r.ox.getBannerListByCampaignId(sessionid,
+                                                                            x['campaignId'])])
     # Logout from Revive
     r.ox.logoff(sessionid)
 
@@ -184,6 +195,7 @@ def campaign():
     return render_template('users/campaign.html',
                            all_campaigns=all_campaigns_standardized,
                            banners=banners,
+                           roles=current_user.roles,
                            now=datetime.utcnow())
 
 
@@ -380,7 +392,6 @@ def order():
             "params": params
         }
         ipn_please = requests.post(electrum_url, json=payload).json()
-        print(ipn_please)
 
         return render_template('users/order.html', banner_id=banner_id,
                                datestart=datestart, datend=datend, image_url=image_url,

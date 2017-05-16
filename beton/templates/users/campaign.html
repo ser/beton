@@ -29,7 +29,7 @@
                                 <td>{{ campaign['startDate'] }}</td>
                                 <td>{{ campaign['endDate'] }}</td>
                                 <td>{{ campaign['amount_btc'] }}</td>
-                                <td><a href="https://webbtc.com/address/{{ campaign['btc_address'] }}">
+                                <td><a href="{{ config.BLOCKCHAIN }}{{ campaign['btc_address'] }}">
                                     <i class="fa fa-indent fa-fw"
                                         aria-hidden="true"></i></a></td>
                                 <td>{{ campaign['ispaid'] }}</td>

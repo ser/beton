@@ -32,6 +32,7 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
         <div id="loader"></div>
+        <div id="sloww">This server is slow, we know and we are working on it. At the moment just please be patient.</div>
 {% block body %}
 {% with form=form  %}
 {% include "nav.html" %}
@@ -71,18 +72,11 @@
 {% block js %}{% endblock %}
 <!-- end scripts -->
 {% endblock %}
-    <script>
-        $(document).ready(function() {
-            savvior.init('#grid', {
-                "screen and (max-width: 30em)": { columns: 1 },
-                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
-                "screen and (min-width: 60em) and (max-width: 80em)": {
-                      columns: 3 },
-                "screen and (min-width: 80em)": { columns: 4 },
-            });
-            $("#loader").fadeOut(1000);
-        });
-     </script>
+<script>
+    $(document).ready(function() {
+        $("#loader").fadeOut(1000);
+    })
+</script>
 </body>
 </html>
 

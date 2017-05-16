@@ -223,6 +223,10 @@
                                 aria-hidden="true"></i></sup> Please be aware
                         that you should cover bitcoin transaction fee and send
                         us precisely the amount specified above.</p>
+                    <p id='btcnote'><b>Your campaign activates after we receive
+                            one confirmation from the bitcoin blockchain. Keep a
+                            proper transaction fee if you want be served
+                            quickly.</b></p>
                     <p id='btcdesc'>This page will get automatically updated
                         when you pay or when the payment request is being
                         expired.</p>
@@ -240,4 +244,15 @@
 {% elif step == "chose-date" %}
     {% include "users/order-chose-date.html" %}
 {% endif %}
+    <script>
+        $(document).ready(function() {
+            savvior.init('#grid', {
+                "screen and (max-width: 30em)": { columns: 1 },
+                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
+                "screen and (min-width: 60em) and (max-width: 80em)": {
+                      columns: 3 },
+                "screen and (min-width: 80em)": { columns: 4 },
+            });
+        });
+     </script>
 {% endblock %}
