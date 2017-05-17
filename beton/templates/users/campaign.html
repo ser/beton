@@ -9,42 +9,31 @@
     <div class="row">
         <div class="col-sm-6">
             <h3>Your campaigns as follow</h3>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nickname</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Price</th>
-                        <th>BTC Addr</th>
-                        <th>Paid?</th>
-                        <th>Banner</th>
-                    </tr>
-                <tbody>
+            <div id="grid">
                     {% for campaign in all_campaigns %}
-                            <tr>
-                                <td>{{ campaign['campaignId'] }}</td>
-                                <td>{{ campaign['campaignName'] }}</td>
-                                <td>{{ campaign['startDate'] }}</td>
-                                <td>{{ campaign['endDate'] }}</td>
-                                <td>{{ campaign['amount_btc'] }}</td>
-                                <td><a href="{{ config.BLOCKCHAIN }}{{ campaign['btc_address'] }}">
-                                    <i class="fa fa-indent fa-fw"
-                                        aria-hidden="true"></i></a></td>
-                                <td>{{ campaign['ispaid'] }}</td>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">#{{ campaign['campaignId'] }} {{ campaign['campaignName'] }}</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div><p><b>From:</b> {{ campaign['startDate'] }}</p></div>
+                                <div><p><b>To:</b> {{ campaign['endDate'] }}</p></div>
+                                <div><p><i class="fa fa-btc" aria-hidden="true"></i>
+                                        {{ campaign['amount_btc'] }} ----
+                                        Confirmed? <a href="{{ config.BLOCKCHAIN }}{{ campaign['btc_address'] }}">
+                                        {{ campaign['ispaid'] }}</a></div>
                                 {% for banner in banners %}
                                     {% if campaign['campaignId'] == banner[0] %}
                                         {% if banner[1] %}
-                                        <td><img class="img-thumbnail thumbmax" 
-                                            src="{{ banner[1][0]['imageURL'] }}"></td>
+                                        <div><img class="img-thumbnail thumbmax" 
+                                            src="{{ banner[1][0]['imageURL'] }}"></div>
                                         {% endif %}
                                     {% endif %}
                                 {% endfor %}
-                            </tr>
+                            </div>
+                        </div>
                     {% endfor %}
-                </tbody>
-            </table>
+            </div>
         </div>
         <div class="col-sm-6">
             <h3>This is an overview of all recent and ongoing campaigns on our websites</h3>
@@ -61,5 +50,9 @@
                 tmpl_path: "{{ config.SUBDIR }}/static/libs/bootstrap-calendar/tmpls/"
             }
     );
+    savvior.init('#grid', {
+        "screen and (max-width: 15em)": { columns: 1 },
+        "screen and (min-width: 15em)": { columns: 2 },
+    });
 </script>
 {% endblock %}
