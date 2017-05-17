@@ -1,0 +1,24 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">#{{ campaign['campaignId'] }} {{ campaign['campaignName'] }}</h3>
+        <h4 class="panel-title">{{ campaign['impressions'] }}</h4>
+    </div>
+    <div class="panel-body">
+        <div><p><b>From:</b> {{ campaign['startDate'] }}</p></div>
+        <div><p><b>To:</b> {{ campaign['endDate'] }}</p></div>
+        <div><p><i class="fa fa-btc" aria-hidden="true"></i>
+                {{ campaign['amount_btc'] }} <i
+                    class="fa fa-arrows-h"
+                    aria-hidden="true"></i>
+                Confirmed? <a href="{{ config.BLOCKCHAIN }}{{ campaign['btc_address'] }}">
+                {{ campaign['ispaid'] }}</a></div>
+        {% for banner in banners %}
+            {% if campaign['campaignId'] == banner[0] %}
+                {% if banner[1] %}
+                <div><img class="img-thumbnail thumbmax" 
+                    src="{{ banner[1][0]['imageURL'] }}"></div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

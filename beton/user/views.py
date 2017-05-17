@@ -188,6 +188,10 @@ def campaign():
         try:
             tasks['btc_address'] = orderinfo.btcaddress
         except: tasks['btc_address'] = "deadbeef"
+#        try:
+#            tasks['impressions'] = campaign['impressions']
+#        except:
+#            tasks['impressions'] = 0
 
         all_campaigns_standardized.append(tasks)
 

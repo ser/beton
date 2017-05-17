@@ -6,7 +6,7 @@
         <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
     </div>
     <div id="grid">
-        {% for banner in all_banners %}
+        {% for banner in all_banners|reverse %}
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Banner #{{ banner.id }}</h3>
