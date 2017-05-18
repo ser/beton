@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
+from flask_kvsession import KVSessionExtension
 from flask_moment import Moment
 from flask_user import UserManager, SQLAlchemyAdapter
+from simplekv.memory import DictStore
 
 from beton import commands, public, user
 from beton.assets import assets
@@ -13,6 +15,7 @@ from beton.settings import ProdConfig
 from beton.user.models import User
 
 moment = Moment()
+sesstore = DictStore(d=None)
 
 def create_app(config_object=ProdConfig):
     """An application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
@@ -43,6 +46,7 @@ def register_extensions(app):
     mail.init_app(app)
     db_adapter = SQLAlchemyAdapter(db, User)
     user_manager = UserManager(db_adapter, app)
+    KVSessionExtension(sesstore, app)
     return None
 
 

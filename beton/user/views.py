@@ -6,14 +6,14 @@ import xmlrpc.client
 from datetime import datetime
 
 import names
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Orders, Prices, Zone2Campaign
-from beton.utils import flash_errors
+from beton.utils import flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
 
@@ -59,10 +59,20 @@ def bannerz():
 def offer():
     """Get and display all possible websites and zones in them."""
     form = ChangeOffer()
+
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
-                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+
+    if 'revive' in session:
+        sessionid = session['revive']
+        try:
+            r.ox.getUserList(sessionid)
+        except: 
+            sessionid = reviveme(r)
+            session['revive'] = sessionid
+    else:
+        sessionid = reviveme(r)
+        session['revive'] = sessionid
 
     # Get all publishers (websites)
     publishers = r.ox.getPublisherListByAgencyId(sessionid, 
@@ -107,8 +117,6 @@ def offer():
                                       dayprice=form.zoneprice.data)
 
         return redirect(url_for('user.offer'))
-    # Logout from Revive
-    r.ox.logoff(sessionid)
 
     # Render the page and quit
     return render_template('users/offer.html', allzones=all_zones,
@@ -122,8 +130,16 @@ def campaign():
     """Get and display all camapigns belonging to user."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
-                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+    if 'revive' in session:
+        sessionid = session['revive']
+        try:
+            r.ox.getUserList(sessionid)
+        except: 
+            sessionid = reviveme(r)
+            session['revive'] = sessionid
+    else:
+        sessionid = reviveme(r)
+        session['revive'] = sessionid
 
     all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
                                                        current_app.config.get('REVIVE_AGENCY_ID'))
@@ -162,9 +178,6 @@ def campaign():
         for x in all_campaigns:
             banners.append([x['campaignId'], r.ox.getBannerListByCampaignId(sessionid,
                                                                             x['campaignId'])])
-    # Logout from Revive
-    r.ox.logoff(sessionid)
-
     all_campaigns_standardized = []
 
     for campaign in all_campaigns:
@@ -209,8 +222,16 @@ def api_all_campaigns(zone_id):
     """JSON."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
-                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+    if 'revive' in session:
+        sessionid = session['revive']
+        try:
+            r.ox.getUserList(sessionid)
+        except: 
+            sessionid = reviveme(r)
+            session['revive'] = sessionid
+    else:
+        sessionid = reviveme(r)
+        session['revive'] = sessionid
 
     all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
                                                        current_app.config.get('REVIVE_AGENCY_ID'))
@@ -254,8 +275,16 @@ def order():
     """Order a campaign."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
-                           current_app.config.get('REVIVE_MASTER_PASSWORD'))
+    if 'revive' in session:
+        sessionid = session['revive']
+        try:
+            r.ox.getUserList(sessionid)
+        except: 
+            sessionid = reviveme(r)
+            session['revive'] = sessionid
+    else:
+        sessionid = reviveme(r)
+        session['revive'] = sessionid
 
     if ('step' not in request.form) or \
             ('submit' in request.form.values() and request.form['submit'] == 'cancel'):
@@ -403,6 +432,3 @@ def order():
                                exrate=exrate, dayprice=price.dayprice,
                                btctotal=totalbtcprice, electrum=result,
                                step='pay')
-
-    # Logout from Revive
-    r.ox.logoff(sessionid)

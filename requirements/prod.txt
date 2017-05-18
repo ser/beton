@@ -49,3 +49,5 @@ pymysql
 flask-admin
 flask-user
 requests
+flask-kvsession
+
