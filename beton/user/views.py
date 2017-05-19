@@ -201,12 +201,20 @@ def campaign():
         try:
             tasks['btc_address'] = orderinfo.btcaddress
         except: tasks['btc_address'] = "deadbeef"
-#        try:
-#            tasks['impressions'] = campaign['impressions']
-#        except:
-#            tasks['impressions'] = 0
+
+        # ask for stats
+        try:
+            ztatz = r.ox.campaignBannerStatistics(sessionid,
+                                                  campaign['campaignId'],
+                                                  datetime(2011, 1, 1, 0, 0),
+                                                  datetime.now()
+                                                  )
+            tasks['impressions'] = ztatz[0]['impressions']
+        except:
+            tasks['impressions'] = 0
 
         all_campaigns_standardized.append(tasks)
+
 
     # Render the page and quit
     return render_template('users/campaign.html',
