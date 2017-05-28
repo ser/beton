@@ -9,7 +9,8 @@
                 {{ campaign['amount_btc'] }} <i
                     class="fa fa-arrows-h"
                     aria-hidden="true"></i>
-                Confirmed? <a href="{{ config.BLOCKCHAIN }}{{ campaign['btc_address'] }}">
+                Confirmed? <a href="{{ config.BLOCKCHAIN }}{{ campaign['btc_address'] }}"
+                    target="_blank">
                 {{ campaign['ispaid'] }}</a></div>
         {% for banner in banners %}
             {% if campaign['campaignId'] == banner[0] %}

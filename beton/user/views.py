@@ -327,7 +327,7 @@ def order():
                 zone_width = zone['width']
                 zone_height = zone['height']
                 zone['price'] = price
-                if zone_width >= banner.width and zone_height >= banner.height:
+                if zone_width == banner.width and zone_height == banner.height:
                     all_zones.append(zone)
         return render_template('users/order.html', banner=banner,
                                image_url=image_url,

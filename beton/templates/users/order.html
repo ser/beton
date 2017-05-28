@@ -7,7 +7,11 @@
         <div class="row">
             <div class="col-sm-6 col-xs-12">
                 <p>Select a banner for your new campaign, please</p>
-                <p>or <a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
+                <p>or <a class="btn btn-primary btn-lg" role="button"
+                        href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
+                <span class="label label-info">
+                    Your banner must have exectly the same size as the
+                    zone you want to put it in.</span>
             </div>
             <div class="col-sm-6 col-xs-12">
                 <h4>Alternatively</h4>
@@ -179,6 +183,10 @@
                 </form>
             </div>
         </div>
+    </div>
+    <div class="alert alert-danger" role="alert">
+        ATTENTION! Because Bitcoin network is recently very congested, please
+        pay a good miner fee to have your transaction confirmed on time!!!
     </div>
     <div class="row">
         <div class="col-sm-4 col-xs-12">
