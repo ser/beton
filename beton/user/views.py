@@ -186,6 +186,7 @@ def campaign():
         tasks = {}
         tasks['campaignId'] = campaign['campaignId']
         tasks['campaignName'] = campaign['campaignName']
+        tasks['comments'] = campaign['comments']
         starttime = datetime.strptime(campaign['startDate'].value,
                                       '%Y%m%dT%H:%M:%S')
         endtime = datetime.strptime(campaign['endDate'].value,
@@ -338,9 +339,10 @@ def order():
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
         zone_id = int(request.form['zone_id'])
+        zone_name = request.form['zone_name']
         return render_template('users/order.html', banner_id=banner_id,
                                zone_id=zone_id, image_url=image_url,
-                               step='chose-date')
+                               zone_name=zone_name, step='chose-date')
 
     elif request.form['step'] == 'pay':
         randomname = names.get_full_name()
@@ -351,6 +353,7 @@ def order():
         height = banner.height
         url = banner.url
         zone_id = int(request.form['zone_id'])
+        zone_name = request.form['zone_name']
         datestart = request.form['datestart']
         datend = request.form['datend']
 
@@ -370,7 +373,8 @@ def order():
         diki['advertiserId'] = advertiser_id
         diki['campaignName'] = randomname
         diki['startDate'] = begin
-        diki['endDate']= enddate
+        diki['endDate'] = enddate
+        diki['comments'] = zone_name
         campaign = r.ox.addCampaign(sessionid, diki)
 
         # Now we are adding our banner to campaign

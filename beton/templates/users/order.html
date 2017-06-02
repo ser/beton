@@ -9,9 +9,6 @@
                 <p>Select a banner for your new campaign, please</p>
                 <p>or <a class="btn btn-primary btn-lg" role="button"
                         href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
-                <span class="label label-info">
-                    Your banner must have exactly the same size as the
-                    zone you want to put it in.</span>
             </div>
             <div class="col-sm-6 col-xs-12">
                 <h4>Alternatively</h4>
@@ -88,6 +85,7 @@
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                             <input type="hidden" name="banner_id" value="{{ banner.id }}" />
                             <input type="hidden" name="zone_id" value="{{ zone.zoneId }}" />
+                            <input type="hidden" name="zone_name" value="{{ zone.zoneName }}" />
                             <input type="hidden" name="step" value="chose-date" />
                             <button type="submit" name="submit" value="chose-date" class="btn
                                 btn-primary">Choose this zone</button>
@@ -144,6 +142,7 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <input type="hidden" name="banner_id" value="{{ banner_id }}" />
                     <input type="hidden" name="zone_id" value="{{ zone_id }}" />
+                    <input type="hidden" name="zone_name" value="{{ zone_name }}" />
                     <input type="hidden" name="step" value="pay" />
                     <button type="submit" name="submit" value="pay" class="btn
                         btn-primary">Confirm and go to payment details</button>

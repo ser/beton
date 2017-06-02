@@ -4,6 +4,9 @@
     <div class="jumbotron">
         <h1>Your banners, {{ current_user.username }}</h1>
         <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
+        <span class="label label-info">
+            Your banner must have exactly the same size as the
+            zone you want to put it in!</span>
     </div>
     <div id="grid">
         {% for banner in all_banners|reverse %}
