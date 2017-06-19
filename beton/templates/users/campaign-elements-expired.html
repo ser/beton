@@ -1,5 +1,5 @@
 {% if campaign['ispaid'] == True %}
-{% if campaign['expired'] == False %}
+{% if campaign['expired'] == True %}
 <div class="panel panel-default">
     <div class="panel-heading">
         <h3 class="panel-title">#{{ campaign['campaignId'] }} {{ campaign['campaignName'] }}</h3>

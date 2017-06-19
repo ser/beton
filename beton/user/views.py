@@ -193,6 +193,10 @@ def campaign():
                                     '%Y%m%dT%H:%M:%S')
         tasks['startDate'] = starttime
         tasks['endDate'] = endtime
+        present = datetime.now()
+        if endtime < present:
+            tasks['expired'] = True
+        else: tasks['expired'] = False
         try:
             tasks['amount_btc'] = orderinfo.amount_btc
         except: tasks['amount_btc'] = 0

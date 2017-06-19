@@ -8,11 +8,23 @@
     </div>
     <div class="row">
         <div class="col-sm-6">
-            <h3>Your campaigns as follow</h3>
+            <h3>Your current campaigns</h3>
             <div id="grid">
-                    {% for campaign in all_campaigns|reverse %}
-                        {% include "users/campaign-elements.html" %}
-                    {% endfor %}
+                {% for campaign in all_campaigns|reverse %}
+                    {% include "users/campaign-elements.html" %}
+                {% endfor %}
+            </div>
+            <h3>Unpaid campaigns</h3>
+            <div id="grid">
+                {% for campaign in all_campaigns|reverse %}
+                    {% include "users/campaign-elements-unpaid.html" %}
+                {% endfor %}
+            </div>
+            <h3>Your expired campaigns</h3>
+            <div id="grid">
+                {% for campaign in all_campaigns|reverse %}
+                    {% include "users/campaign-elements-expired.html" %}
+                {% endfor %}
             </div>
         </div>
         <div class="col-sm-6">
