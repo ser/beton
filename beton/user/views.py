@@ -4,6 +4,7 @@ import requests
 import uuid
 import xmlrpc.client
 from datetime import datetime
+from dateutil import parser
 
 import names
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
@@ -103,6 +104,19 @@ def offer():
             tmpdict['height'] = zone['height']
             tmpdict['zoneId'] = zone['zoneId']
             tmpdict['comments'] = zone['comments']
+        
+            # ask for stats
+            try:
+                ztatz = r.ox.getZoneDailyStatistics(sessionid,
+                                                  zone['zoneId'],
+                                                  datetime.now() - parser.relativedelta(months=1),
+                                                  datetime.now()
+                                                  )
+                #tmpdict['impressions'] = ztatz[0]['impressions']
+                tmpdict['impressions'] = ztatz
+            except:
+                tmpdict['impressions'] = 0
+            
             all_zones.append(tmpdict)
 
     if request.method == 'POST':
