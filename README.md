@@ -1,6 +1,9 @@
 # Beton
 > Beton :cocktail: - a Czech drink containing becherovka and tonic
 
+This software is in active developement. You should be an experienced admin of
+PHP/Python to start playing with Beton. Strictly no warranty.
+
 ## What really is Beton?
 Beton is a cover plate (frontend) over [Revive Ad Server](https://www.revive-adserver.com/).
 
@@ -17,6 +20,15 @@ Installation process consists of two main stages, first is installation and conf
 ### Install and prepare Revive Ad Server
 
 * Get the newest version of the Revive Ad Server from https://www.revive-adserver.com/download/ - I'm using version 4.1. Install and configure it according to it's documentation. It must be fully working before you move over to next steps.
-* Create a new advertiser. Note it's Revive's internal ID number.
+* Create a new advertiser. Note its Revive's internal ID number.
 * Add your websites. 
 * Add zone(s) you want to have within your websites. It must be of *Banner, Button or Rectangle* type.
+
+### Install and configure Electrum merchant system
+
+Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.html
+
+### Install and prepare Beton
+
+* Create a separate user in your system: ```useradd -m beton```
+
