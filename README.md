@@ -1,4 +1,5 @@
-# Beton ![Python3](https://www.shareicon.net/data/128x128/2016/07/16/634601_python_512x512.png)
+![Python3](https://www.shareicon.net/data/128x128/2016/07/16/634601_python_512x512.png)
+# Beton
 > Beton :cocktail: - a Czech drink containing becherovka and tonic
 
 This software is in active developement. You should be an experienced admin of
