@@ -1,17 +1,17 @@
 # Beton
 > Beton :cocktail: - a Czech drink containing becherovka and tonic
 
-This software is in active developement. You should be an experienced admin of
+This software is in active development. You should be an experienced admin of
 PHP/Python to start playing with Beton. Strictly no warranty.
 
 ## What really is Beton?
-Beton is a cover plate (frontend) over [Revive Ad Server](https://www.revive-adserver.com/).
+Beton is a cover plate (front end) over [Revive Ad Server](https://www.revive-adserver.com/).
 
 It links to Revive via its XML-RPC API, fully taking over management of banner ads for your customers. They don't need to see or access original Revive web interface anymore.
 
-Beton adventages over standar Revive web app:
+Beton advantages over standard Revive web app:
 * Fully automatic sell system for banners
-* Independent user base system with autoregistration
+* Independent user base system with auto-registration and email confirmation
 * Bitcoin payments via [Electrum](https://electrum.org), your own wallet merchant service (no third parties required!)
 * A very clean and responsive interface, based on Bootstrap
  
