@@ -1,3 +1,4 @@
+[Python3](https://www.unixstickers.com/image/cache/data/stickers/python/python_sh-70x70.png)
 # Beton
 > Beton :cocktail: - a Czech drink containing becherovka and tonic
 
@@ -11,18 +12,18 @@ It links to Revive via it's XML-RPC API, fully taking over management of ads for
 
 Beton adventages over standar Revive web app:
 * Fully automatic sell system for banners
-* Bitcoin payments via [Electrum](https://electrum.org) wallet merchant service
+* Bitcoin payments via [Electrum](https://electrum.org) your own wallet merchant service (no third parties required!)
 * A very clean and responsive interface, based on Bootstrap
  
 ## Installation
-Installation process consists of two main stages, first is installation and configuration of the Revive Ad Server, and second one is installation of Beton itself.
+Installation process consists of three main stages, first is installation and configuration of the Revive Ad Server, second is preparation of Electrum payment interface and the third one is installation of Beton itself.
 
 ### Install and prepare Revive Ad Server
 
 * Get the newest version of the Revive Ad Server from https://www.revive-adserver.com/download/ - I'm using version 4.1. Install and configure it according to it's documentation. It must be fully working before you move over to next steps.
 * Create a new advertiser. Note its Revive's internal ID number.
 * Add your websites. 
-* Add zone(s) you want to have within your websites. It must be of *Banner, Button or Rectangle* type.
+* Add zone(s) you want to have within your websites. It must be of ```Banner, Button or Rectangle``` type.
 
 ### Install and configure Electrum merchant system
 
