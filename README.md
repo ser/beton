@@ -1,4 +1,4 @@
-[Python3](https://www.unixstickers.com/image/cache/data/stickers/python/python_sh-70x70.png)
+![Python3](https://www.unixstickers.com/image/cache/data/stickers/python/python_sh-70x70.png) ![Flask](https://www.unixstickers.com/image/cache/data/stickers/flask/Flask.sh-70x70.png)
 # Beton
 > Beton :cocktail: - a Czech drink containing becherovka and tonic
 
