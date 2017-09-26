@@ -33,7 +33,10 @@ Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.htm
 
 ### Install and prepare Beton
 
-* Create a separate unix user in your system: ```useradd -m beton```
+> This part assumes that you have Ubuntu Xenial 16.04. 
+
+* Create a separate unix user in your system:
+  * ```useradd -m beton```
 * Install system packages for python and web developement:
   * ```apt install python3-pip python3-wheel python3-setuptools virtualenvwrapper nodejs-legacy npm```
   * ```npm install -g bower```
