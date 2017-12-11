@@ -40,3 +40,16 @@ Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.htm
 * Install system packages for python and web developement:
   * ```apt install python3-pip python3-wheel python3-setuptools virtualenvwrapper nodejs-legacy npm```
   * ```npm install -g bower```
+* Create a virtual python environment for beton and activate it:
+  * ```su - beton```
+  * ```mkvirtualenv beton```
+* When you want to access your environment at a later date, you are just activating it:
+  * ```workon beton```
+* Clone the beton git repository:
+  * ```git clone https://github.com/ser/beton```
+* Install required dependencies to your environment
+  * ```cd beton```
+  * ```pip3 install -r requirements/prod.txt```
+
+
+  
