@@ -50,6 +50,7 @@ Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.htm
 * Install required dependencies to your environment
   * ```cd beton```
   * ```pip3 install -r requirements/prod.txt```
+  * ```bower install```
 
 
   
