@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+"""Beton configuration file."""
+import os
+
+
+class Config(object):
+    """Base configuration."""
+
+    SECRET_KEY = os.environ.get('BETON_SECRET', 'secret-key')
+    APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
+    PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
+    BCRYPT_LOG_ROUNDS = 13
+    ASSETS_DEBUG = False
+    DEBUG_TB_ENABLED = False  # Disable Debug toolbar - enable it only for development!
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
+    CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # User permissions
+    USER_ENABLE_CHANGE_PASSWORD = True  # Allow users to change their password
+    USER_ENABLE_CHANGE_USERNAME = False  # Allow users to change their username
+    USER_ENABLE_CONFIRM_EMAIL = True  # Force users to confirm their email
+    USER_ENABLE_FORGOT_PASSWORD = True  # Allow users to reset their passwords
+    USER_ENABLE_EMAIL = True  # Register with Email
+    USER_ENABLE_REGISTRATION = True  # Allow new users to register
+    USER_ENABLE_RETYPE_PASSWORD = True  # Prompt for `retype password`
+
+    # You definitely want to add these
+    SITE_NAME = ""
+    USER_APP_NAME = ""
+    SUBDIR = ""
+    CONTACT_URL = ""
+    # flask-uploads
+    UPLOADED_IMAGES_DEST = APP_DIR + ''
+    UPLOADED_IMAGES_URL = ''
+    # Revive-adserver XML access data
+    REVIVE_MASTER_USER = ''
+    REVIVE_MASTER_PASSWORD = ''
+    REVIVE_XML_URI = ''
+    REVIVE_AGENCY_ID = 1
+    # Electrum related
+    ELECTRUM_RPC = ''
+    # Mail settings
+    MAIL_SERVER = ''
+    MAIL_PORT = 587
+    MAIL_DEFAULT_SENDER = ''  # envelope address of system emails
+
+
+class ProdConfig(Config):
+    """Production configuration."""
+
+    ENV = 'prod'
+    DEBUG = False
+
+
+class DevConfig(Config):
+    """Development configuration."""
+
+    ENV = 'dev'
+    DEBUG = True
+
+
+class TestConfig(Config):
+
+    """Test configuration."""
+
+    TESTING = True
+    DEBUG = True
+
+
+# vim: set tabstop=4 softtabstop=4 shiftwidth=4 expandtab :
