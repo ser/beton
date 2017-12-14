@@ -43,6 +43,11 @@ class Config(object):
     MAIL_SERVER = ''
     MAIL_PORT = 587
     MAIL_DEFAULT_SENDER = ''  # envelope address of system emails
+    # To speed up read-only operations, beton requires a direct access to revive database
+    MYDBPASS = ''
+    SQLALCHEMY_BINDS = {
+        'revive': 'mysql+pymysql://'
+    }
 
 
 class ProdConfig(Config):
