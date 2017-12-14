@@ -62,7 +62,7 @@ You should create the main configuration file inside the ```beton``` subdirector
 
 Note that you are able to keep developement and production settings separately.
 
-After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use Systemd, this is an example configuration file:
+After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use Systemd, this is an example service unit file ```/etc/systemd/system/beton.service```:
 
 ```
 [Unit]
@@ -79,4 +79,11 @@ User=beton
 
 [Install]
 WantedBy=multi-user.target
+```
+
+When you are ready with all configuration steps, add and enable beton service (as root):
+
+```
+# systemctl enable beton.service
+# systemctl start beton.service
 ```
