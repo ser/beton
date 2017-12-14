@@ -56,7 +56,9 @@ Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.htm
 
 Configuration of beton requires two steps. First is setting up a configuration file, the second one requires setting environment, as you don't want to keep sensitive passwords in the config file itself.
 
-You should create the main configuration file inside the ```beton``` subdirectory with a name ```settings.py```. 
+You should create the main configuration file inside the ```beton``` subdirectory with a name ```settings.py```. A template of this file is located in root directory of beton with name ```settings.py.dist```. You are able to keep developement and production settings separately. 
+
+
 
 
 
