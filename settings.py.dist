@@ -29,6 +29,7 @@ class Config(object):
     USER_APP_NAME = ""
     SUBDIR = ""
     CONTACT_URL = ""
+    OUR_URL = ""
     # flask-uploads
     UPLOADED_IMAGES_DEST = APP_DIR + ''
     UPLOADED_IMAGES_URL = ''
@@ -37,8 +38,9 @@ class Config(object):
     REVIVE_MASTER_PASSWORD = ''
     REVIVE_XML_URI = ''
     REVIVE_AGENCY_ID = 1
-    # Electrum related
+    # Electrum and coin related
     ELECTRUM_RPC = ''
+    BLOCKCHAIN = 'https://www.blocktrail.com/BTC/address/'
     # Mail settings
     MAIL_SERVER = ''
     MAIL_PORT = 587
@@ -48,6 +50,30 @@ class Config(object):
     SQLALCHEMY_BINDS = {
         'revive': 'mysql+pymysql://'
     }
+
+    # UI
+    USER_CHANGE_PASSWORD_URL      = SUBDIR+'/user/change-password'
+    USER_CHANGE_USERNAME_URL      = SUBDIR+'/user/change-username'
+    USER_CONFIRM_EMAIL_URL        = SUBDIR+'/user/confirm-email/<token>'
+    USER_EMAIL_ACTION_URL         = SUBDIR+'/user/email/<id>/<action>'
+    USER_FORGOT_PASSWORD_URL      = SUBDIR+'/user/forgot-password'
+    USER_INVITE_URL               = SUBDIR+'/user/invite'
+    USER_LOGIN_URL                = SUBDIR+'/user/login'
+    USER_LOGOUT_URL               = SUBDIR+'/user/logout'
+    USER_MANAGE_EMAILS_URL        = SUBDIR+'/user/manage-emails'
+    USER_REGISTER_URL             = SUBDIR+'/user/register'
+    USER_RESEND_CONFIRM_EMAIL_URL = SUBDIR+'/user/resend-confirm-email'
+    USER_RESET_PASSWORD_URL       = SUBDIR+'/user/reset-password/<token>'
+    USER_AFTER_CHANGE_PASSWORD_ENDPOINT      = 'user.campaign'
+    USER_AFTER_CHANGE_USERNAME_ENDPOINT      = 'user.campaign'
+    USER_AFTER_CONFIRM_ENDPOINT              = 'user.campaign'
+    USER_AFTER_FORGOT_PASSWORD_ENDPOINT      = 'user.campaign'
+    USER_AFTER_LOGIN_ENDPOINT                = 'user.campaign'
+    USER_AFTER_LOGOUT_ENDPOINT               = 'user.login'
+    USER_AFTER_REGISTER_ENDPOINT             = 'user.campaign'
+    USER_AFTER_RESEND_CONFIRM_EMAIL_ENDPOINT = 'user.campaign'
+    USER_AFTER_RESET_PASSWORD_ENDPOINT       = 'user.campaign'
+    USER_INVITE_ENDPOINT                     = 'user.campaign'
 
 
 class ProdConfig(Config):
