@@ -56,10 +56,17 @@ Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.htm
 
 Configuration of beton requires two steps. First is setting up a configuration file, the second one requires setting environment, as you don't want to keep sensitive passwords in the config file itself.
 
-You should create the main configuration file inside the ```beton``` subdirectory with a name ```settings.py```. A template of this file is located in root directory of beton with name ```settings.py.dist```. You are able to keep developement and production settings separately. 
+You should create the main configuration file inside the ```beton``` subdirectory with a name ```settings.py```. A template of this file is located in root directory of beton with name ```settings.py.dist```:
 
+```cp settings.py.dist beton/settings.py```
 
+Note that you are able to keep developement and production settings separately.
 
+After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use Bash, edit ```~beton/.bashrc``` file, adding:
 
-
-  
+```
+export BETON_SECRET='a_truly_random_characters_about_60_of_them'
+export REVIVE_MASTER_PASSWORD='password_to_main_revive_admin'
+export REVIVE_SQL_PASSWORD='password_to_access_revive_sql_database'
+export FLASK_APP='/home/beton/beton/autoapp.py'
+```
