@@ -56,10 +56,34 @@ Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.htm
 
 Configuration of beton requires two steps. First is setting up a configuration file, the second one requires setting environment, as you don't want to keep sensitive passwords in the config file itself.
 
-You should create the main configuration file inside the ```beton``` subdirectory with a name ```settings.py```. A template of this file is located in root directory of beton with name ```settings.py.dist```. You are able to keep developement and production settings separately. 
+You should create the main configuration file inside the ```beton``` subdirectory with a name ```settings.py```. A template of this file is located in root directory of beton with name ```settings.py.dist```:
 
+```cp settings.py.dist beton/settings.py```
 
+Note that you are able to keep developement and production settings separately.
 
+After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use Systemd, this is an example service unit file ```/etc/systemd/system/beton.service```:
 
+```
+[Unit]
+Description=Beton Ad Server
+After=multi-user.target
 
-  
+[Service]
+Type=idle
+Environment=BETON_SECRET=a_truly_random_characters_about_60_of_them
+Environment=REVIVE_SQL_PASSWORD=password_to_access_revive_sql_database
+Environment=FLASK_APP=/home/beton/beton/autoapp.py
+ExecStart=/home/beton/.virtualenvs/beton/bin/flask run --host=127.0.0.1 --port=9234
+User=beton
+
+[Install]
+WantedBy=multi-user.target
+```
+
+When you are ready with all configuration steps, add and enable beton service (as root):
+
+```
+# systemctl enable beton.service
+# systemctl start beton.service
+```
