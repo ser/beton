@@ -60,7 +60,7 @@ You should create the main configuration file inside the ```beton``` subdirector
 
 ```cp settings.py.dist beton/settings.py```
 
-Note that you are able to keep developement and production settings separately.
+Note that you are able to keep developement and production settings separately. Normally beton uses ```ProdConfig``` class settings, if you set ``` FLASK_DEBUG=1``` in the environment, it will use ```DevConfig``` class instead of. Please remeber it is critically unsafe to run debug mode in production. 
 
 After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use Systemd, this is an example service unit file ```/etc/systemd/system/beton.service```:
 
@@ -72,6 +72,7 @@ After=multi-user.target
 [Service]
 Type=idle
 Environment=BETON_SECRET=a_truly_random_characters_about_60_of_them
+Environment=REVIVE_MASTER_PASSWORD=password_to_access_main_admin_account_on_revive
 Environment=REVIVE_SQL_PASSWORD=password_to_access_revive_sql_database
 Environment=FLASK_APP=/home/beton/beton/autoapp.py
 ExecStart=/home/beton/.virtualenvs/beton/bin/flask run --host=127.0.0.1 --port=9234
