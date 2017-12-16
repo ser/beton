@@ -12,6 +12,7 @@ beton/static/libs/
 beton/static/css/common.css
 beton/static/js/common.js
 dev.db
+pip-selfcheck.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
