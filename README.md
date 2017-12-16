@@ -72,6 +72,7 @@ After=multi-user.target
 [Service]
 Type=idle
 Environment=BETON_SECRET=a_truly_random_characters_about_60_of_them
+Environment=REVIVE_MASTER_PASSWORD=password_to_access_main_admin_account_on_revive
 Environment=REVIVE_SQL_PASSWORD=password_to_access_revive_sql_database
 Environment=FLASK_APP=/home/beton/beton/autoapp.py
 ExecStart=/home/beton/.virtualenvs/beton/bin/flask run --host=127.0.0.1 --port=9234
