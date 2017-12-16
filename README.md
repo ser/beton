@@ -60,7 +60,7 @@ You should create the main configuration file inside the ```beton``` subdirector
 
 ```cp settings.py.dist beton/settings.py```
 
-Note that you are able to keep developement and production settings separately.
+Note that you are able to keep developement and production settings separately. Normally beton uses ```ProdConfig``` class settings, if you set ``` FLASK_DEBUG=1``` in the environment, it will use ```DevConfig``` class instead of. Please remeber it is critically unsafe to run debug mode in production. 
 
 After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use Systemd, this is an example service unit file ```/etc/systemd/system/beton.service```:
 
