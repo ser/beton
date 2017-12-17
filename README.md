@@ -29,7 +29,7 @@ directly to customers.
 
 ### Install and configure Electrum merchant system
 
-Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.html - if not sure, consult #electrum IRC channel @ Freenode.
+Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.html - if not sure, consult #electrum IRC channel @ Freenode. Please install websockets service as well, as it is being used by beton.
 
 ### Install and prepare Beton
 
