@@ -85,6 +85,7 @@ WantedBy=multi-user.target
 When you are ready with all configuration steps, add and enable beton service (as root):
 
 ```
+# chmod og-wrx /etc/systemd/system/beton.service
 # systemctl enable beton.service
 # systemctl start beton.service
 ```
