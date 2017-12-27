@@ -31,6 +31,24 @@ directly to customers.
 
 Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.html - if not sure, consult #electrum IRC channel @ Freenode. Please install websockets service as well, as it is being used by beton.
 
+After finishing configuration, your ```~/.electrum/config``` should look similar to this, for reference:
+
+```
+{
+    "requests_dir": "/srv/www/electest", 
+    "rpchost": "127.0.0.1", 
+    "rpcport": 7707, 
+    "ssl_chain": "/etc/pki/realms/random-re/default.crt", 
+    "ssl_privkey": "/etc/pki/realms/random-re/default.key", 
+    "url_rewrite": [
+        "file:///srv/www/", 
+        "https://random.re/"
+    ], 
+    "websocket_port": 9997, 
+    "websocket_server": "0.0.0.0"
+}
+```
+
 ### Install and prepare Beton
 
 > This part assumes that you have Ubuntu Xenial 16.04. 
