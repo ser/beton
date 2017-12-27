@@ -20,7 +20,7 @@
 
   <link rel="stylesheet" href="{{ config.SUBDIR }}/static/libs/font-awesome/css/font-awesome.min.css">
   {% assets "css_all" %}
-    <link rel="stylesheet" href="{{ ASSET_URL }}">
+    <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}">
   {% endassets %}
 
   {% block css %}{% endblock %}
@@ -28,6 +28,19 @@
    <link
    href="https://fonts.googleapis.com/css?family=Fresca|Tauri&amp;subset=latin-ext"
    rel="stylesheet"> 
+
+  <!-- this part of css must be here because requires templating -->
+  <style media="screen" type="text/css">
+    #loader {  
+      position: fixed;  
+      left: 0px;  
+      top: 0px;  
+      width: 100%;  
+      height: 100%;  
+      z-index: 9999;  
+      background: url('{{ config.SUBDIR }}/static/img/loading.gif') 50% 50% no-repeat rgb(249,249,249);  
+    }
+  </style>
 
 </head>
 <body class="{% block body_class %}{% endblock %}">
