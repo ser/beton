@@ -119,4 +119,8 @@ location /beton/ {
 location /beton/banners/ {
          alias /home/beton/beton/beton/banners/;
          }
+location /electest/ {
+         default_type "application/bitcoin-paymentrequest";
+         alias /srv/www/electest/;
+         }
 ```
