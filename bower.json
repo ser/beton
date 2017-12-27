@@ -11,6 +11,7 @@
     "bootstrap-progressbar": "",
     "jquery-timeago": "",
     "bootswatch": "",
-    "font-awesome": ""
+    "font-awesome": "",
+    "moment-timezone": "",
   }
 }

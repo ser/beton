@@ -34,7 +34,7 @@ js = Bundle(
     'libs/enquire/dist/enquire.js',
     'libs/savvior/dist/savvior.js',
     'libs/bootstrap-progressbar/bootstrap-progressbar.js',
-    'libs/qrious/dist/umd/qrious.js',
+    'libs/qrious/dist/qrious.js',
     'js/plugins.js',
     filters='jsmin',
     output='public/js/common.js'
