@@ -52,7 +52,7 @@ Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.htm
   * ```pip3 install -r requirements/prod.txt```
   * ```bower install```
   
-### Configuration
+### Configuration of beton
 
 Configuration of beton requires two steps. First is setting up a configuration file, the second one requires setting environment, as you don't want to keep sensitive passwords in the config file itself.
 
@@ -88,4 +88,17 @@ When you are ready with all configuration steps, add and enable beton service (a
 # chmod og-wrx /etc/systemd/system/beton.service
 # systemctl enable beton.service
 # systemctl start beton.service
+```
+
+### Configuration of nginx
+
+Instead of serving banners through python or php, it's advised to serve them directly through nginx. It's a suggested nginx configuration snippet:
+
+```
+location /beton/ {
+         proxy_pass http://127.0.0.1:9234/;
+         }
+location /beton/banners/ {
+         alias /home/beton/beton/beton/banners/;
+         }
 ```
