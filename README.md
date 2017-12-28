@@ -69,6 +69,9 @@ After finishing configuration, your ```~/.electrum/config``` should look similar
   * ```cd beton```
   * ```pip3 install -r requirements/prod.txt```
   * ```bower install```
+  * ```flask db init```
+  * ```flask db migrate```
+  * ```flask db upgrade```
   
 ### Configuration of beton
 
