@@ -115,7 +115,7 @@ Instead of serving banners through python or php, it's advised to serve them dir
 
 ```
 location /beton/ {
-         proxy_pass http://127.0.0.1:9234/;
+         proxy_pass http://127.0.0.1:9234/beton/;
          }
 location /beton/banners/ {
          alias /home/beton/beton/beton/banners/;
