@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """User and other DB models."""
-import uuid
+# import uuid
 import datetime as dt
 
 from flask_user import UserMixin
@@ -46,7 +46,7 @@ class Banner(SurrogatePK, Model):
     """Banner files."""
 
     __tablename__ = 'banners'
-    filename = Column(db.String(256), unique=True, nullable=False)
+    filename = Column(db.String(191), unique=True, nullable=False)
     owner = Column(db.Integer(), unique=False, nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     url = Column(db.String(2083), nullable=False)
@@ -80,7 +80,7 @@ class Prices(SurrogatePK, Model):
     zoneid = Column(db.Integer(), unique=True, nullable=False)
     dayprice = Column(db.Integer(), unique=False, nullable=False)
 
-    def __init__(self,zoneid, dayprice):
+    def __init__(self, zoneid, dayprice):
         """Create instance."""
         self.zoneid = zoneid
         self.dayprice = dayprice
@@ -99,7 +99,7 @@ class Orders(SurrogatePK, Model):
     zoneid = Column(db.Integer(), unique=False, nullable=False)
     ispaid = Column(db.Boolean(), default=False, nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    amount_btc = Column(db.Numeric(16,8))
+    amount_btc = Column(db.Numeric(16, 8))
     btcaddress = Column(db.String(35), unique=True, nullable=False)
 
     def __init__(self, campaigno, zoneid, ispaid,
