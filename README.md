@@ -133,4 +133,13 @@ location /electest/ {
 ### Post-install setup
 
  * Using web interface, add yourself as a user. 
- * Add yourself as an admin manually modifying ```roles``` table. TODO: this step should be automatised in next versions. 
+ * Add yourself as an admin manually modifying ```roles``` table. TODO: this step should be automatised in next versions:
+ ```
+ mysql> select * from roles;
++----+-------+---------+
+| id | name  | user_id |
++----+-------+---------+
+|  1 | admin |       2 |
++----+-------+---------+
+1 row in set (0.00 sec)
+ ```
