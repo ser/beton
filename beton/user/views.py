@@ -1,4 +1,4 @@
-import logging
+# import logging
 import json
 import requests
 import uuid
@@ -68,7 +68,7 @@ def offer():
         sessionid = session['revive']
         try:
             r.ox.getUserList(sessionid)
-        except: 
+        except:
             sessionid = reviveme(r)
             session['revive'] = sessionid
     else:
@@ -76,20 +76,20 @@ def offer():
         session['revive'] = sessionid
 
     # Get all publishers (websites)
-    publishers = r.ox.getPublisherListByAgencyId(sessionid, 
-                                    current_app.config.get('REVIVE_AGENCY_ID'))
+    publishers = r.ox.getPublisherListByAgencyId(sessionid,
+                                                 current_app.config.get('REVIVE_AGENCY_ID'))
 
     if current_user.has_role('admin'):
         isadmin = True
-    else: 
+    else:
         isadmin = False
     all_zones = []
-        
+
     for website in publishers:
 
         # get zones from Revive
         allzones = r.ox.getZoneListByPublisherId(sessionid,
-                                                website['publisherId'])
+                                                 website['publisherId'])
         for zone in allzones:
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
@@ -104,19 +104,19 @@ def offer():
             tmpdict['height'] = zone['height']
             tmpdict['zoneId'] = zone['zoneId']
             tmpdict['comments'] = zone['comments']
-        
+
             # ask for stats
             try:
                 ztatz = r.ox.getZoneDailyStatistics(sessionid,
-                                                  zone['zoneId'],
-                                                  datetime.now() - parser.relativedelta(months=1),
-                                                  datetime.now()
-                                                  )
-                #tmpdict['impressions'] = ztatz[0]['impressions']
+                                                    zone['zoneId'],
+                                                    datetime.now() - parser.relativedelta(months=1),
+                                                    datetime.now()
+                                                    )
+                # tmpdict['impressions'] = ztatz[0]['impressions']
                 tmpdict['impressions'] = ztatz
             except:
                 tmpdict['impressions'] = 0
-            
+
             all_zones.append(tmpdict)
 
     if request.method == 'POST':
@@ -148,7 +148,7 @@ def campaign():
         sessionid = session['revive']
         try:
             r.ox.getUserList(sessionid)
-        except: 
+        except:
             sessionid = reviveme(r)
             session['revive'] = sessionid
     else:
@@ -210,16 +210,20 @@ def campaign():
         present = datetime.now()
         if endtime < present:
             tasks['expired'] = True
-        else: tasks['expired'] = False
+        else:
+            tasks['expired'] = False
         try:
             tasks['amount_btc'] = orderinfo.amount_btc
-        except: tasks['amount_btc'] = 0
+        except:
+            tasks['amount_btc'] = 0
         try:
             tasks['ispaid'] = orderinfo.ispaid
-        except: tasks['ispaid'] = False
+        except:
+            tasks['ispaid'] = False
         try:
             tasks['btc_address'] = orderinfo.btcaddress
-        except: tasks['btc_address'] = "deadbeef"
+        except:
+            tasks['btc_address'] = "deadbeef"
 
         # ask for stats
         try:
@@ -233,7 +237,6 @@ def campaign():
             tasks['impressions'] = 0
 
         all_campaigns_standardized.append(tasks)
-
 
     # Render the page and quit
     return render_template('users/campaign.html',
@@ -253,7 +256,7 @@ def api_all_campaigns(zone_id):
         sessionid = session['revive']
         try:
             r.ox.getUserList(sessionid)
-        except: 
+        except:
             sessionid = reviveme(r)
             session['revive'] = sessionid
     else:
@@ -306,7 +309,7 @@ def order():
         sessionid = session['revive']
         try:
             r.ox.getUserList(sessionid)
-        except: 
+        except:
             sessionid = reviveme(r)
             session['revive'] = sessionid
     else:
@@ -329,7 +332,6 @@ def order():
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
-
 
         # Get all publishers (websites)
         publishers = r.ox.getPublisherListByAgencyId(sessionid,
@@ -380,12 +382,12 @@ def order():
         # We are booking the campaign in Revive, but turning off by default
         # until payment is confirmed
         all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
-                                                       current_app.config.get('REVIVE_AGENCY_ID'))
+                                                           current_app.config.get('REVIVE_AGENCY_ID'))
         advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
-                        current_user.username)['advertiserId'])
+                            current_user.username)['advertiserId'])
 
-        begin=datetime.strptime(datestart, "%d/%m/%Y")
-        enddate=datetime.strptime(datend, "%d/%m/%Y")
+        begin = datetime.strptime(datestart, "%d/%m/%Y")
+        enddate = datetime.strptime(datend, "%d/%m/%Y")
         totaltime = enddate - begin
         diki = {}
         diki['advertiserId'] = advertiser_id
@@ -404,7 +406,7 @@ def order():
         diki['height'] = height
         diki['url'] = url
         diki['storageType'] = 'url'
-        banno = r.ox.addBanner(sessionid, diki)
+        # banno = r.ox.addBanner(sessionid, diki)
 
         # ask kraken for rate
         krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
@@ -416,7 +418,7 @@ def order():
         totalbtcprice = totalcurrencyprice / float(exrate)
 
         # kindly ask miss electrum for an invoice which expires in 20 minutes
-        headers = {'content-type': 'application/json'}
+        # headers = {'content-type': 'application/json'}
         params = {
             "amount": totalbtcprice,
             "expiration": 1212
@@ -438,11 +440,11 @@ def order():
         btcaddr = result['address']
 
         Orders.create(campaigno=campaign,
-                     amount_btc=totalbtcprice,
-                     zoneid=zone_id,
-                     created_at=datetime.utcnow(),
-                     ispaid=False,
-                     btcaddress=btcaddr)
+                      amount_btc=totalbtcprice,
+                      zoneid=zone_id,
+                      created_at=datetime.utcnow(),
+                      ispaid=False,
+                      btcaddress=btcaddr)
 
         #  kindly ask miss electrum for a ping when our address changes
         params = {
@@ -454,7 +456,7 @@ def order():
             "method": "notify",
             "params": params
         }
-        ipn_please = requests.post(electrum_url, json=payload).json()
+        # ipn_please = requests.post(electrum_url, json=payload).json()
 
         return render_template('users/order.html', banner_id=banner_id,
                                datestart=datestart, datend=datend, image_url=image_url,
