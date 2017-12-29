@@ -26,6 +26,7 @@ Installation process consists of three main stages. First is installation and co
 * Add zone(s) you want to have within your websites. It must be of ```Banner, Button or Rectangle``` type.
 * Be sure that SMTP server is working, as Revive will send campaign summaries
 directly to customers.
+* Enable ```Allow External Banners``` in ```Banner Storage Settings``` in global settings.
 
 ### Install and configure Electrum merchant system
 
