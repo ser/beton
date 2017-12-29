@@ -29,7 +29,10 @@
    href="https://fonts.googleapis.com/css?family=Fresca|Tauri&amp;subset=latin-ext"
    rel="stylesheet"> 
 
-  <!-- this part of css must be here because requires templating -->
+  
+  <!-- this part of css must be here because requires templating, not active
+  during debug -->
+  {% if not config['DEBUG'] %}
   <style media="screen" type="text/css">
     #loader {  
       position: fixed;  
@@ -41,6 +44,7 @@
       background: url('{{ config.SUBDIR }}/static/img/loading.gif') 50% 50% no-repeat rgb(249,249,249);  
     }
   </style>
+  {% endif %}
 
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -85,11 +89,15 @@
 {% block js %}{% endblock %}
 <!-- end scripts -->
 {% endblock %}
+
+{% if not config['DEBUG'] %}
 <script>
     $(document).ready(function() {
         $("#loader").fadeOut(1000);
     })
 </script>
+{% endif %}
+
 </body>
 </html>
 
