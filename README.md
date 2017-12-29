@@ -129,3 +129,8 @@ location /electest/ {
          alias /srv/www/electest/;
          }
 ```
+
+### Post-install setup
+
+ * Using web interface, add yourself as a user. 
+ * Add yourself as an admin manually modifying ```roles``` table. TODO: this step should be automatised in next versions. 
