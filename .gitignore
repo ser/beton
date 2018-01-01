@@ -103,3 +103,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# temporary debugger fixes
+beton/static/css/toolbar.css
+beton/static/jquery.tablesorter.js
+beton/static/toolbar.js
+#
