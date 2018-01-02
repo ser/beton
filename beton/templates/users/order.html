@@ -143,9 +143,9 @@
                     <input type="hidden" name="banner_id" value="{{ banner_id }}" />
                     <input type="hidden" name="zone_id" value="{{ zone_id }}" />
                     <input type="hidden" name="zone_name" value="{{ zone_name }}" />
-                    <input type="hidden" name="step" value="pay" />
-                    <button type="submit" name="submit" value="pay" class="btn
-                        btn-primary">Confirm and go to payment details</button>
+                    <input type="hidden" name="step" value="order" />
+                    <button type="submit" name="submit" value="order" class="btn
+                        btn-primary">Confirm and add to your shopping basket</button>
                 </div>
             </form>
         </div>
@@ -157,21 +157,15 @@
     <script>
         var events_source = "{{ config.SUBDIR }}/api/all_campaigns_in_zone/{{ zone_id }}";
     </script>
-{% elif step == "pay" %}
-    <script>
-        var payid = "{{ electrum['id'] }}";
-        var wssaddr = "wss://{{ electrum['websocket_server'] }}:{{ electrum['websocket_port'] }}/";
-        var paytime = "{{ electrum['time'] }}"
-        var payexp = "{{ electrum['exp'] }}";
-        var payuri = "{{ electrum['URI'] }}";
-    </script>
+{% elif step == "order" %}
     <div class="jumbotron">
-        <h1>Just pay, {{ current_user.username }}</h1>
+        <h1>Campaign added, {{ current_user.username }}</h1>
         <div class="row">
             <div class="col-sm-6 col-xs-12">
-                <p>Carefully check your order and please pay. After you pay, we
-                will automatically verify the payment and show you that it's
-                paid.</p>
+                <p>Carefully check your order. If it is not correct, remove it
+                    from your basket. If everything is OK, pay for your basket
+                    or order another campaign and pay for all of them later.
+                </p>
             </div>
             <div class="col-sm-6 col-xs-12">
                 <h4>Alternatively</h4>
@@ -183,12 +177,8 @@
             </div>
         </div>
     </div>
-    <div class="alert alert-danger" role="alert">
-        ATTENTION! Because Bitcoin network is recently very congested, please
-        pay a good miner fee to have your transaction confirmed on time!!!
-    </div>
     <div class="row">
-        <div class="col-sm-4 col-xs-12">
+        <div class="col-sm-6 col-xs-12">
             <h3>Statement of facts</h3>
             <p>You want to have a campaign with banner #{{ banner_id }}</p>
             <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
@@ -199,45 +189,18 @@
                     aria-hidden="true"></i></p>
             <p>Total is: {{ btctotal }} BTC /  {{ dayprice/100*(days+1) }} 
                 <i class="fa fa-eur fa-fw" aria-hidden="true"></i>.</p>
+            <div class="alert alert-warning">
+                <p>Please notice that price in BTC may change when you decide to pay for
+                    your basket, according to current market exchange value.</p>
+            </div>
         </div>
-        <div class="col-sm-8 col-xs-12">
-            <div class="row">
-                <div class="col-sm-3 col-xs-12">
-                    <canvas id="qrcode"></canvas>
-                </div>
-                <div class="col-sm-9 col-xs-12">
-                    <p id='btcpay'>Amount to pay:
-                        <sup><i class="fa fa-asterisk" aria-hidden="true"></i></sup>
-                    </p>
-                    <h3>
-                        <i class="fa fa-btc" aria-hidden="true"></i>
-                        <kbd id="amount">{{ electrum['amount (BTC)'] }}</kbd>
-                    </h3>
-                    <p id='reqpaid'><a class="btn btn-primary" id="paylink" href="{{ electrum['URI'] }}">Click to pay with a connected wallet</a></p>
-                    <p id='btcinfo'>or send money directly to the bitcoin address:</p>
-                    <p class="dont-break-out"><kbd class="dont-break-out" id="address">{{ electrum['address'] }}</kbd></p>
-                </div>
-            </div>
-            <br/><br/>
-            <div class="row">
-                <div class="col-xs-12">
-                    <div class="progress progress-striped active right">
-                        <div class="progress-bar progress-bar-warning six-sec-ease-in-out" role="progressbar"></div>
-                    </div>
-                </div>
-                <div class="col-xs-12">
-                    <p id='btcstar'><sup><i class="fa fa-asterisk"
-                                aria-hidden="true"></i></sup> Please be aware
-                        that you should cover bitcoin transaction fee and send
-                        us precisely the amount specified above.</p>
-                    <p id='btcdesc'><b>Your campaign activates only 
-                        after we receive one confirmation from the bitcoin
-                        blockchain. Keep a proper transaction fee if you want
-                        be served on time. </b>This page will get automatically
-                        updated when you pay or when the payment request is being
-                        expired.</p>
-                </div>
-            </div>
+        <div class="col-sm-6 col-xs-12">
+            <a href="#" class="btn btn-default">Order another campaign and pay
+                later</a>
+            <br/>or
+            <br/>
+            <a href="#" class="btn btn-default">Pay now for your whole
+                basket</a>
         </div>
     </div>
 
@@ -245,9 +208,7 @@
 {% endblock %}
 
 {% block js %}
-{% if step == "pay" %}
-    {% include "users/order-pay.html" %}
-{% elif step == "chose-date" %}
+{% if step == "chose-date" %}
     {% include "users/order-chose-date.html" %}
 {% endif %}
     <script>

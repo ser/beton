@@ -1,7 +1,7 @@
 # import logging
 import json
 import requests
-import uuid
+# import uuid
 import xmlrpc.client
 from datetime import datetime
 from dateutil import parser
@@ -364,7 +364,7 @@ def order():
                                zone_id=zone_id, image_url=image_url,
                                zone_name=zone_name, step='chose-date')
 
-    elif request.form['step'] == 'pay':
+    elif request.form['step'] == 'order':
         randomname = names.get_full_name()
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
@@ -385,6 +385,83 @@ def order():
                                                            current_app.config.get('REVIVE_AGENCY_ID'))
         advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                             current_user.username)['advertiserId'])
+
+        begin = datetime.strptime(datestart, "%d/%m/%Y")
+        enddate = datetime.strptime(datend, "%d/%m/%Y")
+        totaltime = enddate - begin
+        diki = {}
+        diki['advertiserId'] = advertiser_id
+        diki['campaignName'] = randomname
+        diki['startDate'] = begin
+        diki['endDate'] = enddate
+        diki['comments'] = zone_name
+        campaign = r.ox.addCampaign(sessionid, diki)
+
+        # Now we are adding our banner to campaign
+        diki = {}
+        diki['campaignId'] = campaign
+        diki['bannerName'] = str(banner_id)
+        diki['imageURL'] = image_url
+        diki['width'] = width
+        diki['height'] = height
+        diki['url'] = url
+        diki['storageType'] = 'url'
+        # banno = r.ox.addBanner(sessionid, diki)
+
+        # ask kraken for rate
+        krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
+        krkr = requests.get(krkuri)
+        json_data = krkr.text
+        fj = json.loads(json_data)
+        exrate = fj["result"]['XXBTZEUR']["c"][0]
+        totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
+        totalbtcprice = totalcurrencyprice / float(exrate)
+
+        Orders.create(campaigno=campaign,
+                      zoneid=zone_id,
+                      created_at=datetime.utcnow(),
+                      amount_days=totaltime.days+1,
+                      paymentno=0
+                      )
+
+        # Checks to see if the user has already started a cart.
+        if 'cart' in session:
+            session['cart'].append(campaign)
+        else:
+            session['cart'] = [campaign]
+
+        return render_template('users/order.html', banner_id=banner_id,
+                               datestart=datestart, datend=datend, image_url=image_url,
+                               zone_id=zone_id, days=totaltime.days,
+                               exrate=exrate, dayprice=price.dayprice,
+                               btctotal=totalbtcprice, step='order')
+
+
+@blueprint.route('/basket', methods=['get', 'post'])
+@login_required
+def basket():
+    pass
+
+
+@blueprint.route('/pay', methods=['get', 'post'])
+@login_required
+def pay():
+    """Pay a campaign."""
+
+    pass
+"""
+        banner_id = int(request.form['banner_id'])
+        banner = Banner.query.filter_by(id=banner_id).first()
+        image_url = images.url(banner.filename)
+        width = banner.width
+        height = banner.height
+        url = banner.url
+        zone_id = int(request.form['zone_id'])
+        zone_name = request.form['zone_name']
+        datestart = request.form['datestart']
+        datend = request.form['datend']
+
+        price = Prices.query.filter_by(zoneid=zone_id).first()
 
         begin = datetime.strptime(datestart, "%d/%m/%Y")
         enddate = datetime.strptime(datend, "%d/%m/%Y")
@@ -464,3 +541,4 @@ def order():
                                exrate=exrate, dayprice=price.dayprice,
                                btctotal=totalbtcprice, electrum=result,
                                step='pay')
+"""
