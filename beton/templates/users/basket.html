@@ -1,0 +1,49 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="jumbotron">
+        <h1>Your basket, {{ current_user.username }}</h1>
+        <p>Here you can see your shopping basket and pay for all ordered campaigns</p>
+    </div>
+    <div id="grid">
+        {% for order in basket %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Campaign #{{ order.campaigno }}</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="thumbnail">
+                        <div class="caption">
+                            <div id="zoneid">Strefa #{{ order.zoneid }}</div>
+                            {% for banner in banners %}
+                                {% if order.zoneid == banner.id %}
+                                    <div><img class="img-thumbnail thumbmax"
+                                        src="{{ config.UPLOADED_IMAGES_URL }}{{ banner.filename }}"></div>
+                                {% endif %}
+                            {% endfor %}
+                            <a href="" class="btn btn-danger btn-xs">Remove from
+                                basket</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div>
+        <a href="" class="btn btn-success">Pay for all items in the basket</a>
+        or
+        <a href="" class="btn btn-danger">Empty whole basket</a>
+{% endblock %}
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            savvior.init('#grid', {
+                "screen and (max-width: 30em)": { columns: 1 },
+                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
+                "screen and (min-width: 60em) and (max-width: 80em)": {
+                      columns: 3 },
+                "screen and (min-width: 80em)": { columns: 4 },
+            });
+        });
+     </script>
+{% endblock %}

@@ -4,7 +4,7 @@ from flask import Flask, render_template
 from flask_kvsession import KVSessionExtension
 from flask_moment import Moment
 from flask_user import UserManager, SQLAlchemyAdapter
-from simplekv.memory import DictStore
+from simplekv.fs import FilesystemStore
 
 from beton import commands, public, user
 from beton.assets import assets
@@ -15,7 +15,7 @@ from beton.settings import ProdConfig
 from beton.user.models import User
 
 moment = Moment()
-sesstore = DictStore(d=None)
+sesstore = FilesystemStore('./data')
 
 def create_app(config_object=ProdConfig):
     """An application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.

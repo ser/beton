@@ -406,7 +406,7 @@ def order():
         diki['height'] = height
         diki['url'] = url
         diki['storageType'] = 'url'
-        # banno = r.ox.addBanner(sessionid, diki)
+        r.ox.addBanner(sessionid, diki)
 
         # ask kraken for rate
         krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
@@ -421,7 +421,8 @@ def order():
                       zoneid=zone_id,
                       created_at=datetime.utcnow(),
                       amount_days=totaltime.days+1,
-                      paymentno=0
+                      paymentno=0,
+                      bannerid=banner_id
                       )
 
         # Checks to see if the user has already started a cart.
@@ -440,7 +441,35 @@ def order():
 @blueprint.route('/basket', methods=['get', 'post'])
 @login_required
 def basket():
-    pass
+    """Present basket to customer."""
+    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                  verbose=False)
+    if 'revive' in session:
+        sessionid = session['revive']
+        try:
+            r.ox.getUserList(sessionid)
+        except:
+            sessionid = reviveme(r)
+            session['revive'] = sessionid
+    else:
+        sessionid = reviveme(r)
+        session['revive'] = sessionid
+
+    # Checks to see if the user has already started a cart.
+    if 'cart' in session:
+        cart = session['cart']
+        basket = []
+        banners = []
+        for x in cart:
+            basket_sql = Orders.query.filter_by(campaigno=x).first()
+            basket.append(basket_sql)
+            banner_sql = Banner.query.filter_by(id=basket_sql.bannerid).first()
+            banners.append(banner_sql)
+    else:
+        basket = 0
+
+    return render_template('users/basket.html', basket=basket,
+                           banners=banners)
 
 
 @blueprint.route('/pay', methods=['get', 'post'])

@@ -100,25 +100,28 @@ class Orders(SurrogatePK, Model):
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     amount_days = Column(db.Integer(), unique=False, nullable=False)
     paymentno = Column(db.Integer(), unique=False, nullable=True)
+    bannerid = Column(db.Integer(), unique=False, nullable=False)
 
-    def __init__(self, campaigno, zoneid,
-                 created_at, amount_days, paymentno):
+    def __init__(self, campaigno, zoneid, created_at, amount_days,
+                 paymentno, bannerid):
         """Create instance."""
         self.campaigno = campaigno
         self.zoneid = zoneid
         self.created_at = created_at
         self.amount_days = amount_days
         self.paymentno = paymentno
+        self.bannerid = bannerid
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<campaigno: {}, zoneid: {}, created_at: {},\
-                amount_days: {}, paymentno: {}>'.format(
+                amount_days: {}, paymentno: {}, bannerid: {}>'.format(
                                         self.campaigno,
                                         self.zoneid,
                                         self.created_at,
                                         self.amount_days,
-                                        self.paymentno)
+                                        self.paymentno,
+                                        self.bannerid)
 
 
 class Payments(SurrogatePK, Model):

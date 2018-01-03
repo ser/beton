@@ -178,7 +178,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-6 col-xs-12">
+        <div class="col-xs-12">
             <h3>Statement of facts</h3>
             <p>You want to have a campaign with banner #{{ banner_id }}</p>
             <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
@@ -187,20 +187,19 @@
             <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
             <p>1 BTC if now for {{ exrate }} <i class="fa fa-eur fa-fw"
                     aria-hidden="true"></i></p>
-            <p>Total is: {{ btctotal }} BTC /  {{ dayprice/100*(days+1) }} 
-                <i class="fa fa-eur fa-fw" aria-hidden="true"></i>.</p>
-            <div class="alert alert-warning">
-                <p>Please notice that price in BTC may change when you decide to pay for
-                    your basket, according to current market exchange value.</p>
-            </div>
+            <p>Estimated total is: {{ btctotal }} BTC /  {{ dayprice/100*(days+1) }} 
+                <i class="fa fa-eur fa-fw" aria-hidden="true"></i>***</p>
         </div>
-        <div class="col-sm-6 col-xs-12">
-            <a href="#" class="btn btn-default">Order another campaign and pay
+        <div class="col-xs-12">
+            <h3>Now you have two options:</h3>
+            <a href="#" class="btn btn-info">Order another campaign and pay
                 later</a>
-            <br/>or
-            <br/>
-            <a href="#" class="btn btn-default">Pay now for your whole
+            or
+            <a href="#" class="btn btn-info">Pay now for your whole
                 basket</a>
+            <br/>
+            <p class="alert alert-warning"> *** Please notice that price in BTC may change when you decide to pay for
+                your basket, according to current market exchange value.</p>
         </div>
     </div>
 
