@@ -153,6 +153,25 @@ class Payments(SurrogatePK, Model):
                                 self.created_at)
 
 
+class Basket(SurrogatePK, Model):
+    """User basket."""
+
+    __tablename__ = 'basket'
+    user_id = Column(db.Integer(), unique=False, nullable=False)
+    campaigno = Column(db.Integer(), unique=False, nullable=False)
+
+    def __init__(self, user_id, campaigno):
+        """Create instance."""
+        self.user_id = user_id
+        self.campaigno = campaigno
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return 'user_id: {}, campaigno: {}>'.format(
+                                self.user_id,
+                                self.campaigno)
+
+
 class Zone2Campaign(Model):
     """Relation from original DB, a quick hack."""
 

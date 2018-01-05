@@ -425,11 +425,10 @@ def order():
                       bannerid=banner_id
                       )
 
-        # Checks to see if the user has already started a cart.
-        if 'cart' in session:
-            session['cart'].append(campaign)
-        else:
-            session['cart'] = [campaign]
+        # if cart is empty convert to an empty list
+        if not session['cart'] or session['cart'] == "":
+            session['cart'] = []
+        session['cart'].append(campaign)
 
         return render_template('users/order.html', banner_id=banner_id,
                                datestart=datestart, datend=datend, image_url=image_url,
@@ -438,7 +437,7 @@ def order():
                                btctotal=totalbtcprice, step='order')
 
 
-@blueprint.route('/basket', methods=['get', 'post'])
+@blueprint.route('/basket', methods=['get'])
 @login_required
 def basket():
     """Present basket to customer."""
@@ -460,16 +459,30 @@ def basket():
         cart = session['cart']
         basket = []
         banners = []
-        for x in cart:
-            basket_sql = Orders.query.filter_by(campaigno=x).first()
-            basket.append(basket_sql)
-            banner_sql = Banner.query.filter_by(id=basket_sql.bannerid).first()
-            banners.append(banner_sql)
+        if cart == [] or cart == "":
+            basket = 0
+        else:
+            for x in cart:
+                basket_sql = Orders.query.filter_by(campaigno=x).first()
+                basket.append(basket_sql)
+                banner_sql = Banner.query.filter_by(id=basket_sql.bannerid).first()
+                banners.append(banner_sql)
     else:
         basket = 0
 
     return render_template('users/basket.html', basket=basket,
                            banners=banners)
+
+
+@blueprint.route('/clear/basket/<int:campaign_id>')
+@login_required
+def clear_basket(campaign_id):
+    if campaign_id == "0":
+        session['cart'] = []
+    else:
+        if campaign_id in session['cart']:
+            session['cart'].remove(campaign_id)
+    return redirect(url_for("user.basket"), code=302)
 
 
 @blueprint.route('/pay', methods=['get', 'post'])
@@ -478,7 +491,7 @@ def pay():
     """Pay a campaign."""
 
     pass
-"""
+    """
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)

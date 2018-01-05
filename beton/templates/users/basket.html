@@ -2,6 +2,11 @@
 {% extends "layout.html" %}
 {% block content %}
     <div class="jumbotron">
+{% if basket == 0 %}
+        <h1>Your basket is empty, {{ current_user.username }}</h1>
+        <p><a href="{{ url_for('user.order') }}" class="btn btn-default">Order a new campaign</a></p>
+    </div>
+{% else %}
         <h1>Your basket, {{ current_user.username }}</h1>
         <p>Here you can see your shopping basket and pay for all ordered campaigns</p>
     </div>
@@ -21,7 +26,7 @@
                                         src="{{ config.UPLOADED_IMAGES_URL }}{{ banner.filename }}"></div>
                                 {% endif %}
                             {% endfor %}
-                            <a href="" class="btn btn-danger btn-xs">Remove from
+                            <a href="{{ config.OUR_URL }}clear/basket/{{ order.campaigno }}" class="btn btn-danger btn-xs">Remove from
                                 basket</a>
                         </div>
                     </div>
@@ -30,9 +35,10 @@
         {% endfor %}
     </div>
     <div>
-        <a href="" class="btn btn-success">Pay for all items in the basket</a>
+        <a href="{{ url_for('user.pay') }}" class="btn btn-success">Pay for all items in the basket</a>
         or
-        <a href="" class="btn btn-danger">Empty whole basket</a>
+        <a href="{{ config.OUR_URL }}clear/basket/0" class="btn btn-danger">Empty whole basket</a>
+{% endif %}
 {% endblock %}
 {% block js %}
     <script>
