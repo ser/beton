@@ -7,16 +7,24 @@ from datetime import datetime
 from dateutil import parser
 
 import names
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Orders, Prices, Zone2Campaign
+from beton.user.models import Banner, Basket, Orders, Prices, Zone2Campaign
 from beton.utils import flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
+
+
+@blueprint.url_value_preprocessor
+def get_basket(endpoint, values):
+    """We need basket on every view"""
+    basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
+    if basket_sql:
+        g.basket = len(basket_sql)
 
 
 @blueprint.route('/add_bannerz', methods=['GET', 'POST'])
@@ -425,10 +433,9 @@ def order():
                       bannerid=banner_id
                       )
 
-        # if cart is empty convert to an empty list
-        if not session['cart'] or session['cart'] == "":
-            session['cart'] = []
-        session['cart'].append(campaign)
+        Basket.create(campaigno=campaign,
+                      user_id=current_user.id
+                      )
 
         return render_template('users/order.html', banner_id=banner_id,
                                datestart=datestart, datend=datend, image_url=image_url,
@@ -440,7 +447,7 @@ def order():
 @blueprint.route('/basket', methods=['get'])
 @login_required
 def basket():
-    """Present basket to customer."""
+    """Present basket to customer.
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
     if 'revive' in session:
@@ -453,20 +460,18 @@ def basket():
     else:
         sessionid = reviveme(r)
         session['revive'] = sessionid
+    """
 
     # Checks to see if the user has already started a cart.
-    if 'cart' in session:
-        cart = session['cart']
-        basket = []
-        banners = []
-        if cart == [] or cart == "":
-            basket = 0
-        else:
-            for x in cart:
-                basket_sql = Orders.query.filter_by(campaigno=x).first()
-                basket.append(basket_sql)
-                banner_sql = Banner.query.filter_by(id=basket_sql.bannerid).first()
-                banners.append(banner_sql)
+    basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
+    basket = []
+    banners = []
+    if basket_sql:
+        for item in basket_sql:
+            order_sql = Orders.query.filter_by(campaigno=item.campaigno).first()
+            basket.append(order_sql)
+            banner_sql = Banner.query.filter_by(id=order_sql.bannerid).first()
+            banners.append(banner_sql)
     else:
         basket = 0
 
@@ -478,10 +483,11 @@ def basket():
 @login_required
 def clear_basket(campaign_id):
     if campaign_id == "0":
-        session['cart'] = []
+        basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
+        basket_sql.delete()
     else:
-        if campaign_id in session['cart']:
-            session['cart'].remove(campaign_id)
+        basket_sql = Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).first()
+        basket_sql.delete()
     return redirect(url_for("user.basket"), code=302)
 
 

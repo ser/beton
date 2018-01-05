@@ -19,7 +19,7 @@
         <li><a href="{{ url_for('user.offer') }}">Offer</a></li>
         <li><a href="{{ url_for('user.order') }}"><i class="fa fa-plus-square fa-spin fa-fw"
                     aria-hidden="true"></i> Order a new campaign</a></li>
-        <li><a href="{{ url_for('user.basket') }}">({{ session['cart']|count }})<i class="fa fa-shopping-cart
+        <li><a href="{{ url_for('user.basket') }}">({{ g.basket }})<i class="fa fa-shopping-cart
                     fa-fw" aria-hidden="true"></i> Shopping basket</a></li>
       {% endif %}
     </ul>
