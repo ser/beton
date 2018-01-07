@@ -9,23 +9,27 @@
 {% else %}
         <h1>Your basket, {{ current_user.username }}</h1>
         <p>Here you can see your shopping basket and pay for all ordered campaigns</p>
+        <div>
+            <a href="{{ url_for('user.pay') }}" class="btn btn-success">Pay for all items in the basket</a>
+            or
+            <a href="{{ config.OUR_URL }}clear/basket/0" class="btn btn-danger">Empty whole basket</a>
+        </div>
     </div>
     <div id="grid">
         {% for order in basket %}
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Campaign #{{ order.campaigno }}</h3>
+                    <h3 class="panel-title">Campaign #{{ order[0].campaigno }}</h3>
                 </div>
                 <div class="panel-body">
                     <div class="thumbnail">
                         <div class="caption">
-                            <div id="zoneid">Strefa #{{ order.zoneid }}</div>
-                            {% for banner in banners %}
-                                {% if order.zoneid == banner.id %}
-                                    <div><img class="img-thumbnail thumbmax"
-                                        src="{{ config.UPLOADED_IMAGES_URL }}{{ banner.filename }}"></div>
-                                {% endif %}
-                            {% endfor %}
+                            <div>
+                                <img class="img-thumbnail thumbmax"
+                                src="{{ config.UPLOADED_IMAGES_URL }}{{ order.filename }}">
+                                <br/>
+                                {{ order.url }}
+                            </div>
                             <a href="{{ config.OUR_URL }}clear/basket/{{ order.campaigno }}" class="btn btn-danger btn-xs">Remove from
                                 basket</a>
                         </div>
@@ -34,10 +38,6 @@
             </div>
         {% endfor %}
     </div>
-    <div>
-        <a href="{{ url_for('user.pay') }}" class="btn btn-success">Pay for all items in the basket</a>
-        or
-        <a href="{{ config.OUR_URL }}clear/basket/0" class="btn btn-danger">Empty whole basket</a>
 {% endif %}
 {% endblock %}
 {% block js %}

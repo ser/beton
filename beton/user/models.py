@@ -53,6 +53,7 @@ class Banner(SurrogatePK, Model):
     height = Column(db.Integer(), nullable=False)
     width = Column(db.Integer(), nullable=False)
     comments = Column(db.String(512), nullable=True)
+    bannerid = db.relationship("Orders")
 
     def __init__(self, filename, owner, created_at, url, height, width, comments):
         """Create instance."""
@@ -96,11 +97,11 @@ class Orders(SurrogatePK, Model):
 
     __tablename__ = 'orders'
     campaigno = Column(db.Integer(), unique=True, nullable=False)
-    zoneid = Column(db.Integer(), unique=False, nullable=False)
+    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid'), nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     amount_days = Column(db.Integer(), unique=False, nullable=False)
     paymentno = Column(db.Integer(), unique=False, nullable=True)
-    bannerid = Column(db.Integer(), unique=False, nullable=False)
+    bannerid = Column(db.Integer(), db.ForeignKey('banners.id'), nullable=False)
 
     def __init__(self, campaigno, zoneid, created_at, amount_days,
                  paymentno, bannerid):
@@ -157,8 +158,8 @@ class Basket(SurrogatePK, Model):
     """User basket."""
 
     __tablename__ = 'basket'
-    user_id = Column(db.Integer(), unique=False, nullable=False)
-    campaigno = Column(db.Integer(), unique=False, nullable=False)
+    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
+    campaigno = Column(db.Integer(), db.ForeignKey('orders.campaigno'), nullable=False)
 
     def __init__(self, user_id, campaigno):
         """Create instance."""

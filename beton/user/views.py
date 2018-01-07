@@ -21,10 +21,11 @@ blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../stat
 
 @blueprint.url_value_preprocessor
 def get_basket(endpoint, values):
-    """We need basket on every view"""
-    basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
-    if basket_sql:
-        g.basket = len(basket_sql)
+    """We need basket on every view if authenticated"""
+    if current_user.is_authenticated:
+        basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
+        if basket_sql:
+            g.basket = len(basket_sql)
 
 
 @blueprint.route('/add_bannerz', methods=['GET', 'POST'])
@@ -324,6 +325,8 @@ def order():
         sessionid = reviveme(r)
         session['revive'] = sessionid
 
+    # TODO: add here exception when prices are not set
+
     if ('step' not in request.form) or \
             ('submit' in request.form.values() and request.form['submit'] == 'cancel'):
         all_banners = Banner.query.filter_by(owner=current_user.id).all()
@@ -462,21 +465,22 @@ def basket():
         session['revive'] = sessionid
     """
 
+    basket = []
     # Checks to see if the user has already started a cart.
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
-    basket = []
-    banners = []
+    # banners = []
     if basket_sql:
         for item in basket_sql:
-            order_sql = Orders.query.filter_by(campaigno=item.campaigno).first()
+            # order_sql = Orders.query.join(Banner).all()
+            # order_sql = Orders.query.join(Banner).filter_by(campaigno=item.campaigno).first()
+            order_sql = Orders.query.filter_by(campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
+                Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
+
             basket.append(order_sql)
-            banner_sql = Banner.query.filter_by(id=order_sql.bannerid).first()
-            banners.append(banner_sql)
     else:
         basket = 0
 
-    return render_template('users/basket.html', basket=basket,
-                           banners=banners)
+    return render_template('users/basket.html', basket=basket)
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')
