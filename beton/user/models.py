@@ -99,27 +99,32 @@ class Orders(SurrogatePK, Model):
     campaigno = Column(db.Integer(), unique=True, nullable=False)
     zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid'), nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    amount_days = Column(db.Integer(), unique=False, nullable=False)
+    begins_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     paymentno = Column(db.Integer(), unique=False, nullable=True)
     bannerid = Column(db.Integer(), db.ForeignKey('banners.id'), nullable=False)
 
-    def __init__(self, campaigno, zoneid, created_at, amount_days,
-                 paymentno, bannerid):
+    def __init__(self, campaigno, zoneid, created_at, begins_at,
+                 stops_at, paymentno, bannerid):
         """Create instance."""
         self.campaigno = campaigno
         self.zoneid = zoneid
         self.created_at = created_at
-        self.amount_days = amount_days
+        self.begins_at = begins_at
+        self.stops_at = stops_at
         self.paymentno = paymentno
         self.bannerid = bannerid
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<campaigno: {}, zoneid: {}, created_at: {},\
-                amount_days: {}, paymentno: {}, bannerid: {}>'.format(
+                begins_at: {}, stops_at: {},\
+                paymentno: {}, bannerid: {}>'.format(
                                         self.campaigno,
                                         self.zoneid,
                                         self.created_at,
+                                        self.begins_at,
+                                        self.stops_at,
                                         self.amount_days,
                                         self.paymentno,
                                         self.bannerid)

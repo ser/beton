@@ -26,6 +26,15 @@ def get_basket(endpoint, values):
         basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
         if basket_sql:
             g.basket = len(basket_sql)
+        else:
+            g.basket = 0
+
+
+@blueprint.route('/me')
+@login_required
+def user_me():
+    """Main website for logged-in user"""
+    return render_template('public/home.html')
 
 
 @blueprint.route('/add_bannerz', methods=['GET', 'POST'])
@@ -356,6 +365,8 @@ def order():
                                                      website['publisherId'])
             for zone in allzones:
                 price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
+                if not price:
+                    return render_template('users/order-noprice.html')
                 zone_width = zone['width']
                 zone_height = zone['height']
                 zone['price'] = price
@@ -431,7 +442,8 @@ def order():
         Orders.create(campaigno=campaign,
                       zoneid=zone_id,
                       created_at=datetime.utcnow(),
-                      amount_days=totaltime.days+1,
+                      begin_at=begin,
+                      stops_at=enddate,
                       paymentno=0,
                       bannerid=banner_id
                       )
@@ -450,32 +462,15 @@ def order():
 @blueprint.route('/basket', methods=['get'])
 @login_required
 def basket():
-    """Present basket to customer.
-    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                  verbose=False)
-    if 'revive' in session:
-        sessionid = session['revive']
-        try:
-            r.ox.getUserList(sessionid)
-        except:
-            sessionid = reviveme(r)
-            session['revive'] = sessionid
-    else:
-        sessionid = reviveme(r)
-        session['revive'] = sessionid
-    """
+    """Present basket to customer."""
 
     basket = []
     # Checks to see if the user has already started a cart.
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
-    # banners = []
     if basket_sql:
         for item in basket_sql:
-            # order_sql = Orders.query.join(Banner).all()
-            # order_sql = Orders.query.join(Banner).filter_by(campaigno=item.campaigno).first()
             order_sql = Orders.query.filter_by(campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
                 Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
-
             basket.append(order_sql)
     else:
         basket = 0
