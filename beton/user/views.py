@@ -1,7 +1,7 @@
 # import logging
 import json
 import requests
-# import uuid
+import uuid
 import xmlrpc.client
 from datetime import datetime
 from dateutil import parser
@@ -13,7 +13,7 @@ from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Basket, Orders, Prices, Zone2Campaign
+from beton.user.models import Banner, Basket, Orders, Payments, Prices, Zone2Campaign
 from beton.utils import flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -488,97 +488,74 @@ def clear_basket(campaign_id):
 def pay():
     """Pay a campaign."""
 
-    pass
-    """
-        banner_id = int(request.form['banner_id'])
-        banner = Banner.query.filter_by(id=banner_id).first()
-        image_url = images.url(banner.filename)
-        width = banner.width
-        height = banner.height
-        url = banner.url
-        zone_id = int(request.form['zone_id'])
-        zone_name = request.form['zone_name']
-        datestart = request.form['datestart']
-        datend = request.form['datend']
+    exrate = krakenrate()
+    # first we need to get basket data
+    basket = []
+    total = 0
+    totalbtc = 0
+    basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
+    # Checks to see if the user has already started a cart.
+    if basket_sql:
+        for item in basket_sql:
+            order_sql = Orders.query.filter_by(campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
+                Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
+            basket.append(order_sql)
+            begin = order_sql[0].begins_at
+            enddate = order_sql[0].stops_at
+            totaltime = enddate - begin
+            totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
+            totalbtcprice = totalcurrencyprice / float(exrate)
+            total += totalcurrencyprice
+            totalbtc += totalbtcprice
+    else:
+        basket = 0
 
-        price = Prices.query.filter_by(zoneid=zone_id).first()
+    # kindly ask miss electrum for an invoice which expires in 20 minutes
+    # headers = {'content-type': 'application/json'}
+    params = {
+        "amount": totalbtc,
+        "expiration": 1212
+    }
+    payload = {
+        "id": str(uuid.uuid4()),
+        "method": "addrequest",
+        "params": params
+    }
 
-        begin = datetime.strptime(datestart, "%d/%m/%Y")
-        enddate = datetime.strptime(datend, "%d/%m/%Y")
-        totaltime = enddate - begin
-        diki = {}
-        diki['advertiserId'] = advertiser_id
-        diki['campaignName'] = randomname
-        diki['startDate'] = begin
-        diki['endDate'] = enddate
-        diki['comments'] = zone_name
-        campaign = r.ox.addCampaign(sessionid, diki)
+    electrum_url = current_app.config.get('ELECTRUM_RPC')
+    electrum = requests.post(electrum_url, json=payload).json()
+    result = electrum['result']
+    # more debug if needed
+    # print(electrum_url)
+    # print(result)
+    # print(params)
+    # print(payload)
+    btcaddr = result['address']
 
-        # Now we are adding our banner to campaign
-        diki = {}
-        diki['campaignId'] = campaign
-        diki['bannerName'] = str(banner_id)
-        diki['imageURL'] = image_url
-        diki['width'] = width
-        diki['height'] = height
-        diki['url'] = url
-        diki['storageType'] = 'url'
-        # banno = r.ox.addBanner(sessionid, diki)
+    # creating database record for payment and linking it into orders
+    payment_sql = Payments.create(
+        btcaddress=btcaddr,
+        total_btc=totalbtc,
+        ispaid=False,
+        created_at=datetime.utcnow()
+    )
+    paymentno = payment_sql.id
+    for item in basket:
+        Orders.query.filter_by(campaigno=item[0].campaigno).update({"paymentno": paymentno})
+        Orders.commit()
 
-        # ask kraken for rate
-        krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
-        krkr = requests.get(krkuri)
-        json_data = krkr.text
-        fj = json.loads(json_data)
-        exrate = fj["result"]['XXBTZEUR']["c"][0]
-        totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
-        totalbtcprice = totalcurrencyprice / float(exrate)
+    #  kindly ask miss electrum for a ping when our address changes
+    params = {
+        "address": btcaddr,
+        "URL": current_app.config.get('OUR_URL')+'ipn'
+    }
+    payload = {
+        "id": str(uuid.uuid4()),
+        "method": "notify",
+        "params": params
+    }
+    # ipn_please = requests.post(electrum_url, json=payload).json()
 
-        # kindly ask miss electrum for an invoice which expires in 20 minutes
-        # headers = {'content-type': 'application/json'}
-        params = {
-            "amount": totalbtcprice,
-            "expiration": 1212
-        }
-        payload = {
-            "id": str(uuid.uuid4()),
-            "method": "addrequest",
-            "params": params
-        }
-
-        electrum_url = current_app.config.get('ELECTRUM_RPC')
-        electrum = requests.post(electrum_url, json=payload).json()
-        result = electrum['result']
-        # more debug if needed
-        # print(electrum_url)
-        # print(result)
-        # print(params)
-        # print(payload)
-        btcaddr = result['address']
-
-        Orders.create(campaigno=campaign,
-                      amount_btc=totalbtcprice,
-                      zoneid=zone_id,
-                      created_at=datetime.utcnow(),
-                      ispaid=False,
-                      btcaddress=btcaddr)
-
-        #  kindly ask miss electrum for a ping when our address changes
-        params = {
-            "address": btcaddr,
-            "URL": current_app.config.get('OUR_URL')+'ipn'
-        }
-        payload = {
-            "id": str(uuid.uuid4()),
-            "method": "notify",
-            "params": params
-        }
-        # ipn_please = requests.post(electrum_url, json=payload).json()
-
-        return render_template('users/order.html', banner_id=banner_id,
-                               datestart=datestart, datend=datend, image_url=image_url,
-                               zone_id=zone_id, days=totaltime.days,
-                               exrate=exrate, dayprice=price.dayprice,
-                               btctotal=totalbtcprice, electrum=result,
-                               step='pay')
-"""
+    return render_template('users/pay.html',
+                           exrate=exrate,
+                           electrum=result)
