@@ -19,6 +19,16 @@ from beton.utils import flash_errors, reviveme
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
 
 
+def krakenrate():
+    # ask kraken for rate
+    krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
+    krkr = requests.get(krkuri)
+    json_data = krkr.text
+    fj = json.loads(json_data)
+    exrate = fj["result"]['XXBTZEUR']["c"][0]
+    return exrate
+
+
 @blueprint.url_value_preprocessor
 def get_basket(endpoint, values):
     """We need basket on every view if authenticated"""
@@ -28,6 +38,20 @@ def get_basket(endpoint, values):
             g.basket = len(basket_sql)
         else:
             g.basket = 0
+
+    # keeping constant connection to Revive instance
+    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                  verbose=False)
+    if 'revive' in session:
+        sessionid = session['revive']
+        try:
+            r.ox.getUserList(sessionid)
+        except:
+            sessionid = reviveme(r)
+            session['revive'] = sessionid
+    else:
+        sessionid = reviveme(r)
+        session['revive'] = sessionid
 
 
 @blueprint.route('/me')
@@ -81,17 +105,7 @@ def offer():
 
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-
-    if 'revive' in session:
-        sessionid = session['revive']
-        try:
-            r.ox.getUserList(sessionid)
-        except:
-            sessionid = reviveme(r)
-            session['revive'] = sessionid
-    else:
-        sessionid = reviveme(r)
-        session['revive'] = sessionid
+    sessionid = session['revive']
 
     # Get all publishers (websites)
     publishers = r.ox.getPublisherListByAgencyId(sessionid,
@@ -162,19 +176,11 @@ def campaign():
     """Get and display all camapigns belonging to user."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-    if 'revive' in session:
-        sessionid = session['revive']
-        try:
-            r.ox.getUserList(sessionid)
-        except:
-            sessionid = reviveme(r)
-            session['revive'] = sessionid
-    else:
-        sessionid = reviveme(r)
-        session['revive'] = sessionid
+    sessionid = session['revive']
 
     all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
                                                        current_app.config.get('REVIVE_AGENCY_ID'))
+
     # Try to find out if the customer is already registered in Revive, if not,
     # register him
     try:
@@ -270,16 +276,7 @@ def api_all_campaigns(zone_id):
     """JSON."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-    if 'revive' in session:
-        sessionid = session['revive']
-        try:
-            r.ox.getUserList(sessionid)
-        except:
-            sessionid = reviveme(r)
-            session['revive'] = sessionid
-    else:
-        sessionid = reviveme(r)
-        session['revive'] = sessionid
+    sessionid = session['revive']
 
     all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
                                                        current_app.config.get('REVIVE_AGENCY_ID'))
@@ -323,18 +320,7 @@ def order():
     """Order a campaign."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
-    if 'revive' in session:
-        sessionid = session['revive']
-        try:
-            r.ox.getUserList(sessionid)
-        except:
-            sessionid = reviveme(r)
-            session['revive'] = sessionid
-    else:
-        sessionid = reviveme(r)
-        session['revive'] = sessionid
-
-    # TODO: add here exception when prices are not set
+    sessionid = session['revive']
 
     if ('step' not in request.form) or \
             ('submit' in request.form.values() and request.form['submit'] == 'cancel'):
@@ -431,11 +417,7 @@ def order():
         r.ox.addBanner(sessionid, diki)
 
         # ask kraken for rate
-        krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
-        krkr = requests.get(krkuri)
-        json_data = krkr.text
-        fj = json.loads(json_data)
-        exrate = fj["result"]['XXBTZEUR']["c"][0]
+        exrate = krakenrate()
         totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
         totalbtcprice = totalcurrencyprice / float(exrate)
 
@@ -465,6 +447,8 @@ def basket():
     """Present basket to customer."""
 
     basket = []
+    total = 0
+    totalbtc = 0
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
     # Checks to see if the user has already started a cart.
     if basket_sql:
@@ -472,10 +456,19 @@ def basket():
             order_sql = Orders.query.filter_by(campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
                 Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
             basket.append(order_sql)
+            begin = order_sql[0].begins_at
+            enddate = order_sql[0].stops_at
+            totaltime = enddate - begin
+            totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
+            exrate = krakenrate()
+            totalbtcprice = totalcurrencyprice / float(exrate)
+            total += totalcurrencyprice
+            totalbtc += totalbtcprice
     else:
         basket = 0
 
-    return render_template('users/basket.html', basket=basket)
+    return render_template('users/basket.html', basket=basket, total=total,
+                           totalbtc=totalbtc)
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')
