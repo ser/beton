@@ -442,7 +442,7 @@ def order():
         Orders.create(campaigno=campaign,
                       zoneid=zone_id,
                       created_at=datetime.utcnow(),
-                      begin_at=begin,
+                      begins_at=begin,
                       stops_at=enddate,
                       paymentno=0,
                       bannerid=banner_id
@@ -465,8 +465,8 @@ def basket():
     """Present basket to customer."""
 
     basket = []
-    # Checks to see if the user has already started a cart.
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
+    # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
             order_sql = Orders.query.filter_by(campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
