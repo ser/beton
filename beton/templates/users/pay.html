@@ -17,19 +17,25 @@
             </div>
         </div>
     </div>
-    <div class="alert alert-warning" role="alert">
-        ATTENTION! Because Bitcoin network is recently very congested, please
-        pay a good miner fee to have your transaction confirmed on time!!!
-    </div>
     <div class="row">
         <div class="col-sm-4 col-xs-12">
             <h3>Statement of facts</h3>
-            <p>You want to have campaign</p>
+            <p>You want to have {{ orders }} campaign(s).</p>
             <h3>Calculations</h3>
-            <p>1 BTC if now for {{ exrate }} <i class="fa fa-eur fa-fw"
+            <p><i class="fa fa-btc"aria-hidden="true"></i>1 is now for {{ exrate }}<i class="fa fa-eur fa-fw"
                     aria-hidden="true"></i></p>
-            <p>Total is: {{ electrum['amount (BTC)'] }} BTC
-                <i class="fa fa-eur fa-fw" aria-hidden="true"></i>.</p>
+            <p>Total is:
+                {{ total }}<i class="fa fa-eur fa-fw" aria-hidden="true"></i> /
+                <i class="fa fa-btc"aria-hidden="true"></i>{{ electrum['amount (BTC)'] }}
+            </p>
+            <p class="alert alert-warning" role="alert">ATTENTION! Because
+                Bitcoin network is recently very congested, please pay a good
+                miner fee to have your transaction confirmed on time!
+                Suggested minimum fee to get paid on time: <i class="fa fa-btc"
+                        aria-hidden="true"></i>{{ fee }} - but your wallet should
+                set the correct value according to your local circumstances.
+                We recommend <a href="https://electrum.org/">Electrum</a> wallet.</p>
+
         </div>
         <div class="col-sm-8 col-xs-12">
             <div class="row">
@@ -75,9 +81,7 @@
 {% endblock %}
 
 {% block js %}
-{% if step == "pay" %}
-    {% include "users/order-pay.html" %}
-{% endif %}
+{% include "users/order-pay.html" %}
     <script>
         $(document).ready(function() {
             savvior.init('#grid', {

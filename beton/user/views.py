@@ -29,6 +29,17 @@ def krakenrate():
     return exrate
 
 
+def minerfee(amount):
+    # ask bitcoinfees for a recommended fee
+    feeuri = "https://bitcoinfees.earn.com/api/v1/fees/recommended"
+    fee = requests.get(feeuri)
+    json_data = fee.text
+    fj = json.loads(json_data)
+    halfhourfee = fj['halfHourFee']
+    mimimaltransaction = 258
+    return int(halfhourfee)*mimimaltransaction/100000000
+
+
 @blueprint.url_value_preprocessor
 def get_basket(endpoint, values):
     """We need basket on every view if authenticated"""
@@ -525,9 +536,12 @@ def pay():
     electrum_url = current_app.config.get('ELECTRUM_RPC')
     electrum = requests.post(electrum_url, json=payload).json()
     result = electrum['result']
+    if result is False:
+        return render_template('users/electrum-problems.html')
+
     # more debug if needed
     # print(electrum_url)
-    # print(result)
+    print(result)
     # print(params)
     # print(payload)
     btcaddr = result['address']
@@ -554,8 +568,13 @@ def pay():
         "method": "notify",
         "params": params
     }
+
+    fee = minerfee(totalbtc)
     # ipn_please = requests.post(electrum_url, json=payload).json()
 
     return render_template('users/pay.html',
+                           total=total,
+                           orders=len(basket),
                            exrate=exrate,
+                           fee=fee,
                            electrum=result)
