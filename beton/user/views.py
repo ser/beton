@@ -25,7 +25,10 @@ def krakenrate():
     krkr = requests.get(krkuri)
     json_data = krkr.text
     fj = json.loads(json_data)
-    exrate = fj["result"]['XXBTZEUR']["c"][0]
+    try:
+        exrate = fj["result"]['XXBTZEUR']["c"][0]
+    except:
+        exrate = 0
     return exrate
 
 
@@ -429,6 +432,8 @@ def order():
 
         # ask kraken for rate
         exrate = krakenrate()
+        if exrate == 0:
+            return render_template('users/electrum-problems.html')
         totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
         totalbtcprice = totalcurrencyprice / float(exrate)
 
@@ -472,6 +477,8 @@ def basket():
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
             exrate = krakenrate()
+            if exrate == 0:
+                return render_template('users/electrum-problems.html')
             totalbtcprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
             totalbtc += totalbtcprice

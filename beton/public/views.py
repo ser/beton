@@ -5,7 +5,7 @@ import requests
 import uuid
 import xmlrpc
 from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
-from flask_login import login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 
 from beton.extensions import csrf_protect, login_manager
 from beton.user.forms import RegisterForm
@@ -24,6 +24,9 @@ def load_user(user_id):
 @blueprint.route('/', methods=['GET'])
 def home():
     """Home page."""
+    # redirect to personalised version for logged in users
+    if current_user.is_authenticated:
+        return redirect(url_for('user.user_me'))
     return render_template('public/home.html')
 
 
