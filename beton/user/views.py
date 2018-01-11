@@ -32,6 +32,19 @@ def krakenrate():
     return exrate
 
 
+def coinbasereate():
+    # ask coinbase for rate
+    coinbaseuri = "https://api.coinbase.com/v2/prices/BTC-EUR/buy"
+    cbsr = requests.get(coinbaseuri)
+    json_data = cbsr.text
+    fj = json.loads(json_data)
+    try:
+        exrate = fj['data']['amount']
+    except:
+        exrate = 0
+    return exrate
+
+
 def minerfee(amount):
     # ask bitcoinfees for a recommended fee
     feeuri = "https://bitcoinfees.earn.com/api/v1/fees/recommended"
@@ -433,6 +446,8 @@ def order():
         # ask kraken for rate
         exrate = krakenrate()
         if exrate == 0:
+            exrate = coinbasereate()
+        if exrate == 0:
             return render_template('users/electrum-problems.html')
         totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
         totalbtcprice = totalcurrencyprice / float(exrate)
@@ -476,7 +491,10 @@ def basket():
             enddate = order_sql[0].stops_at
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
+            # try to get exchange values from two sources, and give up
             exrate = krakenrate()
+            if exrate == 0:
+                exrate = coinbasereate()
             if exrate == 0:
                 return render_template('users/electrum-problems.html')
             totalbtcprice = totalcurrencyprice / float(exrate)
