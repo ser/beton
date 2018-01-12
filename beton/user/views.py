@@ -45,6 +45,13 @@ def coinbasereate():
     return exrate
 
 
+def getexrate():
+    exrate = krakenrate()
+    if exrate == 0:
+        exrate = coinbasereate()
+    return exrate
+
+
 def minerfee(amount):
     # ask bitcoinfees for a recommended fee
     feeuri = "https://bitcoinfees.earn.com/api/v1/fees/recommended"
@@ -443,12 +450,11 @@ def order():
         diki['storageType'] = 'url'
         r.ox.addBanner(sessionid, diki)
 
-        # ask kraken for rate
-        exrate = krakenrate()
-        if exrate == 0:
-            exrate = coinbasereate()
+        # ask for x rate
+        exrate = getexrate()
         if exrate == 0:
             return render_template('users/electrum-problems.html')
+
         totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
         totalbtcprice = totalcurrencyprice / float(exrate)
 
@@ -491,12 +497,12 @@ def basket():
             enddate = order_sql[0].stops_at
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
+
             # try to get exchange values from two sources, and give up
-            exrate = krakenrate()
-            if exrate == 0:
-                exrate = coinbasereate()
+            exrate = getexrate()
             if exrate == 0:
                 return render_template('users/electrum-problems.html')
+
             totalbtcprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
             totalbtc += totalbtcprice
@@ -524,7 +530,10 @@ def clear_basket(campaign_id):
 def pay():
     """Pay a campaign."""
 
-    exrate = krakenrate()
+    exrate = getexrate()
+    if exrate == 0:
+        return render_template('users/electrum-problems.html')
+
     # first we need to get basket data
     basket = []
     total = 0
@@ -566,7 +575,7 @@ def pay():
 
     # more debug if needed
     # print(electrum_url)
-    print(result)
+    # print(result)
     # print(params)
     # print(payload)
     btcaddr = result['address']
