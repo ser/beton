@@ -567,8 +567,13 @@ def pay():
         "params": params
     }
 
+    # contact electrum server - if it is not possible, signal problems to
+    # customer
     electrum_url = current_app.config.get('ELECTRUM_RPC')
-    electrum = requests.post(electrum_url, json=payload).json()
+    try:
+        electrum = requests.post(electrum_url, json=payload).json()
+    except:
+        return render_template('users/electrum-problems.html')
     result = electrum['result']
     if result is False:
         return render_template('users/electrum-problems.html')

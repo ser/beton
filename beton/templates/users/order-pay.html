@@ -9,15 +9,16 @@ new QRious({
 	size: 1500 // It is automatically scaled down by CSS
 });
 
+$.timeago.settings.allowFuture = true;
+
 if (payid) {
             $('.progress .progress-bar').progressbar();
             var $pb = $('.progress .progress-bar');
-            jQuery.timeago.settings.allowFuture = true;
-            $(function () {
+            jQuery(function ($) {
                 var current;
                 var initial = paytime;
                 var duration = payexp;
-                if(duration){
+                if (duration) {
                   function update() {
                     var current = 100 - (100 * (Math.floor(Date.now()/1000) - initial)/duration);
                     $pb.attr('data-transitiongoal', current).progressbar({
@@ -25,7 +26,7 @@ if (payid) {
                         use_percentage: false,
                         amount_format: function(amount_part) {
                                         if (current > 0) {
-                                                return "Expires in: " + jQuery.timeago(new Date(initial * 1000 + duration *1000));
+                                            return "Expires in: " + $.timeago(new Date(initial * 1000 + duration *1000));
                                         }},
                     });
                     if (current <= 0) {
