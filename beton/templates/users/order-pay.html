@@ -11,6 +11,7 @@ new QRious({
 
 $.timeago.settings.allowFuture = true;
 
+/* TODO: verify if client is capable to do WebSockets */
 if (payid) {
             $('.progress .progress-bar').progressbar();
             var $pb = $('.progress .progress-bar');
@@ -35,28 +36,48 @@ if (payid) {
                         $("p#reqpaid").replaceWith('');
                         $("p#btcdesc").replaceWith('');
                         $("p#btcinfo").replaceWith('<p>to the bitcoin address:</p>');
+                        // We can close WSS as we don't need to get any more data from Electrum
+                        ws.close();
                     }
                   };
                   var interval = setInterval(update, 3000);
                  }
             });
-            console.log("Opening WSS: " + wssaddr);
-            var ws = new WebSocket(wssaddr);
-            ws.onopen = function() {
-                ws.send('id:' + payid);
-            };
-            ws.onmessage = function (evt) {
-                var received_msg = evt.data;
-                if (received_msg == 'paid') {
-                    $("div.progress").replaceWith('<div class="alert alert-success" role="alert"><p>This payment has been sent! Thank you.</p><p>We will activate the campaign after receiving one confirmation from the bitcoin blockchain.</p></div>');
+            // Websocket activation and monitoring
+            jQuery(function ($) {
+                var ws = new WebSocket(wssaddr);
+                console.log("Opening WSS: " + wssaddr);
+
+                ws.onopen = function() {
+                    ws.send('id:' + payid);
+                    console.log("WSS is watching payment request ID: " + payid)
+                };
+
+                ws.onclose = function(){
+                    console.log("WSS connection got closed. Probably the invoice has expired or got paid?")
+                };
+
+                ws.onerror = function(error){
+                    console.log('WSS error detected: ' + error);
+                };
+
+                ws.onmessage = function (evt) {
+                    var received_msg = evt.data;
+                    if (received_msg == 'paid') {
+                        console.log("We have recived message from Electrum via WSS that transaction is paid.")
+                        $("div.progress").replaceWith('<div class="alert alert-success" role="alert"><p>This payment has been sent! Thank you.</p><p>We will activate the campaign after receiving one confirmation from the bitcoin blockchain.</p></div>');
                         $("p#reqpaid").replaceWith('<p><span class="badge">PAID</span> to address:</p>');
                         $("p#btcpay").replaceWith('<h2>&nbsp;</h2>');
                         $("p#btcinfo").replaceWith('');
                         $("p#btcstar").replaceWith('');
                         $("p#btcdesc").replaceWith('');
-                }
-                else alert("Message is received:"+ received_msg);
-            };
+                        // We can close WSS as we don't need to get any more data from Electrum
+                        ws.close();
+                    }
+                    else console.log("An unexpected WSS message was received from Electrum:"+ received_msg);
+                };
+
+            });
 };
 
 
@@ -67,4 +88,5 @@ $(document).on('click', 'a[href^="bitcoin:"]', function (e) {
     btcWindow.close();
     return false;
 });
+
 </script>

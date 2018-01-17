@@ -577,13 +577,16 @@ def pay():
     result = electrum['result']
     if result is False:
         return render_template('users/electrum-problems.html')
+    try:
+        btcaddr = result['address']
+    except:
+        return render_template('users/electrum-problems.html')
 
     # more debug if needed
     # print(electrum_url)
     # print(result)
     # print(params)
     # print(payload)
-    btcaddr = result['address']
 
     # creating database record for payment and linking it into orders
     payment_sql = Payments.create(
