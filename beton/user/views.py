@@ -428,8 +428,11 @@ def order():
         advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                             current_user.username)['advertiserId'])
 
-        begin = datetime.strptime(datestart, "%d/%m/%Y")
-        enddate = datetime.strptime(datend, "%d/%m/%Y")
+        try:
+            begin = datetime.strptime(datestart, "%d/%m/%Y")
+            enddate = datetime.strptime(datend, "%d/%m/%Y")
+        except:
+            return render_template('users/date-problems.html')
         totaltime = enddate - begin
         diki = {}
         diki['advertiserId'] = advertiser_id
