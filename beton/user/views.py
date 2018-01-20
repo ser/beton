@@ -516,12 +516,14 @@ def basket():
 @blueprint.route('/clear/basket/<int:campaign_id>')
 @login_required
 def clear_basket(campaign_id):
-    if campaign_id == "0":
-        basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
-        basket_sql.delete()
-    else:
-        basket_sql = Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).first()
-        basket_sql.delete()
+    try:
+        if campaign_id == 0:
+            Basket.query.filter_by(user_id=current_user.id).delete()
+        else:
+            Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
+        Basket.commit()
+    except:
+        pass
     return redirect(url_for("user.basket"), code=302)
 
 
@@ -588,6 +590,9 @@ def pay():
     # print(params)
     # print(payload)
 
+    # TODO: swap it with internal electrum command
+    fee = minerfee(totalbtc)
+
     # creating database record for payment and linking it into orders
     payment_sql = Payments.create(
         btcaddress=btcaddr,
@@ -610,10 +615,18 @@ def pay():
         "method": "notify",
         "params": params
     }
+    print(payload)
+    ipn_please = requests.post(electrum_url, json=payload).json()
+    print(ipn_please)
+    # If electrum refuses notify request, signal an error and give up payment
+    if ipn_please['result'] is not True:
+        return render_template('users/electrum-problems.html')
 
-    fee = minerfee(totalbtc)
-    # ipn_please = requests.post(electrum_url, json=payload).json()
+    # It looks that payment page is ready to be shown, so we remove the content of basket
+    Basket.query.filter_by(user_id=current_user.id).delete()
+    Basket.commit()
 
+    # and display payment page
     return render_template('users/pay.html',
                            total=total,
                            orders=len(basket),

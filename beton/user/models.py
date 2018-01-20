@@ -125,7 +125,6 @@ class Orders(SurrogatePK, Model):
                                         self.created_at,
                                         self.begins_at,
                                         self.stops_at,
-                                        self.amount_days,
                                         self.paymentno,
                                         self.bannerid)
 
