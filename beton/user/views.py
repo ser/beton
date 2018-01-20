@@ -597,7 +597,7 @@ def pay():
     payment_sql = Payments.create(
         btcaddress=btcaddr,
         total_btc=totalbtc,
-        ispaid=False,
+        txno=0,
         created_at=datetime.utcnow()
     )
     paymentno = payment_sql.id

@@ -135,22 +135,22 @@ class Payments(SurrogatePK, Model):
     __tablename__ = 'payments'
     btcaddress = Column(db.String(35), unique=True, nullable=False)
     total_btc = Column(db.Numeric(16, 8))
-    ispaid = Column(db.Boolean(), default=False, nullable=False)
+    txno = Column(db.String(64), unique=False, nullable=True)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
 
-    def __init__(self, btcaddress, total_btc, ispaid, created_at):
+    def __init__(self, btcaddress, txno, total_btc, created_at):
         """ Create instance."""
         self.btcaddress = btcaddress
-        self.ispaid = ispaid
+        self.txno = txno
         self.total_btc = total_btc
         self.created_at = created_at
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<btcaddress: {}, self.ispaid: {}, \
+        return '<btcaddress: {}, txno: {},\
                 total_btc: {}, created_at: {}>'.format(
                                 self.btcaddress,
-                                self.ispaid,
+                                self.txno,
                                 self.total_btc,
                                 self.created_at)
 

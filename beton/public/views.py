@@ -1,6 +1,9 @@
 """Public section, including homepage and signup."""
 
 # import logging
+
+import requests
+import uuid
 import xmlrpc
 from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
 from flask_login import current_user, login_required, logout_user
@@ -52,21 +55,38 @@ def download_file(filename):
 @csrf_protect.exempt
 @blueprint.route('/ipn', methods=['POST'])
 def ipn():
-    """Quasi-IPN service. Electrum sends us pings when something related to oe
-    og pur payments changes. We have an opportunity to register it and for
-    example link a campaign to a zone."""
+    """Quasi-IPN service. Electrum sends us pings when something related to
+    our payments changes. Here we are linking a campaign to a zone."""
 
     # Get the content of the IPN from Electrum
     json = request.get_json()
-    print(json)
+    print("IPN JSON: ", json)
     # This is not a valid payment yet
-    if json['status'] == "None":
+    if not json['status']:
+        print("Electrum acknowledged subscribtion. Not paid yet.")
         return redirect(url_for('public.home'))
 
     # loading order datails from the database
     pay_db = Payments.query.filter_by(btcaddress=json['address']).first()
+    print(pay_db)
 
-    if pay_db.ispaid is not True:  # If our invoice is already paid, do not bother
+    if int(pay_db.txno) == 0:  # If our invoice is already paid, do not bother
+
+        # Get TX hash from Electrum
+        electrum_url = current_app.config.get('ELECTRUM_RPC')
+        params = {
+            "address": json['address']
+        }
+        payload = {
+            "id": str(uuid.uuid4()),
+            "method": "getaddresshistory",
+            "params": params
+        }
+        print(payload)
+        get_tx = requests.post(electrum_url, json=payload).json()
+        print(get_tx)
+        txno = get_tx['result'][0]['tx_hash']
+        print("txno: ", txno)
 
         # loading all orders related to payment
         all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
@@ -81,7 +101,8 @@ def ipn():
             linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
             print(linkme)
         # and finally mark payment as paid
-        Payments.query.filter_by(btcaddress=json['address']).update({"ispaid": True})
+        Payments.query.filter_by(btcaddress=json['address']).update({"txno":
+                                                                     txno})
         Payments.commit()
         # Logout from Revive
         r.ox.logoff(sessionid)

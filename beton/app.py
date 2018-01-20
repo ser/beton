@@ -5,6 +5,7 @@ from flask_kvsession import KVSessionExtension
 from flask_moment import Moment
 from flask_user import UserManager, SQLAlchemyAdapter
 from simplekv.fs import FilesystemStore
+from werkzeug.contrib.fixers import ProxyFix
 
 from beton import commands, public, user
 from beton.assets import assets
@@ -23,6 +24,7 @@ def create_app(config_object=ProdConfig):
     :param config_object: The configuration object to use.
     """
     app = Flask(__name__.split('.')[0])
+    app.wsgi_app = ProxyFix(app.wsgi_app)
     app.config.from_object(config_object)
     register_extensions(app)
     register_blueprints(app)
