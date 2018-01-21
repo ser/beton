@@ -53,14 +53,17 @@ def getexrate():
 
 
 def minerfee(amount):
-    # ask bitcoinfees for a recommended fee
-    feeuri = "https://bitcoinfees.earn.com/api/v1/fees/recommended"
-    fee = requests.get(feeuri)
-    json_data = fee.text
-    fj = json.loads(json_data)
-    halfhourfee = fj['halfHourFee']
-    mimimaltransaction = 258
-    return int(halfhourfee)*mimimaltransaction/100000000
+    # ask electrum for an average miner fee
+    # we assume that an average transaction is about 258 bytes long
+    electrum_url = current_app.config.get('ELECTRUM_RPC')
+    payload = {
+        "id": str(uuid.uuid4()),
+        "method": "getfeerate"
+    }
+    get_fee = requests.post(electrum_url, json=payload).json()
+    print("Miner fee rate per kb is in satoshi: ", get_fee)
+    fee_kb = get_fee['result']
+    return format(int(fee_kb)*0.258/100000000, '.9f')
 
 
 @blueprint.url_value_preprocessor
