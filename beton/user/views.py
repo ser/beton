@@ -207,7 +207,7 @@ def offer():
 @blueprint.route('/campaign')
 @login_required
 def campaign():
-    """Get and display all camapigns belonging to user."""
+    """Get and display all campaigns belonging to user."""
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
     sessionid = session['revive']
@@ -255,6 +255,7 @@ def campaign():
     for campaign in all_campaigns:
         # check orders what do we know about that campaign
         orderinfo = Orders.query.filter_by(campaigno=campaign['campaignId']).first()
+        sql = Payments.query.filter_by(id=orderinfo.paymentno).first()
         tasks = {}
         tasks['campaignId'] = campaign['campaignId']
         tasks['campaignName'] = campaign['campaignName']
@@ -271,16 +272,17 @@ def campaign():
         else:
             tasks['expired'] = False
         try:
-            tasks['amount_btc'] = orderinfo.amount_btc
+            tasks['amount_btc'] = sql.total_btc
         except:
             tasks['amount_btc'] = 0
         try:
-            tasks['ispaid'] = orderinfo.ispaid
+            if sql.txno is not 0:
+                tasks['ispaid'] = True
+                tasks['btc_address'] = sql.btcaddress
+            else:
+                tasks['ispaid'] = False
         except:
             tasks['ispaid'] = False
-        try:
-            tasks['btc_address'] = orderinfo.btcaddress
-        except:
             tasks['btc_address'] = "deadbeef"
 
         # ask for stats
@@ -523,7 +525,7 @@ def clear_basket(campaign_id):
                 Orders.query.filter_by(campaigno=order.campaigno).delete()
         else:
             removed = r.ox.deleteCampaign(sessionid, campaign_id)
-            print("Removed from Revive: ", campaign_id, removed)
+            print("Campaign removed from Revive: ", campaign_id, removed)
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
             Orders.query.filter_by(campaigno=campaign_id).delete()
         Basket.commit()
