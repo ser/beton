@@ -133,7 +133,7 @@ class Payments(SurrogatePK, Model):
     """All payments"""
 
     __tablename__ = 'payments'
-    btcaddress = Column(db.String(35), unique=True, nullable=False)
+    btcaddress = Column(db.String(64), unique=True, nullable=False)
     total_btc = Column(db.Numeric(16, 8))
     txno = Column(db.String(64), unique=False, nullable=True)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
