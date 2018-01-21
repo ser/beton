@@ -13,7 +13,7 @@ from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Basket, Orders, Payments, Prices, Zone2Campaign
+from beton.user.models import Banner, Basket, Orders, Payments, Prices  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -308,38 +308,28 @@ def campaign():
 @login_required
 def api_all_campaigns(zone_id):
     """JSON."""
-    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                  verbose=False)
-    sessionid = session['revive']
-
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
-                                                       current_app.config.get('REVIVE_AGENCY_ID'))
-    advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
-                        current_user.username)['advertiserId'])
+    # Get all orders from local database
+    if zone_id == 0:
+        all_orders = Orders.query.all()
+    else:
+        all_orders = Orders.query.filter_by(zoneid=zone_id).all()
+    print(all_orders)
     ac = []
-    for x in all_advertisers:
+    for order in all_orders:
+        tasks = {}
         fullname = names.get_full_name()
-        for y in r.ox.getCampaignListByAdvertiserId(sessionid, x['advertiserId']):
-            z2c = Zone2Campaign.query.filter_by(placement_id=y['campaignId']).first()
-            if z2c:
-                if zone_id == int(z2c.zone_id) or zone_id == 0:
-                    tasks = {}
-                    tasks['id'] = y['campaignId']
-                    if x['advertiserId'] == advertiser_id:
-                        tasks['title'] = y['campaignName']
-                        tasks['class'] = 'event-info'
-                    else:
-                        tasks['title'] = fullname
-                    tasks['zone'] = int(z2c.zone_id)
-            # calendar['url'] = ''
-            # calendar['class'] = ''
-                    starttime = datetime.strptime(y['startDate'].value,
-                                                  '%Y%m%dT%H:%M:%S')
-                    endtime = datetime.strptime(y['endDate'].value,
-                                                '%Y%m%dT%H:%M:%S')
-                    tasks['start'] = 1000*int(starttime.timestamp())
-                    tasks['end'] = 1000*int(endtime.timestamp())
-                    ac.append(tasks)
+        tasks['id'] = order.campaigno
+        tasks['class'] = 'event-info'
+        tasks['title'] = fullname
+        tasks['zone'] = order.zoneid
+        # calendar['url'] = ''
+        # starttime = datetime.strptime(order.begins_at, '%Y%m%dT%H:%M:%S')
+        # endtime = datetime.strptime(order.stops_at, '%Y%m%dT%H:%M:%S')
+        starttime = order.begins_at
+        endtime = order.stops_at
+        tasks['start'] = 1000*int(starttime.timestamp())
+        tasks['end'] = 1000*int(endtime.timestamp())
+        ac.append(tasks)
 
     a = {}
     a['success'] = 1
@@ -526,15 +516,18 @@ def clear_basket(campaign_id):
         if campaign_id == 0:
             all_basket = Basket.query.filter_by(user_id=current_user.id).all()
             # Removing these campaigns from Revive as not useful in future
+            Basket.query.filter_by(user_id=current_user.id).delete()
             for order in all_basket:
                 removed = r.ox.deleteCampaign(sessionid, order.campaigno)
                 print("Campaign removed from Revive: ", order.campaigno, removed)
-            Basket.query.filter_by(user_id=current_user.id).delete()
+                Orders.query.filter_by(campaigno=order.campaigno).delete()
         else:
             removed = r.ox.deleteCampaign(sessionid, campaign_id)
             print("Removed from Revive: ", campaign_id, removed)
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
+            Orders.query.filter_by(campaigno=campaign_id).delete()
         Basket.commit()
+        Orders.commit()
     except:
         pass
     return redirect(url_for("user.basket"), code=302)
