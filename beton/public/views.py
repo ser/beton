@@ -99,7 +99,7 @@ def ipn():
             for order in all_orders:
                 # Linking the campaigna because it's paid!
                 linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
-                print("We have linked in Revive: ", linkme)
+                print("Have we linked in Revive? ", linkme)
             # and finally mark payment as paid
             Payments.query.filter_by(btcaddress=ipn['address']).update({"txno":
                                                                         txno})

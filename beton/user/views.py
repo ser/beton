@@ -520,9 +520,19 @@ def basket():
 @login_required
 def clear_basket(campaign_id):
     try:
+        r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                      verbose=False)
+        sessionid = session['revive']
         if campaign_id == 0:
+            all_basket = Basket.query.filter_by(user_id=current_user.id).all()
+            # Removing these campaigns from Revive as not useful in future
+            for order in all_basket:
+                removed = r.ox.deleteCampaign(sessionid, order.campaigno)
+                print("Campaign removed from Revive: ", order.campaigno, removed)
             Basket.query.filter_by(user_id=current_user.id).delete()
         else:
+            removed = r.ox.deleteCampaign(sessionid, campaign_id)
+            print("Removed from Revive: ", campaign_id, removed)
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
         Basket.commit()
     except:
