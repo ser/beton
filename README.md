@@ -57,7 +57,7 @@ After finishing configuration, your ```~/.electrum/config``` should look similar
 * Create a separate unix user in your system:
   * ```useradd -m beton```
 * Install system packages for python and web developement:
-  * ```apt install python3-pip python3-wheel python3-setuptools virtualenvwrapper nodejs-legacy npm```
+  * ```apt install python3-pip python3-wheel python3-setuptools python3-dev virtualenvwrapper nodejs-legacy npm```
   * ```npm install -g bower```
 * Create a virtual python environment for beton and activate it:
   * ```su - beton```
