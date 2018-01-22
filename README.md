@@ -61,7 +61,7 @@ After finishing configuration, your ```~/.electrum/config``` should look similar
   * ```npm install -g bower```
 * Create a virtual python environment for beton and activate it:
   * ```su - beton```
-  * ```mkvirtualenv beton```
+  * ```mkvirtualenv -p /usr/bin/python3 beton```
 * When you want to access your environment at a later date, you are just activating it:
   * ```workon beton```
 * Clone the beton git repository:
