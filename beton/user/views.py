@@ -1,15 +1,16 @@
 # import logging
 import json
+import names
 import requests
 import uuid
 import xmlrpc.client
+
 from datetime import datetime
 from dateutil import parser
+from PIL import Image
 
-import names
 from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
-from PIL import Image
 
 from beton.extensions import images
 from beton.user.forms import AddBannerForm, ChangeOffer
@@ -275,18 +276,18 @@ def campaign():
         else:
             tasks['expired'] = False
         try:
-            tasks['amount_btc'] = sql.total_btc
+            tasks['amount_coins'] = sql.total_coins
         except:
-            tasks['amount_btc'] = 0
+            tasks['amount_coins'] = 0
         try:
             if sql.txno is not 0:
                 tasks['ispaid'] = True
-                tasks['btc_address'] = sql.btcaddress
+                tasks['address'] = sql.address
             else:
                 tasks['ispaid'] = False
         except:
             tasks['ispaid'] = False
-            tasks['btc_address'] = "deadbeef"
+            tasks['address'] = "deadbeef"
 
         # ask for stats
         try:
@@ -454,7 +455,7 @@ def order():
             return render_template('users/electrum-problems.html')
 
         totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
-        totalbtcprice = totalcurrencyprice / float(exrate)
+        totalcoinprice = totalcurrencyprice / float(exrate)
 
         Orders.create(campaigno=campaign,
                       zoneid=zone_id,
@@ -473,7 +474,7 @@ def order():
                                datestart=datestart, datend=datend, image_url=image_url,
                                zone_id=zone_id, days=totaltime.days,
                                exrate=exrate, dayprice=price.dayprice,
-                               btctotal=totalbtcprice, step='order')
+                               cointotal=totalcoinprice, step='order')
 
 
 @blueprint.route('/basket', methods=['get'])
@@ -483,7 +484,7 @@ def basket():
 
     basket = []
     total = 0
-    totalbtc = 0
+    cointotal = 0
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
     # Checks to see if the user has already started a cart.
     if basket_sql:
@@ -501,14 +502,16 @@ def basket():
             if exrate == 0:
                 return render_template('users/electrum-problems.html')
 
-            totalbtcprice = totalcurrencyprice / float(exrate)
+            totalcoinprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
-            totalbtc += totalbtcprice
+            cointotal += totalcoinprice
+        total = format(total, '.2f')
+        cointotal = format(cointotal, '.9f')
     else:
         basket = 0
 
     return render_template('users/basket.html', basket=basket, total=total,
-                           totalbtc=totalbtc)
+                           cointotal=cointotal)
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')
@@ -538,10 +541,10 @@ def clear_basket(campaign_id):
     return redirect(url_for("user.basket"), code=302)
 
 
-@blueprint.route('/pay', methods=['get', 'post'])
+@blueprint.route('/pay/<string:payment>')
 @login_required
-def pay():
-    """Pay a campaign."""
+def pay(payment):
+    """Pay a campaign. We serve a few payment systems, so it depends on 'payment' value."""
 
     exrate = getexrate()
     if exrate == 0:
@@ -550,7 +553,7 @@ def pay():
     # first we need to get basket data
     basket = []
     total = 0
-    totalbtc = 0
+    cointotal = 0
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
     # Checks to see if the user has already started a cart.
     if basket_sql:
@@ -562,16 +565,16 @@ def pay():
             enddate = order_sql[0].stops_at
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
-            totalbtcprice = totalcurrencyprice / float(exrate)
+            totalcoinprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
-            totalbtc += totalbtcprice
+            cointotal += totalcoinprice
     else:
         basket = 0
 
     # kindly ask miss electrum for an invoice which expires in 20 minutes
     # headers = {'content-type': 'application/json'}
     params = {
-        "amount": totalbtc,
+        "amount": cointotal,
         "expiration": 1212
     }
     payload = {
@@ -591,7 +594,7 @@ def pay():
     if result is False:
         return render_template('users/electrum-problems.html')
     try:
-        btcaddr = result['address']
+        addr = result['address']
     except:
         return render_template('users/electrum-problems.html')
 
@@ -602,12 +605,12 @@ def pay():
     # print(payload)
 
     # TODO: swap it with internal electrum command
-    fee = minerfee(totalbtc)
+    fee = minerfee(cointotal)
 
     # creating database record for payment and linking it into orders
     payment_sql = Payments.create(
-        btcaddress=btcaddr,
-        total_btc=totalbtc,
+        address=addr,
+        total_coins=cointotal,
         txno=0,
         created_at=datetime.utcnow()
     )
@@ -618,7 +621,7 @@ def pay():
 
     #  kindly ask miss electrum for a ping when our address changes
     params = {
-        "address": btcaddr,
+        "address": addr,
         "URL": current_app.config.get('OUR_URL')+'ipn'
     }
     payload = {

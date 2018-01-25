@@ -8,13 +8,29 @@
     </div>
 {% else %}
         <h1>Your basket, {{ current_user.username }}</h1>
-        <p>Here you can see your shopping basket.</p>
-        <p>In total whole basket is: <i class="fa fa-eur fa-fw" aria-hidden="true"></i>{{ total }} / <i class="fa fa-btc fa-fw" aria-hidden="true"></i>{{ totalbtc }} ***
-        <div>
-            <a href="{{ url_for('user.pay') }}" class="btn btn-success">Pay for all items in the basket</a>
-            or
-            <a href="{{ config.OUR_URL }}clear/basket/0" class="btn btn-danger">Empty whole basket</a>
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <p>Here you can see your shopping basket.</p>
+                <p>In total whole basket is: <i class="fa fa-eur fa-fw" aria-hidden="true"></i>{{ total }} / <i class="fa fa-btc fa-fw" aria-hidden="true"></i>{{ cointotal }} ***
+                <div>
+                    <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger">Empty whole basket</a>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xs-12">
+                <p>Pay for all items in the basket using:</p>
+                <div>
+                    <a href="{{ url_for('user.pay', payment='tbtc') }}"
+                        class="btn btn-success btn-xs">Bitcoin testnet standard address</a>
+                </div>
+                or
+                <div>
+                    <a href="{{ url_for('user.pay', payment='tbtcs') }}"
+                        class="btn btn-success btn-xs">Bitcoin testnet SegWit (Bech32
+                        address)</a>
+                </div>
+            </div>
         </div>
+    </div>
     </div>
     <div id="grid">
         {% for order in basket %}

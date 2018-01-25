@@ -7,10 +7,10 @@
         <div><p><b>From:</b> {{ campaign['startDate'] }}</p></div>
         <div><p><b>To:</b> {{ campaign['endDate'] }}</p></div>
         <div><p><i class="fa fa-btc" aria-hidden="true"></i>
-                {{ campaign['amount_btc'] }} <i
+                {{ campaign['amount_coins'] }} <i
                     class="fa fa-arrows-h"
                     aria-hidden="true"></i>
-                Confirmed? <a href="{{ config.BLOCKCHAIN }}{{ campaign['btc_address'] }}"
+                Confirmed? <a href="{{ config.BLOCKCHAIN }}{{ campaign['address'] }}"
                     target="_blank">
                 {{ campaign['ispaid'] }}</a></div>
         {% for banner in banners %}

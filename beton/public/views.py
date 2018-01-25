@@ -64,11 +64,11 @@ def ipn():
         print("IPN JSON: ", ipn)
         # This is not a valid payment yet
         if not ipn['status']:
-            print("Electrum acknowledged subscription. Not paid yet.")
+            print("Electrum acknowledged subscription. Not paid yet or expired.")
             return redirect(url_for('public.home'))
 
         # loading order datails from the database
-        pay_db = Payments.query.filter_by(btcaddress=ipn['address']).first()
+        pay_db = Payments.query.filter_by(address=ipn['address']).first()
         print("Payments related to address: ", pay_db)
 
         if int(pay_db.txno) == 0:  # If our invoice is already paid, do not bother
@@ -101,8 +101,8 @@ def ipn():
                 linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
                 print("Have we linked in Revive? ", linkme)
             # and finally mark payment as paid
-            Payments.query.filter_by(btcaddress=ipn['address']).update({"txno":
-                                                                        txno})
+            Payments.query.filter_by(address=ipn['address']).update({"txno":
+                                                                     txno})
             Payments.commit()
 
             # Logout from Revive

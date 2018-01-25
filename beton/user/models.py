@@ -133,25 +133,28 @@ class Payments(SurrogatePK, Model):
     """All payments"""
 
     __tablename__ = 'payments'
-    btcaddress = Column(db.String(64), unique=True, nullable=False)
-    total_btc = Column(db.Numeric(16, 8))
+    blockchain = Column(db.String(10), unique=False, nullable=False)
+    address = Column(db.String(64), unique=True, nullable=False)
+    total_coins = Column(db.Numeric(16, 8))
     txno = Column(db.String(64), unique=False, nullable=True)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
 
-    def __init__(self, btcaddress, txno, total_btc, created_at):
+    def __init__(self, blockchain, address, txno, total_coins, created_at):
         """ Create instance."""
-        self.btcaddress = btcaddress
+        self.blockchain = blockchain
+        self.address = address
         self.txno = txno
-        self.total_btc = total_btc
+        self.total_coins = total_coins
         self.created_at = created_at
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<btcaddress: {}, txno: {},\
-                total_btc: {}, created_at: {}>'.format(
-                                self.btcaddress,
+        return '<blockchain: {}, address: {}, txno: {},\
+                total_coins: {}, created_at: {}>'.format(
+                                self.blockchain,
+                                self.address,
                                 self.txno,
-                                self.total_btc,
+                                self.total_coins,
                                 self.created_at)
 
 
