@@ -275,19 +275,22 @@ def campaign():
             tasks['expired'] = True
         else:
             tasks['expired'] = False
+
+        try:
+            tasks['address'] = sql.address
+        except:
+            tasks['address'] = "0"
+
         try:
             tasks['amount_coins'] = sql.total_coins
         except:
             tasks['amount_coins'] = 0
+
         try:
-            if sql.txno is not 0:
-                tasks['ispaid'] = True
-                tasks['address'] = sql.address
-            else:
+            if int(sql.txno) == 0:
                 tasks['ispaid'] = False
         except:
-            tasks['ispaid'] = False
-            tasks['address'] = "deadbeef"
+            tasks['ispaid'] = True
 
         # ask for stats
         try:
@@ -300,7 +303,9 @@ def campaign():
         except:
             tasks['impressions'] = 0
 
-        all_campaigns_standardized.append(tasks)
+        # We ignore campaigns in the basket
+        if tasks['address'] != "0":
+            all_campaigns_standardized.append(tasks)
 
     # Render the page and quit
     return render_template('users/campaign.html',
