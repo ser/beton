@@ -454,13 +454,13 @@ def order():
         diki['storageType'] = 'url'
         r.ox.addBanner(sessionid, diki)
 
-        # ask for x rate
-        exrate = getexrate()
-        if exrate == 0:
-            return render_template('users/electrum-problems.html')
+        ## ask for x rate
+        # exrate = getexrate()
+        # if exrate == 0:
+        #    return render_template('users/electrum-problems.html')
 
-        totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
-        totalcoinprice = totalcurrencyprice / float(exrate)
+        # totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
+        # totalcoinprice = totalcurrencyprice / float(exrate)
 
         Orders.create(campaigno=campaign,
                       zoneid=zone_id,
@@ -475,11 +475,15 @@ def order():
                       user_id=current_user.id
                       )
 
-        return render_template('users/order.html', banner_id=banner_id,
-                               datestart=datestart, datend=datend, image_url=image_url,
-                               zone_id=zone_id, days=totaltime.days,
-                               exrate=exrate, dayprice=price.dayprice,
-                               cointotal=totalcoinprice, step='order')
+        return render_template('users/order.html',
+                               banner_id=banner_id,
+                               datestart=datestart,
+                               datend=datend,
+                               image_url=image_url,
+                               zone_id=zone_id,
+                               days=totaltime.days,
+                               dayprice=price.dayprice,
+                               step='order')
 
 
 @blueprint.route('/basket', methods=['get'])
