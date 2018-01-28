@@ -37,16 +37,15 @@
             </div>
             <div class="col-sm-6 col-xs-12">
                 <p>Pay for all items in the basket using:</p>
-                <div>
-                    <a href="{{ url_for('user.pay', payment='tbtc') }}"
-                        class="btn btn-success btn-xs">Bitcoin testnet standard address</a>
-                </div>
-                or
-                <div>
-                    <a href="{{ url_for('user.pay', payment='tbtcs') }}"
-                        class="btn btn-success btn-xs">Bitcoin testnet SegWit (Bech32
-                        address)</a>
-                </div>
+                    {% for x in config.PAYMENT_SYSTEMS %}
+                        <div>
+                            <a href="{{ url_for('user.pay', payment=x) }}"
+                                class="btn btn-success btn-xs">{{ config.PAYMENT_SYSTEMS[x][1] }}</a>
+                        </div>
+                        {% if loop.last == False %}
+                            or
+                        {% endif %}
+                    {% endfor %}
             </div>
         </div>
     </div>
