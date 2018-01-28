@@ -29,7 +29,7 @@
                             {% endif %}
                         {% endfor %}
                         <br/>
-                        <b>{{ x }}:</b> {{ z|sum }}
+                        <b>{{ x }}:</b> {{ z|sum|round(9) }}
                     {% endfor %}
                 <div>
                     <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger">Empty whole basket</a>
