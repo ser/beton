@@ -20,36 +20,53 @@ from beton.utils import flash_errors, reviveme
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
 
 
-def krakenrate():
-    # ask kraken for rate
-    krkuri = "https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR"
-    krkr = requests.get(krkuri)
-    json_data = krkr.text
+def krakenrate(coin):
+    # ask kraken for rate: https://api.kraken.com/0/public/AssetPairs
+    # Bitcoin to Euro:
+    if coin == "BTC":
+        base = "XXBTZEUR"
+    # Litecoin to Euro:
+    elif coin == "LTC":
+        base= "LTCEUR"
+    # Bitcoin Cash to Euro
+    elif coin == "BCH":
+        base = "BCHEUR"
+    exuri = "https://api.kraken.com/0/public/Ticker?pair="+base
+    rate = requests.get(exuri)
+    json_data = rate.text
     fj = json.loads(json_data)
     try:
-        exrate = fj["result"]['XXBTZEUR']["c"][0]
-    except:
+        exrate = fj["result"][base]["c"][0]
+    except BaseException:
         exrate = 0
     return exrate
 
 
-def coinbasereate():
+def coinbasereate(coin):
     # ask coinbase for rate
-    coinbaseuri = "https://api.coinbase.com/v2/prices/BTC-EUR/buy"
-    cbsr = requests.get(coinbaseuri)
-    json_data = cbsr.text
+    # Bitcoin to Euro:
+    if coin == "BTC":
+        exuri = "https://api.coinbase.com/v2/prices/BTC-EUR/buy"
+    # Litecoin to Euro
+    elif coin == "LTC":
+        exuri = "https://api.coinbase.com/v2/prices/LTC-EUR/buy"
+    # Bitcoin Cash to Euro
+    elif coin == "BCH":
+        exuri = "https://api.coinbase.com/v2/prices/BCH-EUR/buy"
+    rate = requests.get(exuri)
+    json_data = rate.text
     fj = json.loads(json_data)
     try:
         exrate = fj['data']['amount']
-    except:
+    except BaseException:
         exrate = 0
     return exrate
 
 
-def getexrate():
-    exrate = krakenrate()
+def getexrate(coin):
+    exrate = krakenrate(coin)
     if exrate == 0:
-        exrate = coinbasereate()
+        exrate = coinbasereate(coin)
     return exrate
 
 
@@ -84,7 +101,7 @@ def get_basket(endpoint, values):
         sessionid = session['revive']
         try:
             r.ox.getUserList(sessionid)
-        except:
+        except BaseException:
             sessionid = reviveme(r)
             session['revive'] = sessionid
     else:
@@ -184,7 +201,7 @@ def offer():
                                                     )
                 # tmpdict['impressions'] = ztatz[0]['impressions']
                 tmpdict['impressions'] = ztatz
-            except:
+            except BaseException:
                 tmpdict['impressions'] = 0
 
             all_zones.append(tmpdict)
@@ -278,18 +295,18 @@ def campaign():
 
         try:
             tasks['address'] = sql.address
-        except:
+        except BaseException:
             tasks['address'] = "0"
 
         try:
             tasks['amount_coins'] = sql.total_coins
-        except:
+        except BaseException:
             tasks['amount_coins'] = 0
 
         try:
             if int(sql.txno) == 0:
                 tasks['ispaid'] = False
-        except:
+        except BaseException:
             tasks['ispaid'] = True
 
         # ask for stats
@@ -300,7 +317,7 @@ def campaign():
                                                   datetime.now()
                                                   )
             tasks['impressions'] = ztatz[0]['impressions']
-        except:
+        except BaseException:
             tasks['impressions'] = 0
 
         # We ignore campaigns in the basket
@@ -432,7 +449,7 @@ def order():
         try:
             begin = datetime.strptime(datestart, "%d/%m/%Y")
             enddate = datetime.strptime(datend, "%d/%m/%Y")
-        except:
+        except BaseException:
             return render_template('users/date-problems.html')
         totaltime = enddate - begin
         diki = {}
@@ -454,7 +471,7 @@ def order():
         diki['storageType'] = 'url'
         r.ox.addBanner(sessionid, diki)
 
-        ## ask for x rate
+        # # ask for x rate
         # exrate = getexrate()
         # if exrate == 0:
         #    return render_template('users/electrum-problems.html')
@@ -492,8 +509,7 @@ def basket():
     """Present basket to customer."""
 
     basket = []
-    total = 0
-    cointotal = 0
+    price = []
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
     # Checks to see if the user has already started a cart.
     if basket_sql:
@@ -505,22 +521,21 @@ def basket():
             enddate = order_sql[0].stops_at
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
+            price.append([item.campaigno, "EUR", totalcurrencyprice])
 
-            # try to get exchange values from two sources, and give up
-            exrate = getexrate()
-            if exrate == 0:
-                return render_template('users/electrum-problems.html')
-
-            totalcoinprice = totalcurrencyprice / float(exrate)
-            total += totalcurrencyprice
-            cointotal += totalcoinprice
-        total = format(total, '.2f')
-        cointotal = format(cointotal, '.9f')
+            exchange_prices = current_app.config.get('EXCHANGE_PRICES')
+            for coin in exchange_prices:
+                # try to get exchange values from two sources, and give up
+                exrate = getexrate(coin)
+                if exrate == 0:
+                    return render_template('users/electrum-problems.html')
+                totalcoinprice = format(totalcurrencyprice / float(exrate), '.9f')
+                price.append([item.campaigno, coin, totalcoinprice])
     else:
         basket = 0
 
-    return render_template('users/basket.html', basket=basket, total=total,
-                           cointotal=cointotal, present=datetime.now() )
+    return render_template('users/basket.html', basket=basket, 
+                           price=price, present=datetime.now() )
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')

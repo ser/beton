@@ -11,7 +11,26 @@
         <div class="row">
             <div class="col-sm-6 col-xs-12">
                 <p>Here you can see your shopping basket.</p>
-                <p>In total whole basket is: <i class="fa fa-eur fa-fw" aria-hidden="true"></i>{{ total }} / <i class="fa fa-btc fa-fw" aria-hidden="true"></i>{{ cointotal }} ***
+                <p>In total whole basket is: ***
+                    {% set z = [] %}
+                    {% for y in price %}
+                        {% if y[1] == "EUR" %}
+                            {% set z = z.append(y[2]|float) %}
+                        {% endif %}
+                    {% endfor %}
+                    <br/>
+                    <b>EUR:</b> {{ z|sum }}
+
+                    {% for x in config.EXCHANGE_PRICES %}
+                        {% set z = [] %}
+                        {% for y in price %}
+                            {% if y[1] == x %}
+                                {% set z = z.append(y[2]|float) %}
+                            {% endif %}
+                        {% endfor %}
+                        <br/>
+                        <b>{{ x }}:</b> {{ z|sum }}
+                    {% endfor %}
                 <div>
                     <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger">Empty whole basket</a>
                 </div>
@@ -55,6 +74,12 @@
                                 <b>From:</b> {{ order[0].begins_at }}
                                 <br/>
                                 <b>To:</b> {{ order[0].stops_at }}
+                                {% for x in price %}
+                                    {% if x[0] == order[0].campaigno %}
+                                    <br/>
+                                    <b>{{ x[1] }}:</b> {{ x[2] }}
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                             <a href="{{ config.OUR_URL }}clear/basket/{{ order[0].campaigno }}" class="btn btn-danger btn-xs">Remove from
                                 basket</a>
