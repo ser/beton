@@ -516,7 +516,7 @@ def basket():
         basket = 0
 
     return render_template('users/basket.html', basket=basket, total=total,
-                           cointotal=cointotal)
+                           cointotal=cointotal, present=datetime.now() )
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')

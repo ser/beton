@@ -39,6 +39,11 @@
                     <h3 class="panel-title">Campaign #{{ order[0].campaigno }}</h3>
                 </div>
                 <div class="panel-body">
+                    {% if order[0].stops_at < present %}
+                        <div class="alert alert-warning">
+                            <p>Campaign already expired! Remove it from the basket!</p>
+                        </div>
+                    {% endif %}
                     <div class="thumbnail">
                         <div class="caption">
                             <div>
