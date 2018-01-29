@@ -53,11 +53,12 @@ def download_file(filename):
 
 
 @csrf_protect.exempt
-@blueprint.route('/ipn', methods=['POST'])
-def ipn():
-    """Quasi-IPN service. Electrum sends us pings when something related to
+@blueprint.route('/ipn/<string:payment>', methods=['POST'])
+def ipn(payment):
+    """IPN service. Electrum sends us pings when something related to
     our payments changes. Here we are linking a campaign to a zone."""
 
+    payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
     try:
         # Get the content of the IPN from Electrum
         ipn = request.get_json()
@@ -74,7 +75,7 @@ def ipn():
         if int(pay_db.txno) == 0:  # If our invoice is already paid, do not bother
 
             # Get TX hash from Electrum
-            electrum_url = current_app.config.get('ELECTRUM_RPC')
+            electrum_url = payment_system[3]
             params = {
                 "address": ipn['address']
             }

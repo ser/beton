@@ -22,19 +22,19 @@
             <h3>Statement of facts</h3>
             <p>You want to have {{ orders }} campaign(s).</p>
             <h3>Calculations</h3>
-            <p><i class="fa fa-btc" aria-hidden="true"></i>1 is now for {{ exrate }}
+            <p>1 {{ currency }} is now for {{ exrate }}
                 <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
             <p>Total is:
                 {{ total }}<i class="fa fa-eur fa-fw" aria-hidden="true"></i> /
-                <i class="fa fa-btc" aria-hidden="true"></i>{{ electrum['amount (BTC)'] }}
+                {{ currency }}: {{ electrum['amount (BTC)'] }}
             </p>
             <p class="alert alert-warning" role="alert">ATTENTION! Because
-                Bitcoin network is recently very congested, please pay a good
+                {{ currency }} network is recently very congested, please pay a good
                 miner fee to have your transaction confirmed on time!
                 Suggested minimum fee to get paid on time: <i class="fa fa-btc"
                         aria-hidden="true"></i>{{ fee }} - but your wallet should
-                set the correct value according to your local circumstances.
-                We recommend <a href="https://electrum.org/">Electrum</a> wallet.</p>
+                set the correct value according to your local
+                circumstances.</p>
 
         </div>
         <div class="col-sm-8 col-xs-12">
@@ -47,11 +47,11 @@
                         <sup><i class="fa fa-asterisk" aria-hidden="true"></i></sup>
                     </p>
                     <h3>
-                        <i class="fa fa-btc" aria-hidden="true"></i>
+                        {{ currency }}:
                         <kbd id="amount">{{ electrum['amount (BTC)'] }}</kbd>
                     </h3>
                     <p id='reqpaid'><a class="btn btn-primary" id="paylink" href="{{ electrum['URI'] }}">Click to pay with a connected wallet</a></p>
-                    <p id='btcinfo'>or send money directly to the bitcoin address:</p>
+                    <p id='btcinfo'>or send money directly to the {{ currency }} address:</p>
                     <p class="dont-break-out"><kbd class="dont-break-out" id="address">{{ electrum['address'] }}</kbd></p>
                 </div>
             </div>
@@ -65,10 +65,10 @@
                 <div class="col-xs-12">
                     <p id='btcstar'><sup><i class="fa fa-asterisk"
                                 aria-hidden="true"></i></sup> Please be aware
-                        that you should cover bitcoin transaction fee and send
+                        that you should cover {{ currency }} transaction fee and send
                         us precisely the amount specified above.</p>
                     <p id='btcdesc'><b>Your campaign activates only 
-                        after we receive one confirmation from the bitcoin
+                        after we receive one confirmation from the {{ currency }}
                         blockchain. Keep a proper transaction fee if you want
                         be served on time. </b>This page will get automatically
                         updated when you pay or when the payment request is being

@@ -304,6 +304,11 @@ def campaign():
             tasks['amount_coins'] = 0
 
         try:
+            tasks['chain'] = sql.blockchain
+        except BaseException:
+            tasks['chain'] = "0"
+
+        try:
             if int(sql.txno) == 0:
                 tasks['ispaid'] = False
         except BaseException:
@@ -570,7 +575,8 @@ def clear_basket(campaign_id):
 def pay(payment):
     """Pay a campaign. We serve a few payment systems, so it depends on 'payment' value."""
 
-    exrate = getexrate()
+    payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
+    exrate = getexrate(payment_system[0])
     if exrate == 0:
         return render_template('users/electrum-problems.html')
 
@@ -609,7 +615,7 @@ def pay(payment):
 
     # contact electrum server - if it is not possible, signal problems to
     # customer
-    electrum_url = current_app.config.get('ELECTRUM_RPC')
+    electrum_url = payment_system[3]
     try:
         electrum = requests.post(electrum_url, json=payload).json()
     except:
@@ -633,6 +639,7 @@ def pay(payment):
 
     # creating database record for payment and linking it into orders
     payment_sql = Payments.create(
+        blockchain=payment,
         address=addr,
         total_coins=cointotal,
         txno=0,
@@ -646,7 +653,7 @@ def pay(payment):
     #  kindly ask miss electrum for a ping when our address changes
     params = {
         "address": addr,
-        "URL": current_app.config.get('OUR_URL')+'ipn'
+        "URL": current_app.config.get('OUR_URL')+'ipn/'+payment
     }
     payload = {
         "id": str(uuid.uuid4()),
@@ -670,4 +677,5 @@ def pay(payment):
                            orders=len(basket),
                            exrate=exrate,
                            fee=fee,
+                           currency=payment_system[0],
                            electrum=result)
