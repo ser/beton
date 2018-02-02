@@ -50,6 +50,25 @@ After finishing configuration, your ```~/.electrum/config``` should look similar
 }
 ```
 
+You can have a systemd config file similar to this one:
+
+```
+[Unit]
+Description=Electrum Server
+After=multi-user.target
+
+[Service]
+Environment="RUNAS=lcttest"
+ExecStart=/home/${RUNAS}/.virtualenvs/electrum/bin/electrum -w /home/pay/.electrum/wallets/default_wallet daemon start
+ExecStop=/home/${RUNAS}/.virtualenvs/electrum/bin/electrum daemon stop
+ExecStartPost=/home/${RUNAS}/.virtualenvs/electrum/bin/electrum daemon load_wallet
+Type=forking
+User=${RUNAS}
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ### Install and prepare Beton
 
 > This part assumes that you have Ubuntu Xenial 16.04. 

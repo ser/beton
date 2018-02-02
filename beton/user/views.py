@@ -13,6 +13,7 @@ from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_te
 from flask_login import current_user, login_required
 
 from beton.extensions import images
+from beton.logger import log
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Orders, Payments, Prices  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
@@ -612,20 +613,25 @@ def pay(payment):
         "method": "addrequest",
         "params": params
     }
+    log.debug(payload)
 
     # contact electrum server - if it is not possible, signal problems to
     # customer
     electrum_url = payment_system[3]
+    log.debug(electrum_url)
     try:
         electrum = requests.post(electrum_url, json=payload).json()
-    except:
+        log.debug(electrum)
+    except Exception as e:
+        log.exception("Exception")
         return render_template('users/electrum-problems.html')
     result = electrum['result']
     if result is False:
         return render_template('users/electrum-problems.html')
     try:
         addr = result['address']
-    except:
+    except Exception as e:
+        log.exception("Exception")
         return render_template('users/electrum-problems.html')
 
     # more debug if needed

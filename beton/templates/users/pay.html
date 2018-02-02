@@ -26,13 +26,13 @@
                 <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
             <p>Total is:
                 {{ total }}<i class="fa fa-eur fa-fw" aria-hidden="true"></i> /
-                {{ currency }}: {{ electrum['amount (BTC)'] }}
+                {{ currency }}: {{ electrum['amount'] }}
             </p>
             <p class="alert alert-warning" role="alert">ATTENTION! Because
                 {{ currency }} network is recently very congested, please pay a good
                 miner fee to have your transaction confirmed on time!
-                Suggested minimum fee to get paid on time: <i class="fa fa-btc"
-                        aria-hidden="true"></i>{{ fee }} - but your wallet should
+                Suggested minimum fee to get paid on time:
+                <b>{{ currency }}</b> {{ fee }} - but your wallet should
                 set the correct value according to your local
                 circumstances.</p>
 
@@ -48,7 +48,7 @@
                     </p>
                     <h3>
                         {{ currency }}:
-                        <kbd id="amount">{{ electrum['amount (BTC)'] }}</kbd>
+                        <kbd id="amount">{{ electrum['amount'] }}</kbd>
                     </h3>
                     <p id='reqpaid'><a class="btn btn-primary" id="paylink" href="{{ electrum['URI'] }}">Click to pay with a connected wallet</a></p>
                     <p id='btcinfo'>or send money directly to the {{ currency }} address:</p>
