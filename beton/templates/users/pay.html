@@ -26,7 +26,7 @@
                 <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
             <p>Total is:
                 {{ total }}<i class="fa fa-eur fa-fw" aria-hidden="true"></i> /
-                {{ currency }}: {{ electrum['amount'] }}
+                {{ currency }}: {{ electrum['amount']|float / 100000000 }}
             </p>
             <p class="alert alert-warning" role="alert">ATTENTION! Because
                 {{ currency }} network is recently very congested, please pay a good
@@ -48,7 +48,7 @@
                     </p>
                     <h3>
                         {{ currency }}:
-                        <kbd id="amount">{{ electrum['amount'] }}</kbd>
+                        <kbd id="amount">{{ electrum['amount']|float / 100000000 }}</kbd>
                     </h3>
                     <p id='reqpaid'><a class="btn btn-primary" id="paylink" href="{{ electrum['URI'] }}">Click to pay with a connected wallet</a></p>
                     <p id='btcinfo'>or send money directly to the {{ currency }} address:</p>

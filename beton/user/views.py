@@ -601,6 +601,8 @@ def pay(payment):
             cointotal += totalcoinprice
     else:
         basket = 0
+        log.error("Trying to pay for empty basket.")
+        return redirect(url_for("user.basket"), code=302)
 
     # kindly ask miss electrum for an invoice which expires in 20 minutes
     # headers = {'content-type': 'application/json'}

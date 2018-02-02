@@ -1,7 +1,5 @@
 """Public section, including homepage and signup."""
 
-# import logging
-
 import requests
 import uuid
 import xmlrpc
@@ -9,9 +7,8 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for,
 from flask_login import current_user, login_required, logout_user
 
 from beton.extensions import csrf_protect, login_manager
-# from beton.user.forms import RegisterForm
+from beton.logger import log
 from beton.user.models import Orders, Payments, User
-# from beton.utils import flash_errors
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
@@ -62,15 +59,17 @@ def ipn(payment):
     try:
         # Get the content of the IPN from Electrum
         ipn = request.get_json()
-        print("IPN JSON: ", ipn)
+        log.debug("IPN JSON:")
+        log.debug(ipn)
         # This is not a valid payment yet
         if not ipn['status']:
-            print("Electrum acknowledged subscription. Not paid yet or expired.")
+            log.debug("Electrum acknowledged subscription. Not paid yet or expired.")
             return redirect(url_for('public.home'))
 
         # loading order datails from the database
         pay_db = Payments.query.filter_by(address=ipn['address']).first()
-        print("Payments related to address: ", pay_db)
+        log.debug("Payments related to address:")
+        log.debug(pay_db)
 
         if int(pay_db.txno) == 0:  # If our invoice is already paid, do not bother
 
@@ -84,14 +83,17 @@ def ipn(payment):
                 "method": "getaddresshistory",
                 "params": params
             }
-            print("We have sent to electrum this payload: ", payload)
+            log.debug("We have sent to electrum this payload:")
+            log.debug(payload)
             get_tx = requests.post(electrum_url, json=payload).json()
-            print("We got back from electrum: ", get_tx)
+            log.debug("We got back from electrum:")
+            log.debug(get_tx)
             txno = get_tx['result'][0]['tx_hash']
 
             # loading all orders related to payment
             all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
-            print("We are having these orders in the basket: ", all_orders)
+            log.debug("We are having these orders in the basket:")
+            log.debug(all_orders)
             # Log in into Revive
             r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                           verbose=False)
@@ -100,7 +102,8 @@ def ipn(payment):
             for order in all_orders:
                 # Linking the campaigna because it's paid!
                 linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
-                print("Have we linked in Revive? ", linkme)
+                log.debug("Have we linked in Revive?")
+                log.debug(linkme)
             # and finally mark payment as paid
             Payments.query.filter_by(address=ipn['address']).update({"txno":
                                                                      txno})
