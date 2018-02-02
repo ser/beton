@@ -28,13 +28,11 @@
                 {{ total }}<i class="fa fa-eur fa-fw" aria-hidden="true"></i> /
                 {{ currency }}: {{ electrum['amount']|float / 100000000 }}
             </p>
-            <p class="alert alert-warning" role="alert">ATTENTION! Because
-                {{ currency }} network is recently very congested, please pay a good
-                miner fee to have your transaction confirmed on time!
-                Suggested minimum fee to get paid on time:
-                <b>{{ currency }}</b> {{ fee }} - but your wallet should
-                set the correct value according to your local
-                circumstances.</p>
+            <p class="alert alert-warning" role="alert">ATTENTION! Please pay
+                a good miner fee to have your transaction confirmed on time!
+                Estimated minimum fee: <b>{{ currency }}</b> {{ fee }} 
+                - but your wallet should suggest a correct value according
+                to your local circumstances.</p>
 
         </div>
         <div class="col-sm-8 col-xs-12">
