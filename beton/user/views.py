@@ -80,7 +80,8 @@ def minerfee(amount):
         "method": "getfeerate"
     }
     get_fee = requests.post(electrum_url, json=payload).json()
-    print("Miner fee rate per kb is in satoshi: ", get_fee)
+    log.debug("Miner fee rate per kb is in satoshi:")
+    log.debug(get_fee)
     fee_kb = get_fee['result']
     return format(int(fee_kb)*0.258/100000000, '.9f')
 
@@ -347,7 +348,6 @@ def api_all_campaigns(zone_id):
         all_orders = Orders.query.all()
     else:
         all_orders = Orders.query.filter_by(zoneid=zone_id).all()
-    print(all_orders)
     ac = []
     for order in all_orders:
         tasks = {}
@@ -557,11 +557,15 @@ def clear_basket(campaign_id):
             Basket.query.filter_by(user_id=current_user.id).delete()
             for order in all_basket:
                 removed = r.ox.deleteCampaign(sessionid, order.campaigno)
-                print("Campaign removed from Revive: ", order.campaigno, removed)
+                log.debug("Campaign removed from Revive:")
+                log.debug(order.campaigno)
+                log.debug(removed)
                 Orders.query.filter_by(campaigno=order.campaigno).delete()
         else:
             removed = r.ox.deleteCampaign(sessionid, campaign_id)
-            print("Campaign removed from Revive: ", campaign_id, removed)
+            log.debug("Campaign removed from Revive:")
+            log.debug(campaign_id)
+            log.debug(removed)
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
             Orders.query.filter_by(campaigno=campaign_id).delete()
         Basket.commit()
@@ -668,9 +672,11 @@ def pay(payment):
         "method": "notify",
         "params": params
     }
-    print(payload)
+    log.debug("Payload sent to Electrum:")
+    log.debug(payload)
     ipn_please = requests.post(electrum_url, json=payload).json()
-    print(ipn_please)
+    log.debug("Response received from Electrum:")
+    log.debug(ipn_please)
     # If electrum refuses notify request, signal an error and give up payment
     if ipn_please['result'] is not True:
         return render_template('users/electrum-problems.html')
