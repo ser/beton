@@ -27,7 +27,7 @@ def krakenrate(coin):
         base = "XXBTZEUR"
     # Litecoin to Euro:
     elif coin == "LTC":
-        base = "LTCEUR"
+        base = "XLTCZEUR"
     # Bitcoin Cash to Euro
     elif coin == "BCH":
         base = "BCHEUR"
