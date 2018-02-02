@@ -1,4 +1,3 @@
-# import logging
 import json
 import names
 import requests
@@ -28,7 +27,7 @@ def krakenrate(coin):
         base = "XXBTZEUR"
     # Litecoin to Euro:
     elif coin == "LTC":
-        base= "LTCEUR"
+        base = "LTCEUR"
     # Bitcoin Cash to Euro
     elif coin == "BCH":
         base = "BCHEUR"
@@ -38,7 +37,9 @@ def krakenrate(coin):
     fj = json.loads(json_data)
     try:
         exrate = fj["result"][base]["c"][0]
-    except BaseException:
+    except Exception as e:
+        log.debug("Exception")
+        log.exception(e)
         exrate = 0
     return exrate
 
@@ -59,7 +60,9 @@ def coinbasereate(coin):
     fj = json.loads(json_data)
     try:
         exrate = fj['data']['amount']
-    except BaseException:
+    except Exception as e:
+        log.debug("Exception")
+        log.exception(e)
         exrate = 0
     return exrate
 
@@ -103,7 +106,9 @@ def get_basket(endpoint, values):
         sessionid = session['revive']
         try:
             r.ox.getUserList(sessionid)
-        except BaseException:
+        except Exception as e:
+            log.debug("Exception")
+            log.exception(e)
             sessionid = reviveme(r)
             session['revive'] = sessionid
     else:
@@ -203,7 +208,9 @@ def offer():
                                                     )
                 # tmpdict['impressions'] = ztatz[0]['impressions']
                 tmpdict['impressions'] = ztatz
-            except BaseException:
+            except Exception as e:
+                log.debug("Exception")
+                log.exception(e)
                 tmpdict['impressions'] = 0
 
             all_zones.append(tmpdict)
@@ -244,7 +251,7 @@ def campaign():
         next(x for x in all_advertisers if x['advertiserName'] ==
              current_user.username)
     except StopIteration:
-        # logging.warning('Created user: ', current_user.username)
+        # log.debug('Created user: ', current_user.username)
         r.ox.addAdvertiser(sessionid, {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
                                        'advertiserName': current_user.username,
                                        'emailAddress': current_user.email,
@@ -540,8 +547,8 @@ def basket():
     else:
         basket = 0
 
-    return render_template('users/basket.html', basket=basket, 
-                           price=price, present=datetime.now() )
+    return render_template('users/basket.html', basket=basket,
+                           price=price, present=datetime.now())
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')
@@ -570,8 +577,9 @@ def clear_basket(campaign_id):
             Orders.query.filter_by(campaigno=campaign_id).delete()
         Basket.commit()
         Orders.commit()
-    except:
-        pass
+    except Exception as e:
+        log.debug("Exception")
+        log.exception(e)
     return redirect(url_for("user.basket"), code=302)
 
 
@@ -619,17 +627,21 @@ def pay(payment):
         "method": "addrequest",
         "params": params
     }
+    log.debug("Payload to send to Electrum:")
     log.debug(payload)
 
     # contact electrum server - if it is not possible, signal problems to
     # customer
     electrum_url = payment_system[3]
+    log.debug("Electrum RPC URI:")
     log.debug(electrum_url)
     try:
         electrum = requests.post(electrum_url, json=payload).json()
+        log.debug("Data received back from Electrum:")
         log.debug(electrum)
     except Exception as e:
-        log.exception("Exception")
+        log.debug("Exception")
+        log.exception(e)
         return render_template('users/electrum-problems.html')
     result = electrum['result']
     if result is False:
@@ -637,16 +649,10 @@ def pay(payment):
     try:
         addr = result['address']
     except Exception as e:
-        log.exception("Exception")
+        log.debug("Exception")
+        log.exception(e)
         return render_template('users/electrum-problems.html')
 
-    # more debug if needed
-    # print(electrum_url)
-    # print(result)
-    # print(params)
-    # print(payload)
-
-    # TODO: swap it with internal electrum command
     fee = minerfee(cointotal)
 
     # creating database record for payment and linking it into orders
