@@ -1,13 +1,8 @@
-# -*- coding: utf-8 -*-
 """Application assets."""
 from flask_assets import Bundle, Environment
 
 css = Bundle(
-#    'libs/bootstrap/dist/css/bootstrap.css',
-#    'libs/bootswatch/sandstone/bootstrap.css',
-#    'libs/bootswatch/spacelab/bootstrap.css',
     'libs/bootswatch/dist/superhero/bootstrap.css',
-#    'libs/bootstrap-calendar/css/calendar.css',
     'libs/fullcalendar/dist/fullcalendar.css',
     'libs/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css',
     'libs/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.css',
@@ -19,20 +14,13 @@ css = Bundle(
 js = Bundle(
     'libs/jQuery/dist/jquery.js',
     'libs/bootstrap/dist/js/bootstrap.js',
-    #   'libs/jQuery-File-Upload/js/jquery.fileupload.js',
-    #   'libs/jQuery-File-Upload/js/jquery.fileupload-process.js',
-    #   'libs/jQuery-File-Upload/js/jquery.fileupload-ui.js',
-    #   'static/libs/salvattore/dist/salvattore.min.js',
-    #   'libs/media-match/media.match.js',
     'libs/jquery-timeago/jquery.timeago.js',
     'libs/gasparesganga-jquery-loading-overlay/src/loadingoverlay.js',
     'libs/underscore/underscore.js',
     'libs/moment/moment.js',
     'libs/moment-timezone/moment-timezone.js',
     'libs/fullcalendar/dist/fullcalendar.js',
-#    'libs/daterangepicker/lib/daterangepicker/daterangepicker.js',
     'libs/bootstrap-datepicker/js/bootstrap-datepicker.js',
-#    'libs/bootstrap-calendar/js/calendar.js',
     'libs/enquire/dist/enquire.js',
     'libs/savvior/dist/savvior.js',
     'libs/bootstrap-progressbar/bootstrap-progressbar.js',
