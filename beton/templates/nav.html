@@ -21,11 +21,10 @@
         <li class="nav-item"><a class="nav-link" href="{{ url_for('user.campaign') }}">campaigns</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('user.bannerz') }}">banners</a></li>
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="x" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Luser<i class="far fa-user"></i></a>
+            <a class="nav-link dropdown-toggle" href="x" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="far fa-user"></i></a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" href="{{ url_for('public.logout') }}">Logout</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{{ url_for('public.logout') }}">Logout</a>
             </div>
         </li>
     {% else %}

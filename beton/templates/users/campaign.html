@@ -36,10 +36,9 @@
 {% block js %}
 <script>
     var events_source = "{{ config.SUBDIR  }}/api/all_campaigns_in_zone/0";
-    $('#calendar').calendar(
+    $('#calendar').fullCalendar(
             {
-                events_source: events_source,
-                tmpl_path: "{{ config.SUBDIR }}/static/libs/bootstrap-calendar/tmpls/"
+                events: events_source
             }
     );
     savvior.init('#grid', {

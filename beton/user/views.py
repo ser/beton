@@ -349,7 +349,9 @@ def campaign():
 @blueprint.route('/api/all_campaigns_in_zone/<int:zone_id>')
 @login_required
 def api_all_campaigns(zone_id):
-    """JSON."""
+    """JSON:
+    https://fullcalendar.io/docs/event-object
+    """
     # Get all orders from local database
     if zone_id == 0:
         all_orders = Orders.query.all()
@@ -360,23 +362,19 @@ def api_all_campaigns(zone_id):
         tasks = {}
         fullname = names.get_full_name()
         tasks['id'] = order.campaigno
-        tasks['class'] = 'event-info'
         tasks['title'] = fullname
-        tasks['zone'] = order.zoneid
+        tasks['allDay'] = "true"
+        # tasks['resourceId'] = order.zoneid
         # calendar['url'] = ''
         # starttime = datetime.strptime(order.begins_at, '%Y%m%dT%H:%M:%S')
         # endtime = datetime.strptime(order.stops_at, '%Y%m%dT%H:%M:%S')
         starttime = order.begins_at
         endtime = order.stops_at
-        tasks['start'] = 1000*int(starttime.timestamp())
-        tasks['end'] = 1000*int(endtime.timestamp())
+        tasks['start'] = starttime.strftime("%Y-%m-%d")
+        tasks['end'] = endtime.strftime("%Y-%m-%d")
         ac.append(tasks)
 
-    a = {}
-    a['success'] = 1
-    a['result'] = ac
-
-    return jsonify(a)
+    return jsonify(ac)
 
 
 @blueprint.route('/order', methods=['get', 'post'])
