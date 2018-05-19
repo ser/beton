@@ -74,10 +74,10 @@ def getexrate(coin):
     return exrate
 
 
-def minerfee(amount):
+def minerfee(amount, electrum_url):
     # ask electrum for an average miner fee
     # we assume that an average transaction is about 258 bytes long
-    electrum_url = current_app.config.get('ELECTRUM_RPC')
+    log.debug("Asking Electrum for a miner fee")
     payload = {
         "id": str(uuid.uuid4()),
         "method": "getfeerate"
@@ -653,7 +653,7 @@ def pay(payment):
         log.exception(e)
         return render_template('users/electrum-problems.html')
 
-    fee = minerfee(cointotal)
+    fee = minerfee(cointotal, electrum_url)
 
     # creating database record for payment and linking it into orders
     payment_sql = Payments.create(

@@ -65,9 +65,9 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
 *.log
 local_settings.py
+beton/settings_local.py
 
 # Flask stuff:
 instance/
@@ -103,6 +103,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+data/
 
 # temporary debugger fixes
 beton/static/css/toolbar.css

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
 from flask_kvsession import KVSessionExtension
@@ -11,21 +10,21 @@ from beton import commands, public, user
 from beton.assets import assets
 from beton.extensions import bcrypt, cache, configure_uploads, csrf_protect, patch_request_class
 from beton.extensions import db, debug_toolbar, images, login_manager, mail, migrate
-from beton.settings import ProdConfig
-
 from beton.user.models import User
 
 moment = Moment()
 sesstore = FilesystemStore('./data')
 
-def create_app(config_object=ProdConfig):
+
+def create_app():
     """An application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
 
     :param config_object: The configuration object to use.
     """
     app = Flask(__name__.split('.')[0])
     app.wsgi_app = ProxyFix(app.wsgi_app)
-    app.config.from_object(config_object)
+    app.config.from_pyfile('./settings.py')
+    app.config.from_envvar('BETON')
     register_extensions(app)
     register_blueprints(app)
     register_errorhandlers(app)

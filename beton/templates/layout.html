@@ -1,15 +1,17 @@
 <!doctype html>
-<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<!-- https://www.paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]>  <html class="ie ie6 lte9 lte8 lte7"> <![endif]-->
+<!--[if IE 7]>     <html class="ie ie7 lte9 lte8 lte7"> <![endif]-->
+<!--[if IE 8]>     <html class="ie ie8 lte9 lte8"> <![endif]-->
+<!--[if IE 9]>     <html class="ie ie9 lte9"> <![endif]-->
+<!--[if gt IE 9]>  <html> <![endif]-->
+<!--[if !IE]><!--> <html>             <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-
-  <title>{% block page_title %}
-      {{ config.USER_APP_NAME }}
-    {% endblock %}
+  <title>
+	{% block page_title %}
+      		{{ config.USER_APP_NAME }}
+    	{% endblock %}
   </title>
   <meta name="description" content="{% block meta_description %}{% endblock %}">
   <meta name="author" content="{% block meta_author %}{% endblock %}">
@@ -18,18 +20,19 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="{{ config.SUBDIR }}/static/libs/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{{ config.SUBDIR }}/static/libs/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css">
   {% assets "css_all" %}
     <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}">
   {% endassets %}
 
   {% block css %}{% endblock %}
 
+  <!--
    <link
    href="https://fonts.googleapis.com/css?family=Fresca|Tauri&amp;subset=latin-ext"
    rel="stylesheet"> 
+   -->
 
-  
   <!-- this part of css must be here because requires templating, not active
   during debug -->
   {% if not config['DEBUG'] %}
@@ -51,7 +54,7 @@
         <div id="loader"></div>
         {# <div id="sloww">This server is slow, we know and we are working on it. At the moment just please be patient.</div> #}
 {% block body %}
-{% with form=form  %}
+{% with form=form %}
 {% include "nav.html" %}
 {% endwith %}
 {% include "public/macros.html" %}

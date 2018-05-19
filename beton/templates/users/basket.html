@@ -41,6 +41,7 @@
                         <div>
                             <a href="{{ url_for('user.pay', payment=x) }}"
                                 class="btn btn-success btn-xs">{{ config.PAYMENT_SYSTEMS[x][1] }}</a>
+                            <p class="text-info"><em>{{ config.PAYMENT_SYSTEMS[x][2] }}</em></p>
                         </div>
                         {% if loop.last == False %}
                             or

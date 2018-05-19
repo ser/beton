@@ -1,17 +1,18 @@
 {
   "name": "beton",
   "dependencies": {
-    "bootstrap": "",
     "jQuery": ">=1.6",
-    "savvior": "",
-    "bootstrap-calendar": "",
+    "bootstrap": "",
     "bootstrap-datepicker": "",
+    "bootstrap-progressbar": "",
+    "bootswatch": "",
+    "savvior": "",
     "gasparesganga-jquery-loading-overlay": "",
     "qrious": "",
-    "bootstrap-progressbar": "",
     "jquery-timeago": "",
-    "bootswatch": "",
     "font-awesome": "",
     "moment-timezone": "",
+    "underscore": "",
+    "fullcalendar": ""
   }
 }
