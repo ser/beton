@@ -1,5 +1,6 @@
 import json
 import names
+import random
 import requests
 import uuid
 import xmlrpc.client
@@ -18,6 +19,11 @@ from beton.user.models import Banner, Basket, Orders, Payments, Prices  # , Zone
 from beton.utils import flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
+
+
+def random_color():
+    color = "%03x" % random.randint(0, 0xFFF)
+    return "#"+str(color)
 
 
 def krakenrate(coin):
@@ -352,6 +358,9 @@ def api_all_campaigns(zone_id):
     """JSON:
     https://fullcalendar.io/docs/event-object
     """
+    # TODO: get timescales from fullcalendar uri
+    # start = request.args.get('start')
+    # end = request.args.get('end')
     # Get all orders from local database
     if zone_id == 0:
         all_orders = Orders.query.all()
@@ -364,7 +373,8 @@ def api_all_campaigns(zone_id):
         tasks['id'] = order.campaigno
         tasks['title'] = fullname
         tasks['allDay'] = "true"
-        # tasks['resourceId'] = order.zoneid
+        tasks['color'] = random_color()
+        tasks['resourceId'] = order.zoneid
         # calendar['url'] = ''
         # starttime = datetime.strptime(order.begins_at, '%Y%m%dT%H:%M:%S')
         # endtime = datetime.strptime(order.stops_at, '%Y%m%dT%H:%M:%S')
