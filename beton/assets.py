@@ -5,7 +5,6 @@ css = Bundle(
     'libs/bootswatch/dist/superhero/bootstrap.css',
     'libs/fullcalendar/dist/fullcalendar.css',
     'libs/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css',
-    'libs/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.css',
     'css/style.css',
     filters='cssmin',
     output='public/css/common.css'
@@ -23,7 +22,8 @@ js = Bundle(
     'libs/bootstrap-datepicker/js/bootstrap-datepicker.js',
     'libs/enquire/dist/enquire.js',
     'libs/savvior/dist/savvior.js',
-    'libs/bootstrap-progressbar/bootstrap-progressbar.js',
+    'libs/progresspiesvg/js/jquery-progresspiesvg.js',
+    'libs/progresspiesvg/js/jquery-progresspiesvg-valueDisplay.js',
     'libs/qrious/dist/qrious.js',
     'js/plugins.js',
     filters='jsmin',

@@ -30,7 +30,7 @@
                     <div class="thumbnail">
                         {% for url in all_urls %}
                             {% if url[0] == banner.id %}
-                                <img src="{{ url[1] }}" class="img-responsive">
+                                <img src="{{ url[1] }}" class="img-thumbnail">
                             {% endif %}
                         {% endfor %}
                         <div class="caption">
@@ -79,7 +79,7 @@
                     <div class="panel-body">
                         <div id="zonename">{{ zone.zoneName }}</div>
                         <div id="zonesizetxt"><p>size: {{ zone.width }}x{{ zone.height }}; price: {{ zone.price.dayprice / 100 }}<i
-                                    class="fa fa-eur fa-fw" aria-hidden="true"></i>/day</p></div>
+                                    class="fas fa-euro-sign" aria-hidden="true"></i>/day</p></div>
                         <div id="zonesize"><img src="https://placehold.it/{{ zone.width}}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                         <form action="{{ url_for('user.order') }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -179,8 +179,8 @@
         </div>
         <div class="col-xs-6">
             <h3>Calculations</h3>
-            <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
-            <p>Total is: {{ dayprice/100*(days+1) }} <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
+            <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
+            <p>Total is: {{ dayprice/100*(days+1) }} <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
         </div>
     </div>
 

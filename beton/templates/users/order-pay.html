@@ -13,35 +13,49 @@ $.timeago.settings.allowFuture = true;
 
 /* TODO: verify if client is capable to do WebSockets */
 if (payid) {
-            $('.progress .progress-bar').progressbar();
-            var $pb = $('.progress .progress-bar');
+    $(".pp.clockface").progressPie({
+        mode: $.fn.progressPie.Mode.COLOR,
+        size: 111,
+        strokeWidth: 11,
+        strokeColor: 'silver',
+        valueData: "val",
+        verticalAlign: "middle"
+    }).progressPie();
             jQuery(function ($) {
                 var current;
                 var initial = paytime;
                 var duration = payexp;
                 if (duration) {
-                  function update() {
-                    var current = 100 - (100 * (Math.floor(Date.now()/1000) - initial)/duration);
-                    $pb.attr('data-transitiongoal', current).progressbar({
-                        display_text: 'center',
-                        use_percentage: false,
-                        amount_format: function(amount_part) {
-                                        if (current > 0) {
-                                            return "Expires in: " + $.timeago(new Date(initial * 1000 + duration *1000));
-                                        }},
-                    });
-                    if (current <= 0) {
-                        $("div.progress").replaceWith('<div class="alert alert-danger" role="alert">This payment request has expired, do not try pay it anymore!</div>');
-                        $("p#btcpay").replaceWith('<p>You were about to pay:</p>');
-                        $("p#reqpaid").replaceWith('');
-                        $("p#btcdesc").replaceWith('');
-                        $("p#btcinfo").replaceWith('<p>to the bitcoin address:</p>');
-                        // We can close WSS as we don't need to get any more data from Electrum
-                        ws.close();
-                    }
-                  };
-                  var interval = setInterval(update, 3000);
-                 }
+                    function update() {
+                        var current = 100 - (100 * (Math.floor(Date.now()/1000) - initial)/duration);
+                        $(".pp.clockface").each(function(){
+                            $(this).data("val", parseInt(current));
+                            $(this).progressPie({
+                                mode: $.fn.progressPie.Mode.COLOR,
+                                size: 111,
+                                strokeWidth: 11,
+                                strokeColor: 'silver',
+                                valueData: "val",
+                                verticalAlign: "middle",
+                                update: true
+                            });
+                        }).progressPie();
+                        $("p.licznik").html("This payment request expires in " + $.timeago(new Date(initial * 1000 + duration *1000)));
+                        $("span.youhave").html($.timeago(new Date(initial * 1000 + duration *1000)));
+                        if (current <= 0) {
+                            $("div.odliczanie").replaceWith('<div class="alert alert-danger" role="alert">This payment request has expired, do not try pay it anymore!</div>');
+                            $("p#btcpay").replaceWith('<p>You were about to pay:</p>');
+                            $("p#reqpaid").replaceWith('');
+                            $("p#btcdesc").replaceWith('');
+                            $("p#minerfee").replaceWith('');
+                            $("p#btcinfo").replaceWith('<p>to the bitcoin address:</p>');
+                            $("div.naglowek").replaceWith('<h1>You have not paid</h1><p>You did not pay on time or the paid amount was not enough. If you sent any money, contact us for a refund, please.</p>');
+                            // We can close WSS as we don't need to get any more data from Electrum
+                            ws.close();
+                        }
+                    };
+                    var interval = setInterval(update, 5000);
+                }
             });
             // Websocket activation and monitoring
             jQuery(function ($) {

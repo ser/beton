@@ -9,12 +9,11 @@
         var payuri = "{{ electrum['URI'] }}";
     </script>
     <div class="jumbotron">
-        <h1>Just pay, {{ current_user.username }}</h1>
-        <div class="row">
-            <div class="col-xs-12">
-                <p>After you pay, we will automatically verify the payment
-                    and show you that it's paid.</p>
-            </div>
+        <div class="naglowek">
+            <h1>Just pay, {{ current_user.username }}</h1>
+            <p>You have <span class="youhave">twenty minutes from
+                now</span> to pay. After you pay, we will automatically verify
+                the payment and show you that it's paid.</p>
         </div>
     </div>
     <div class="row">
@@ -23,17 +22,17 @@
             <p>You want to have {{ orders }} campaign(s).</p>
             <h3>Calculations</h3>
             <p>1 {{ currency }} is now for {{ exrate }}
-                <i class="fa fa-eur fa-fw" aria-hidden="true"></i></p>
+                <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
             <p>Total is:
-                {{ total }}<i class="fa fa-eur fa-fw" aria-hidden="true"></i> /
+                {{ total }}<i class="fas fa-euro-sign" aria-hidden="true"></i> /
                 {{ currency }}: {{ electrum['amount']|float / 100000000 }}
             </p>
-            <p class="alert alert-warning" role="alert">ATTENTION! Please pay
-                a good miner fee to have your transaction confirmed on time!
-                Estimated minimum fee: <b>{{ currency }}</b> {{ fee }} 
-                - but your wallet should suggest a correct value according
-                to your local circumstances.</p>
-
+            <p><b>Your campaign activates only after we receive one confirmation
+                from the {{ currency }} blockchain. Keep proper transaction
+                fee if you want be served.</b></p>
+            <p id='btcdesc'>This page will get automatically
+                updated when you pay or when the payment request is being
+                expired.</p>
         </div>
         <div class="col-sm-8 col-xs-12">
             <div class="row">
@@ -53,24 +52,24 @@
                     <p class="dont-break-out"><kbd class="dont-break-out" id="address">{{ electrum['address'] }}</kbd></p>
                 </div>
             </div>
-            <br/><br/>
+            <br/>
             <div class="row">
-                <div class="col-xs-12">
-                    <div class="progress progress-striped active right">
-                        <div class="progress-bar progress-bar-warning six-sec-ease-in-out" role="progressbar"></div>
+                <div class="col-sm-3 col-xs-12">
+                    <div class="odliczanie">
+                        <center>
+                            <span class="pp clockface" data-val="100"></span>
+                            <p class="licznik"></p>
+                        </center>
                     </div>
                 </div>
-                <div class="col-xs-12">
+                <div class="col-sm-9 col-xs-12">
                     <p id='btcstar'><sup><i class="fa fa-asterisk"
                                 aria-hidden="true"></i></sup> Please be aware
                         that you should cover {{ currency }} transaction fee and send
                         us precisely the amount specified above.</p>
-                    <p id='btcdesc'><b>Your campaign activates only 
-                        after we receive one confirmation from the {{ currency }}
-                        blockchain. Keep a proper transaction fee if you want
-                        be served on time. </b>This page will get automatically
-                        updated when you pay or when the payment request is being
-                        expired.</p>
+                    <p id='minerfee'>Estimated minimum fee: <b>{{ currency }}</b>
+                        {{ fee }} - but your wallet should suggest correct
+                        value according to your local circumstances.</p>
                 </div>
             </div>
         </div>

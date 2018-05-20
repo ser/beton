@@ -4,7 +4,7 @@
     "jQuery": ">=1.6",
     "bootstrap": "",
     "bootstrap-datepicker": "",
-    "bootstrap-progressbar": "",
+    "progresspiesvg": "",
     "bootswatch": "",
     "savvior": "",
     "gasparesganga-jquery-loading-overlay": "",
