@@ -79,12 +79,13 @@ if (payid) {
                     var received_msg = evt.data;
                     if (received_msg == 'paid') {
                         console.log("We have recived message from Electrum via WSS that transaction is paid.")
-                        $("div.progress").replaceWith('<div class="alert alert-success" role="alert"><p>This payment has been sent! Thank you.</p><p>We will activate the campaign after receiving one confirmation from the bitcoin blockchain.</p></div>');
+                        $("div.odliczanie").replaceWith('<div class="alert alert-success" role="alert"><p>This payment has been sent to us! Thank you.</p></div>');
                         $("p#reqpaid").replaceWith('<p><span class="badge">PAID</span> to address:</p>');
                         $("p#btcpay").replaceWith('<h2>&nbsp;</h2>');
                         $("p#btcinfo").replaceWith('');
                         $("p#btcstar").replaceWith('');
                         $("p#btcdesc").replaceWith('');
+                        $("div.naglowek").replaceWith('<h1>Paid. Thank you!</h1><p>We will activate your campaign(s) after receiving one confirmation from the blockchain.</p>')
                         // We can close WSS as we don't need to get any more data from Electrum
                         ws.close();
                     }
