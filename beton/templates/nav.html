@@ -1,5 +1,5 @@
-<nav class="navbar navbar-expand-sm rounded">
-    <a class="navbar-brand" href="{% if current_user.is_authenticated %}{{ url_for('user.user_me') }}{% else %}{{ url_for('public.home') }}{% endif %}"><i class="fas fa-puzzle-piece"></i>{{ config.USER_APP_NAME }}</a>
+<nav class="navbar navbar-expand-sm navbar-dark rounded">
+    <a class="navbar-brand" href="{% if current_user.is_authenticated %}{{ url_for('user.user_me') }}{% else %}{{ url_for('public.home') }}{% endif %}"><i class="fas fa-puzzle-piece"></i> {{ config.USER_APP_NAME }}</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse"
         data-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false"

@@ -37,6 +37,7 @@
   width: 90%;
   margin: auto;
   border: 5px solid;
+  color: gray;
 }
 #grid:after {
   content: "";
@@ -119,9 +120,11 @@
         -webkit-hyphens: auto;
         hyphens: auto;
 }
+/*
 .navbar-right {
         color: white;
 }
+*/
 
 canvas {
     width: 100%;

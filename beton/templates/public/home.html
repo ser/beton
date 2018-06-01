@@ -10,30 +10,43 @@
 </div><!-- /.jumbotron -->
 
 <div class="body-content">
-  <div class="row">
-    <div class="col-lg-4">
+    <div class="card-deck mb-3 text-center">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
     {% if not current_user or not current_user.is_authenticated %}
-      <h2><i class="fa fa-user-o fa-2x"></i> Create an account</h2>
-      <p>Sleek, intuitive - just three steps. First, create an account.</p>
-      <p><a href="user/register" class="btn btn-default">Create an account &raquo;</a></p>
+                <h4 class="my-0 font-weight-normal">Create an account</h4>
+            </div>
+            <div class="card-body">
+                <p>Sleek, intuitive - just three steps. First, create an account.</p>
+                <a class="btn btn-lg btn-block" role="button" href="user/register">Create an account &raquo;</a>
     {% else %}
-    <h2><i class="fa fa-newspaper-o fa-2x"></i> Check all zones and prices</h2>
-    <p>There is only one rule: your banner must fit into a zone :-)</p>
-    <p><a href="{{ url_for('user.offer') }}" class="btn btn-default">Check the
-            offer &raquo;</a></p>
+                <h4 class="my-0 font-weight-normal">Check zones and prices</h4>
+            </div>
+            <div class="card-body">
+                <p>Here your find all possible banner zones and their current prices.</p>
+                <a class="btn btn-block btn-primary" role="button" href="{{ url_for('user.offer') }}">Check the offer &raquo;</a>
     {% endif %}
+            </div>
+        </div>
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Upload your banner</h4>
+            </div>
+            <div class="card-body">
+                <p>Upload your banner. There is only one rule: your banner must
+                    fit into the zone you have chosen.</p>
+                <a class="btn btn-block btn-primary" role="button" href="{{ url_for('user.bannerz') }}">Your banners &raquo;</a>
+            </div>
+        </div>
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Chose zone</h4>
+            </div>
+            <div class="card-body">
+                <p>Next step is to select zone you want to have your banner in and add campaign to basket.</p>
+                <a class="btn btn-block btn-primary" role="button" href="{{ url_for('user.order') }}">Order campaign &raquo;</a>
+            </div>
+        </div><!-- /.row -->
     </div>
-    <div class="col-lg-4">
-      <h2><i class="fa fa-arrow-circle-o-up fa-2x"></i> Upload your banner</h2>
-      <p>Upload your banner. Of course please check our full offer first.
-      <p><a href="{{ url_for('user.bannerz') }}" class="btn btn-default">Your banners &raquo;</a></p>
-   </div>
-    <div class="col-lg-4">
-      <h2><i class="fa fa-credit-card fa-2x"></i> Select your zone and pay</h2>
-      <p>Next and last step is to select a zone and pay.
-          <p><a href="{{ url_for('user.order') }}" class="btn btn-default">Order a new campaign &raquo;</a></p>
-    </div>
-  </div><!-- /.row -->
-</div>
 {% endblock %}
 
