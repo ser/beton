@@ -9,22 +9,21 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
     {% if current_user and current_user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.offer') }}">Offer</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.offer') }}"><i class="fab fa-elementor fa-fw"></i> Offer</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('user.order') }}"><i class="fa fa-plus-square fa-spin fa-fw"
-                    aria-hidden="true"></i> Order a new campaign</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.basket') }}">({% if g.basket is defined %}{{ g.basket }}{% else %}0{% endif %})<i class="fa fa-shopping-cart
-                    fa-fw" aria-hidden="true"></i> Shopping basket</a></li>
+                    aria-hidden="true"></i> Order campaign</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.basket') }}">({% if g.basket is defined %}{{ g.basket }}{% else %}0{% endif %})<i class="fa fa-shopping-cart fa-fw" aria-hidden="true"></i> Shopping basket</a></li>
     {% endif %}
     </ul>
     <ul class="navbar-nav ml-auto">
     {% if current_user and current_user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.campaign') }}">campaigns</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.bannerz') }}">banners</a></li>
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="x" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="far fa-user"></i></a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="{{ url_for('public.logout') }}">Logout</a>
+            <a class="nav-link dropdown-toggle" href="x" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="far fa-user"></i> {{ current_user.username }}</a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="{{ url_for('user.campaign') }}"><i class="far fa-list-alt fa-fw"></i> Your campaigns</a>
+                <a class="dropdown-item" href="{{ url_for('user.bannerz')  }}"><i class="fas fa-equals fa-fw"></i> Your banners</a>
                 <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{{ url_for('public.logout') }}"><i class="fas fa-sign-out-alt fa-fw"></i> Logout</a>
             </div>
         </li>
     {% else %}

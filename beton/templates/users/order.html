@@ -139,13 +139,15 @@
                 </div>
                 <br/><br/>
                 <div class="row">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                    <input type="hidden" name="banner_id" value="{{ banner_id }}" />
-                    <input type="hidden" name="zone_id" value="{{ zone_id }}" />
-                    <input type="hidden" name="zone_name" value="{{ zone_name }}" />
-                    <input type="hidden" name="step" value="order" />
-                    <button type="submit" name="submit" value="order" class="btn
-                        btn-primary">Confirm and add to your shopping basket</button>
+                    <div class="col">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <input type="hidden" name="banner_id" value="{{ banner_id }}" />
+                        <input type="hidden" name="zone_id" value="{{ zone_id }}" />
+                        <input type="hidden" name="zone_name" value="{{ zone_name }}" />
+                        <input type="hidden" name="step" value="order" />
+                        <button type="submit" name="submit" value="order" class="btn
+                            btn-primary">Confirm dates and add to your shopping basket</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -166,18 +168,18 @@
                 </p>
                 <a href="{{ url_for('user.order') }}" class="btn btn-info">Order another campaign and pay
                     later</a>
-                or
+                or 
                 <a href="{{ url_for('user.basket') }}" class="btn btn-info">See your
                     basket and pay</a>
     </div>
     <h2>Statement of facts</h2>
     <div class="row">
-        <div class="col-xs-6">
+        <div class="col">
             <p>You want to have a campaign with banner #{{ banner_id }}</p>
             <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
             <p>for period: {{ datestart }} -  {{ datend }}.</p>
         </div>
-        <div class="col-xs-6">
+        <div class="col">
             <h3>Calculations</h3>
             <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
             <p>Total is: {{ dayprice/100*(days+1) }} <i class="fas fa-euro-sign" aria-hidden="true"></i></p>

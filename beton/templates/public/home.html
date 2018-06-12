@@ -1,12 +1,21 @@
 
 {% extends "layout.html" %}
 {% block content %}
+
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
-
-  <h1>Welcome</h1>
-
-  <p>This is a magic place, where you can manage web adverts.
+    {% if not current_user or not current_user.is_authenticated %}
+        <h1>Welcome!</h1>
+        <p>This is a magic place, where you can manage web adverts. To see
+            options and prices, please register first.</p>
+    {% else %}
+        <h1>Welcome, {{ current_user.username }}</h1>
+        <p>This is our friendly adserver. It's really simple: check prices for
+            our websites, upload your banner and order your
+            campaign.</p>
+        <p>Your previous and ongoing campaigns are available in the user menu on top
+            right of the screen.</p>
+    {% endif %}
 </div><!-- /.jumbotron -->
 
 <div class="body-content">
@@ -20,7 +29,7 @@
                 <p>Sleek, intuitive - just three steps. First, create an account.</p>
                 <a class="btn btn-lg btn-block" role="button" href="user/register">Create an account &raquo;</a>
     {% else %}
-                <h4 class="my-0 font-weight-normal">Check zones and prices</h4>
+                <h4 class="my-0 font-weight-normal"><i class="fab fa-elementor"></i> Check zones and prices</h4>
             </div>
             <div class="card-body">
                 <p>Here your find all possible banner zones and their current prices.</p>
@@ -30,7 +39,7 @@
         </div>
         <div class="card mb-4 box-shadow">
             <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Upload your banner</h4>
+                <h4 class="my-0 font-weight-normal"><i class="fas fa-equals"></i> Upload your banner</h4>
             </div>
             <div class="card-body">
                 <p>Upload your banner. There is only one rule: your banner must
@@ -40,7 +49,8 @@
         </div>
         <div class="card mb-4 box-shadow">
             <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Chose zone</h4>
+                <h4 class="my-0 font-weight-normal"> <i class="far
+                        fa-list-alt"></i> Chose zone and order</h4>
             </div>
             <div class="card-body">
                 <p>Next step is to select zone you want to have your banner in and add campaign to basket.</p>
