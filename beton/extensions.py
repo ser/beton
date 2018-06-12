@@ -8,7 +8,6 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_uploads import UploadSet, IMAGES
 from flask_user import UserManager, SQLAlchemyAdapter
 from flask_wtf.csrf import CSRFProtect
 
@@ -24,5 +23,4 @@ migrate = Migrate()
 cache = Cache()
 debug_toolbar = DebugToolbarExtension()
 mail = Mail()
-images = UploadSet('images', IMAGES)
 # admin = Admin()

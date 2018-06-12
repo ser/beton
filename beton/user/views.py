@@ -11,14 +11,15 @@ from PIL import Image
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
+from flask_uploads import UploadSet, IMAGES
 
 # from beton.extensions import images
 from beton.logger import log
-from beton.images import images
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Orders, Payments, Prices  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
 
+images = UploadSet('images', IMAGES)
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
 
 

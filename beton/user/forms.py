@@ -2,12 +2,13 @@
 """User forms."""
 from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
+from flask_uploads import UploadSet, IMAGES
 # from wtforms import IntegerField, PasswordField, StringField
 from wtforms import IntegerField, StringField
 # from wtforms.validators import DataRequired, Email, EqualTo, Length
 from wtforms.validators import DataRequired, Length
 
-from beton.extensions import images
+images = UploadSet('images', IMAGES)
 
 
 class AddBannerForm(Form):
