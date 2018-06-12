@@ -2,17 +2,16 @@
 from flask import Flask, render_template
 from flask_kvsession import KVSessionExtension
 from flask_moment import Moment
-from flask_user import UserManager, SQLAlchemyAdapter
+from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
 from simplekv.fs import FilesystemStore
 from werkzeug.contrib.fixers import ProxyFix
 
 from beton import commands, public, user
 from beton.assets import assets
-from beton.extensions import bcrypt, cache, configure_uploads, csrf_protect, patch_request_class
-from beton.extensions import db, debug_toolbar, images, login_manager, mail, migrate
-from beton.user.models import User
+from beton.extensions import bcrypt, cache, csrf_protect
+from beton.extensions import db, debug_toolbar, mail, migrate
+from beton.extensions import user_manager
 
-moment = Moment()
 sesstore = FilesystemStore('./data')
 
 
@@ -26,6 +25,7 @@ def create_app():
     app.config.from_pyfile('./settings.py')
     app.config.from_envvar('BETON')
     register_extensions(app)
+    register_configuration(app)
     register_blueprints(app)
     register_errorhandlers(app)
     register_shellcontext(app)
@@ -42,14 +42,18 @@ def register_extensions(app):
     csrf_protect.init_app(app)
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
+    user_manager.init_app(app)
+    return None
+
+
+def register_configuration(app):
+    KVSessionExtension(sesstore, app)
+    moment = Moment()
+    moment.init_app(app)
+    images = UploadSet('images', IMAGES)
     configure_uploads(app, images)
     patch_request_class(app, size=577216)
-    moment.init_app(app)
-    mail.init_app(app)
-    db_adapter = SQLAlchemyAdapter(db, User)
-    user_manager = UserManager(db_adapter, app)
-    KVSessionExtension(sesstore, app)
-    return None
 
 
 def register_blueprints(app):

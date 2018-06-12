@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """Database module, including the SQLAlchemy database object and DB-related utilities."""
-from .compat import basestring
-from .extensions import db
 
+from flask_sqlalchemy import SQLAlchemy
+
+from .compat import basestring
+# from .extensions import db
+
+
+db = SQLAlchemy()
 # Alias common SQLAlchemy names
 Column = db.Column
 relationship = db.relationship

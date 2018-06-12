@@ -12,8 +12,9 @@ from PIL import Image
 from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 
-from beton.extensions import images
+# from beton.extensions import images
 from beton.logger import log
+from beton.images import images
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Orders, Payments, Prices  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
