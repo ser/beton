@@ -16,11 +16,19 @@ from flask_uploads import UploadSet, IMAGES
 # from beton.extensions import images
 from beton.logger import log
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Basket, Orders, Payments, Prices  # , Zone2Campaign
+from beton.user.models import Banner, Basket, Orders, Payments, Prices, User  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
 
 images = UploadSet('images', IMAGES)
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
+
+
+def amiadmin():
+    if current_user.has_role('admin'):
+        isadmin = True
+    else:
+        isadmin = False
+    return isadmin
 
 
 def random_color():
@@ -181,14 +189,8 @@ def offer():
     publishers = r.ox.getPublisherListByAgencyId(sessionid,
                                                  current_app.config.get('REVIVE_AGENCY_ID'))
 
-    if current_user.has_role('admin'):
-        isadmin = True
-    else:
-        isadmin = False
     all_zones = []
-
     for website in publishers:
-
         # get zones from Revive
         allzones = r.ox.getZoneListByPublisherId(sessionid,
                                                  website['publisherId'])
@@ -238,7 +240,7 @@ def offer():
 
     # Render the page and quit
     return render_template('users/offer.html', allzones=all_zones,
-                           publishers=publishers, isadmin=isadmin,
+                           publishers=publishers, isadmin=amiadmin(),
                            form=form)
 
 
@@ -275,7 +277,7 @@ def campaign():
                         current_user.username)['advertiserId'])
 
     # dirty auth hack, TODO to be rewritten
-    if current_user.has_role('admin'):
+    if amiadmin():
         all_campaigns = []
         for advertiser in all_advertisers:
             all_campaigns = all_campaigns + r.ox.getCampaignListByAdvertiserId(sessionid, advertiser['advertiserId'])
@@ -709,3 +711,15 @@ def pay(payment):
                            fee=fee,
                            currency=payment_system[0],
                            electrum=result)
+
+
+@blueprint.route('/admin/users', methods=['get', 'post'])
+@login_required
+def listusers():
+    if amiadmin():  # only admins get see this list
+        all_users = User.query.all()
+        return render_template('users/listusers.html',
+                               all_users=all_users)
+    else:
+        flash('You need admin privileges.', 'info')
+        return redirect(url_for('public.home'))

@@ -1,0 +1,31 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="jumbotron">
+        <h1>All users, {{ current_user.username }}</h1>
+        <span class="label label-info">
+            This is a basic list of all users.</span>
+    </div>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">id</th>
+                <th>username</th>
+                <th>email</th>
+                <th>confirmed_at</th>
+                <th>is_enabled</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in all_users|reverse %}
+            <tr>
+                <th scope="row">{{ user.id }}</th>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.confirmed_at }}</td>
+                <td>{{ user.is_enabled }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
