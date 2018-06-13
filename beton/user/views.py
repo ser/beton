@@ -122,11 +122,12 @@ def get_basket(endpoint, values):
         sessionid = session['revive']
         try:
             r.ox.getUserList(sessionid)
-        except Exception as e:
-            log.debug("Exception")
-            log.exception(e)
+        except xmlrpc.client.Fault:
+            log.debug("XML-RPC session to Revive probably expired, getting new one.")
             sessionid = reviveme(r)
             session['revive'] = sessionid
+        except Exception as e:
+            log.exception(e)
     else:
         sessionid = reviveme(r)
         session['revive'] = sessionid
