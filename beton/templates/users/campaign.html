@@ -4,7 +4,12 @@
     <div class="jumbotron">
     <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
             aria-hidden="true"></i></h1>
-    <p>Here are your past, current and future campaigns</p>
+    <p>Here are your past, current and future campaigns, limited to those ending {{ no_weeks }} weeks ago or sooner.</p>
+    <p>You can also see your older campaigns: 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/26">6 months</a> or 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/52">12 months</a> or 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/999">all of them</a>
+    </p>
     </div>
     <div class="row">
         <div class="col-sm-6">

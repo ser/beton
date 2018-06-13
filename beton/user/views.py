@@ -6,6 +6,7 @@ import uuid
 import xmlrpc.client
 
 from datetime import datetime
+from datetime import timedelta
 from dateutil import parser
 from PIL import Image
 
@@ -246,9 +247,12 @@ def offer():
 
 
 @blueprint.route('/campaign')
+@blueprint.route('/campaign/<int:no_weeks>')
 @login_required
-def campaign():
+def campaign(no_weeks=None):
     """Get and display all campaigns belonging to user."""
+    if not no_weeks:
+        no_weeks = 8
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
     sessionid = session['revive']
@@ -294,67 +298,73 @@ def campaign():
     all_campaigns_standardized = []
 
     for campaign in all_campaigns:
-        # check orders what do we know about that campaign
-        orderinfo = Orders.query.filter_by(campaigno=campaign['campaignId']).first()
-        sql = Payments.query.filter_by(id=orderinfo.paymentno).first()
-        tasks = {}
-        tasks['campaignId'] = campaign['campaignId']
-        tasks['campaignName'] = campaign['campaignName']
-        tasks['comments'] = campaign['comments']
-        starttime = datetime.strptime(campaign['startDate'].value,
-                                      '%Y%m%dT%H:%M:%S')
         endtime = datetime.strptime(campaign['endDate'].value,
                                     '%Y%m%dT%H:%M:%S')
-        tasks['startDate'] = starttime
-        tasks['endDate'] = endtime
-        present = datetime.now()
-        if endtime < present:
-            tasks['expired'] = True
-        else:
-            tasks['expired'] = False
+        nowtime = datetime.now()
+        # limit campaigns to no_weeks only
+        if (nowtime - endtime) < timedelta(weeks=no_weeks):
+            # log.debug((nowtime - endtime))
 
-        try:
-            tasks['address'] = sql.address
-        except BaseException:
-            tasks['address'] = "0"
+            # check orders what do we know about that campaign
+            orderinfo = Orders.query.filter_by(campaigno=campaign['campaignId']).first()
+            sql = Payments.query.filter_by(id=orderinfo.paymentno).first()
+            tasks = {}
+            tasks['campaignId'] = campaign['campaignId']
+            tasks['campaignName'] = campaign['campaignName']
+            tasks['comments'] = campaign['comments']
+            starttime = datetime.strptime(campaign['startDate'].value,
+                                          '%Y%m%dT%H:%M:%S')
+            tasks['startDate'] = starttime
+            tasks['endDate'] = endtime
+            present = datetime.now()
+            if endtime < present:
+                tasks['expired'] = True
+            else:
+                tasks['expired'] = False
 
-        try:
-            tasks['amount_coins'] = sql.total_coins
-        except BaseException:
-            tasks['amount_coins'] = 0
+            try:
+                tasks['address'] = sql.address
+            except BaseException:
+                tasks['address'] = "0"
 
-        try:
-            tasks['chain'] = sql.blockchain
-        except BaseException:
-            tasks['chain'] = "0"
+            try:
+                tasks['amount_coins'] = sql.total_coins
+            except BaseException:
+                tasks['amount_coins'] = 0
 
-        try:
-            if int(sql.txno) == 0:
-                tasks['ispaid'] = False
-        except BaseException:
-            tasks['ispaid'] = True
+            try:
+                tasks['chain'] = sql.blockchain
+            except BaseException:
+                tasks['chain'] = "0"
 
-        # ask for stats
-        try:
-            ztatz = r.ox.campaignBannerStatistics(sessionid,
-                                                  campaign['campaignId'],
-                                                  datetime(2011, 1, 1, 0, 0),
-                                                  datetime.now()
-                                                  )
-            tasks['impressions'] = ztatz[0]['impressions']
-        except BaseException:
-            tasks['impressions'] = 0
+            try:
+                if int(sql.txno) == 0:
+                    tasks['ispaid'] = False
+            except BaseException:
+                tasks['ispaid'] = True
 
-        # We ignore campaigns in the basket
-        if tasks['address'] != "0":
-            all_campaigns_standardized.append(tasks)
+            # ask for stats
+            try:
+                ztatz = r.ox.campaignBannerStatistics(sessionid,
+                                                      campaign['campaignId'],
+                                                      datetime(2011, 1, 1, 0, 0),
+                                                      datetime.now()
+                                                      )
+                tasks['impressions'] = ztatz[0]['impressions']
+            except BaseException:
+                tasks['impressions'] = 0
+
+            # We ignore campaigns in the basket
+            if tasks['address'] != "0":
+                all_campaigns_standardized.append(tasks)
 
     # Render the page and quit
     return render_template('users/campaign.html',
                            all_campaigns=all_campaigns_standardized,
                            banners=banners,
                            roles=current_user.roles,
-                           now=datetime.utcnow())
+                           now=datetime.utcnow(),
+                           no_weeks=no_weeks)
 
 
 @blueprint.route('/api/all_campaigns_in_zone/<int:zone_id>')
