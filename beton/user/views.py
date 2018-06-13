@@ -251,8 +251,8 @@ def offer():
 @login_required
 def campaign(no_weeks=None):
     """Get and display all campaigns belonging to user."""
-    if not no_weeks:
-        no_weeks = 8
+    if not no_weeks:  # we show 1 month of campaign by default
+        no_weeks = 4
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
                                   verbose=False)
     sessionid = session['revive']

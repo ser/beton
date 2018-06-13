@@ -6,6 +6,7 @@
             aria-hidden="true"></i></h1>
     <p>Here are your past, current and future campaigns, limited to those ending {{ no_weeks }} weeks ago or sooner.</p>
     <p>You can also see your older campaigns: 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/8">2 months</a> or 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/26">6 months</a> or 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/52">12 months</a> or 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/999">all of them</a>
@@ -13,24 +14,40 @@
     </div>
     <div class="row">
         <div class="col-sm-6">
-            <h3>Your current campaigns</h3>
-            <div id="grid">
-                {% for campaign in all_campaigns|reverse %}
-                    {% include "users/campaign-elements.html" %}
-                {% endfor %}
+
+            <div class="card border-primary mb-3">
+                <div class="card-header">Your current campaigns</div>
+                <div class="card-body">
+                    <div id="grid">
+                        {% for campaign in all_campaigns|reverse %}
+                            {% include "users/campaign-elements.html" %}
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            <h3>Unpaid campaigns</h3>
-            <div id="grid">
-                {% for campaign in all_campaigns|reverse %}
-                    {% include "users/campaign-elements-unpaid.html" %}
-                {% endfor %}
+
+            <div class="card border-warning mb-3">
+                <div class="card-header">Unpaid campaigns</div>
+                <div class="card-body">
+                    <div id="grid">
+                        {% for campaign in all_campaigns|reverse %}
+                            {% include "users/campaign-elements-unpaid.html" %}
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            <h3>Your expired campaigns</h3>
-            <div id="grid">
-                {% for campaign in all_campaigns|reverse %}
-                    {% include "users/campaign-elements-expired.html" %}
-                {% endfor %}
+
+            <div class="card border-success mb-3">
+                <div class="card-header">Your expired campaigns</div>
+                <div class="card-body">
+                    <div id="grid">
+                        {% for campaign in all_campaigns|reverse %}
+                            {% include "users/campaign-elements-expired.html" %}
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
+
         </div>
         <div class="col-sm-6">
             <h3>This is an overview of all recent and ongoing campaigns on our websites</h3>
