@@ -4,7 +4,7 @@
     <div class="jumbotron">
     <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
             aria-hidden="true"></i></h1>
-    <p>Here are your past, current and future campaigns, limited to those ending {{ no_weeks }} weeks ago or sooner.</p>
+    <p class="lead">Here are your past, current and future campaigns, limited to those ending {{ no_weeks }} weeks ago or sooner.</p>
     <p>You can also see your older campaigns: 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/8">2 months</a> or 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/26">6 months</a> or 
@@ -26,23 +26,23 @@
                 </div>
             </div>
 
+            <div class="card border-success mb-3">
+                <div class="card-header">Your previous successful campaigns</div>
+                <div class="card-body">
+                    <div id="grid">
+                        {% for campaign in all_campaigns|reverse %}
+                            {% include "users/campaign-elements-expired.html" %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
             <div class="card border-warning mb-3">
                 <div class="card-header">Unpaid campaigns</div>
                 <div class="card-body">
                     <div id="grid">
                         {% for campaign in all_campaigns|reverse %}
                             {% include "users/campaign-elements-unpaid.html" %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="card border-success mb-3">
-                <div class="card-header">Your expired campaigns</div>
-                <div class="card-body">
-                    <div id="grid">
-                        {% for campaign in all_campaigns|reverse %}
-                            {% include "users/campaign-elements-expired.html" %}
                         {% endfor %}
                     </div>
                 </div>
