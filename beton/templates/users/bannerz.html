@@ -8,13 +8,13 @@
             Your banner must have exactly the same size as the
             zone you want to put it in!</span>
     </div>
-    <div id="grid">
+    <div class="card-columns">
         {% for banner in all_banners|reverse %}
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Banner #{{ banner.id }}</h3>
+            <div class="card border-light">
+                <div class="card-header">
+                    Banner #{{ banner.id }}
                 </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <div class="thumbnail">
                         {% for url in all_urls %}
                             {% if url[0] == banner.id %}
@@ -22,7 +22,7 @@
                                 {#% break %#}
                             {% endif %}
                         {% endfor %}
-                        <div class="caption">
+                        <div class="card-text">
                             <div id="created_at">{{ banner.created_at }}</div>
                             <div id="url">{{ banner.url }}</div>
                             <div id="size">{{ banner.width }} x {{ banner.height }}</div>
@@ -33,17 +33,4 @@
             </div>
         {% endfor %}
     </div>
-{% endblock %}
-{% block js %}
-    <script>
-        $(document).ready(function() {
-            savvior.init('#grid', {
-                "screen and (max-width: 30em)": { columns: 1 },
-                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
-                "screen and (min-width: 60em) and (max-width: 80em)": {
-                      columns: 3 },
-                "screen and (min-width: 80em)": { columns: 4 },
-            });
-        });
-     </script>
 {% endblock %}
