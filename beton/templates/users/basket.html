@@ -11,7 +11,7 @@
         <div class="row">
             <div class="col-sm-6 col-xs-12">
                 <p>Here you can see your shopping basket.</p>
-                <p>In total whole basket is: ***
+                <p>In total whole basket is:
                     {% set z = [] %}
                     {% for y in price %}
                         {% if y[1] == "EUR" %}
@@ -29,7 +29,7 @@
                             {% endif %}
                         {% endfor %}
                         <br/>
-                        <b>{{ x }}:</b> {{ z|sum|round(9) }}
+                        <b>{{ x }}:</b> {{ z|sum|round(9) }} ***
                     {% endfor %}
                 <div>
                     <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger">Empty whole basket</a>
@@ -51,16 +51,17 @@
         </div>
     </div>
     </div>
-    <div id="grid">
+    <div class="card-columns">
         {% for order in basket %}
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Campaign #{{ order[0].campaigno }}</h3>
+            <div class="card border-light">
+                <div class="card-header">
+                    Campaign #{{ order[0].campaigno }}
                 </div>
-                <div class="panel-body">
+                <div class="card-body">
                     {% if order[0].stops_at < present %}
                         <div class="alert alert-warning">
-                            <p>Campaign already expired! Remove it from the basket!</p>
+                            <h4 class="alert-heading">Campaign already expired!</h4>
+                            <p>We advise you to remove it from the basket.</p>
                         </div>
                     {% endif %}
                     <div class="thumbnail">
@@ -77,33 +78,24 @@
                                 {% for x in price %}
                                     {% if x[0] == order[0].campaigno %}
                                     <br/>
-                                    <b>{{ x[1] }}:</b> {{ x[2] }}
+                                    <b>{{ x[1] }}:</b> {{ x[2] }} ***
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <a href="{{ config.OUR_URL }}clear/basket/{{ order[0].campaigno }}" class="btn btn-danger btn-xs">Remove from
-                                basket</a>
                         </div>
                     </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ config.OUR_URL }}clear/basket/{{ order[0].campaigno }}"
+                        class="btn btn-danger btn-sm btn-block">Remove from basket</a>
                 </div>
             </div>
         {% endfor %}
     </div>
-    <p class="text-warning"> *** Please notice that estimated price may change when
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">***</h4>
+        <p>Please notice that estimated price may change when
         you decide to pay for your basket, according to current zone prices and cryptocurrency market exchange
         value. You'll get the final price when the payment invoice is generated.</p>
 {% endif %}
-{% endblock %}
-{% block js %}
-    <script>
-        $(document).ready(function() {
-            savvior.init('#grid', {
-                "screen and (max-width: 30em)": { columns: 1 },
-                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
-                "screen and (min-width: 60em) and (max-width: 80em)": {
-                      columns: 3 },
-                "screen and (min-width: 80em)": { columns: 4 },
-            });
-        });
-     </script>
 {% endblock %}
