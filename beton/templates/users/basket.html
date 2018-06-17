@@ -10,7 +10,7 @@
         <h1>Your basket, {{ current_user.username }}</h1>
         <div class="row">
             <div class="col-sm-6 col-xs-12">
-                <p>Here you can see your shopping basket.</p>
+                <p class="lead">Here you can see your shopping basket.</p>
                 <p>In total whole basket is:
                     {% set z = [] %}
                     {% for y in price %}
@@ -19,7 +19,7 @@
                         {% endif %}
                     {% endfor %}
                     <br/>
-                    <b>EUR:</b> {{ z|sum }}
+                    <b>EUR:</b> {{ '%0.2f'| format(z|sum) }}
 
                     {% for x in config.EXCHANGE_PRICES %}
                         {% set z = [] %}
