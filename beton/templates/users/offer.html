@@ -7,20 +7,20 @@
     </div>
     {% for website in publishers %}
         <h2>{{ website.publisherName }}</h2>
-            <div id="grid">
+            <div class="card-columns">
             {% for zone in allzones %}
                 {% if zone.publisherId == website.publisherId %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">{{ zone.zoneName }}</h3>
+                    <div class="card border-light">
+                        <div class="card-header">
+                            {{ zone.zoneName }}
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             <div id="size"><p>size: {{ zone.width }}x{{ zone.height }}</p></div>
                             <div id="widthheight"><img src="https://placehold.it/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                             <div id="comments">{{ zone.comments }}</div>
                             {#                            <div id="impressions">{{ zone.impressions }}</div> #}
-                            <div id="price"><p>{{ zone.price / 100 }}<i class="fa
-                                        fa-eur fa-fw" aria-hidden="true"></i>/day</p></div>
+                            <div id="price"><p>{{ zone.price / 100 }}<i class="fas
+                                        fa-euro-sign fa-fw" aria-hidden="true"></i>/day</p></div>
                             {% if isadmin == True %}
                                 <form action="{{ url_for('user.offer') }}" method="post">
                                     {{ form.csrf_token }}
@@ -35,17 +35,4 @@
             {% endfor %}
             </div>
     {% endfor %}
-{% endblock %}
-{% block js %}
-    <script>
-        $(document).ready(function() {
-            savvior.init('#grid', {
-                "screen and (max-width: 30em)": { columns: 1 },
-                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
-                "screen and (min-width: 60em) and (max-width: 80em)": {
-                      columns: 3 },
-                "screen and (min-width: 80em)": { columns: 4 },
-            });
-        });
-     </script>
 {% endblock %}

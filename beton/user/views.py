@@ -571,7 +571,7 @@ def basket():
         basket = 0
 
     return render_template('users/basket.html', basket=basket,
-                           price=price, present=datetime.now())
+                           price=price, present=datetime.now()-timedelta(days=1))
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')

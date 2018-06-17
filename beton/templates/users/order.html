@@ -6,8 +6,8 @@
         <h1>Select a banner, {{ current_user.username }}</h1>
         <div class="row">
             <div class="col-sm-6 col-xs-12">
-                <p>Select a banner for your new campaign, please</p>
-                <p>or <a class="btn btn-primary btn-lg" role="button"
+                <p class="lead">Select a banner for your new campaign, please</p>
+                <p>or <a class="btn btn-primary" role="button"
                         href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
             </div>
             <div class="col-sm-6 col-xs-12">
@@ -20,13 +20,13 @@
             </div>
         </div>
     </div>
-    <div id="grid">
+    <div class="card-columns">
         {% for banner in all_banners|reverse %}
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Banner #{{ banner.id }}</h3>
+            <div class="card border-light">
+                <div class="card-header">
+                    Banner #{{ banner.id }}
                 </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <div class="thumbnail">
                         {% for url in all_urls %}
                             {% if url[0] == banner.id %}
@@ -56,7 +56,7 @@
         <h1>Select the zone, {{ current_user.username }}</h1>
         <div class="row">
             <div class="col-sm-6 col-xs-12">
-                <h3>In which zone do you want to display this banner?</h3>
+                <p class="lead">In which zone do you want to display this banner?</p>
                 <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
             </div>
             <div class="col-sm-6 col-xs-12">
@@ -70,15 +70,15 @@
         </div>
     </div>
     {% if all_zones %}
-        <div id="grid">
+        <div id="card-colums">
             {% for zone in all_zones %}
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Zone #{{ zone.zoneId }}</h3>
+                <div class="card border-light">
+                    <div class="card-header">
+                        Zone #{{ zone.zoneId }}
                     </div>
-                    <div class="panel-body">
+                    <div class="card-body">
                         <div id="zonename">{{ zone.zoneName }}</div>
-                        <div id="zonesizetxt"><p>size: {{ zone.width }}x{{ zone.height }}; price: {{ zone.price.dayprice / 100 }}<i
+                        <div id="zonesizetxt"><p>size: {{ zone.width }}x{{ zone.height }}; price: {{ zone.price.dayprice / 100 }} <i
                                     class="fas fa-euro-sign" aria-hidden="true"></i>/day</p></div>
                         <div id="zonesize"><img src="https://placehold.it/{{ zone.width}}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                         <form action="{{ url_for('user.order') }}" method="post">
@@ -87,6 +87,7 @@
                             <input type="hidden" name="zone_id" value="{{ zone.zoneId }}" />
                             <input type="hidden" name="zone_name" value="{{ zone.zoneName }}" />
                             <input type="hidden" name="step" value="chose-date" />
+                            <hr>
                             <button type="submit" name="submit" value="chose-date" class="btn
                                 btn-primary">Choose this zone</button>
                         </form>
@@ -103,7 +104,7 @@
         <h1>Select dates, {{ current_user.username }}</h1>
         <div class="row">
             <div class="col-sm-6 col-xs-12">
-                <h3>Please select time period for this banner</h3>
+                <p class="lead">Please select time period for this banner</p>
                 <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
             </div>
             <div class="col-sm-6 col-xs-12">
@@ -193,15 +194,4 @@
 {% if step == "chose-date" %}
     {% include "users/order-chose-date.html" %}
 {% endif %}
-    <script>
-        $(document).ready(function() {
-            savvior.init('#grid', {
-                "screen and (max-width: 30em)": { columns: 1 },
-                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
-                "screen and (min-width: 60em) and (max-width: 80em)": {
-                      columns: 3 },
-                "screen and (min-width: 80em)": { columns: 4 },
-            });
-        });
-     </script>
 {% endblock %}

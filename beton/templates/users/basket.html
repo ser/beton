@@ -72,9 +72,9 @@
                                 <br/>
                                 {{ order.url }}
                                 <br/>
-                                <b>From:</b> {{ order[0].begins_at }}
+                                <b>From:</b> {{ order[0].begins_at.strftime('%Y-%m-%d (%A)') }}
                                 <br/>
-                                <b>To:</b> {{ order[0].stops_at }}
+                                <b>To:</b> {{ order[0].stops_at.strftime('%Y-%m-%d (%A)') }}
                                 {% for x in price %}
                                     {% if x[0] == order[0].campaigno %}
                                     <br/>
@@ -92,7 +92,9 @@
             </div>
         {% endfor %}
     </div>
+    <hr>
     <div class="alert alert-info" role="alert">
+        <hr>
         <h4 class="alert-heading">***</h4>
         <p>Please notice that estimated price may change when
         you decide to pay for your basket, according to current zone prices and cryptocurrency market exchange

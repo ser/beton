@@ -78,16 +78,5 @@
 {% endblock %}
 
 {% block js %}
-{% include "users/order-pay.html" %}
-    <script>
-        $(document).ready(function() {
-            savvior.init('#grid', {
-                "screen and (max-width: 30em)": { columns: 1 },
-                "screen and (min-width: 30em) and (max-width: 60em)" : { columns: 2 },
-                "screen and (min-width: 60em) and (max-width: 80em)": {
-                      columns: 3 },
-                "screen and (min-width: 80em)": { columns: 4 },
-            });
-        });
-     </script>
+    {% include "users/order-pay.html" %}
 {% endblock %}
