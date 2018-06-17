@@ -18,10 +18,12 @@
             <div class="card border-primary mb-3">
                 <div class="card-header">Your current campaigns</div>
                 <div class="card-body">
-                    <div id="grid">
-                        {% for campaign in all_campaigns|reverse %}
+                    <div class="card-columns">
+                    {% for campaign in all_campaigns|reverse %}
+                        {% if campaign['ispaid'] == True and campaign['expired'] == False %}
                             {% include "users/campaign-elements.html" %}
-                        {% endfor %}
+                        {% endif %}
+                    {% endfor %}
                     </div>
                 </div>
             </div>
@@ -29,10 +31,12 @@
             <div class="card border-success mb-3">
                 <div class="card-header">Your previous successful campaigns</div>
                 <div class="card-body">
-                    <div id="grid">
-                        {% for campaign in all_campaigns|reverse %}
-                            {% include "users/campaign-elements-expired.html" %}
-                        {% endfor %}
+                    <div class="card-columns">
+                    {% for campaign in all_campaigns|reverse %}
+                        {% if campaign['ispaid'] == True and campaign['expired'] == True %}
+                            {% include "users/campaign-elements.html" %}
+                        {% endif %}
+                    {% endfor %}
                     </div>
                 </div>
             </div>
@@ -40,10 +44,12 @@
             <div class="card border-warning mb-3">
                 <div class="card-header">Unpaid campaigns</div>
                 <div class="card-body">
-                    <div id="grid">
-                        {% for campaign in all_campaigns|reverse %}
-                            {% include "users/campaign-elements-unpaid.html" %}
-                        {% endfor %}
+                    <div class="card-columns">
+                    {% for campaign in all_campaigns|reverse %}
+                        {% if campaign['ispaid'] == False %}
+                            {% include "users/campaign-elements.html" %}
+                        {% endif %}
+                    {% endfor %}
                     </div>
                 </div>
             </div>
@@ -63,9 +69,9 @@
                 events: events_source
             }
     );
-    savvior.init('#grid', {
-        "screen and (max-width: 15em)": { columns: 1 },
-        "screen and (min-width: 15em)": { columns: 2 },
-    });
+//    savvior.init('#grid', {
+//        "screen and (max-width: 15em)": { columns: 1 },
+//        "screen and (min-width: 15em)": { columns: 2 },
+//    });
 </script>
 {% endblock %}

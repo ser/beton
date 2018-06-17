@@ -1,30 +1,35 @@
-{% if campaign['ispaid'] == True %}
-{% if campaign['expired'] == False %}
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 class="panel-title">#{{ campaign['campaignId'] }} {{ campaign['campaignName'] }}</h3>
+<div class="card border-light">
+    <div class="card-header">
+        #{{ campaign['campaignId']  }} {{ campaign['campaignName']  }}
     </div>
-    <div class="panel-body">
-        <div><p><b>From:</b> {{ campaign['startDate'] }}</p></div>
-        <div><p><b>To:</b> {{ campaign['endDate'] }}</p></div>
-        <div><p><b>{{ config.PAYMENT_SYSTEMS[campaign['chain']][0] }}:</b>
-                {{ campaign['amount_coins'] }} <i
-                    class="fa fa-arrows-h"
-                    aria-hidden="true"></i>
+    <div class="card-body">
+        <div class="card-text">
+            <p>
+                <b>From:</b> {{ campaign['startDate'].strftime('%Y-%m-%d') }}<br/>
+                <b>To:</b> {{ campaign['endDate'].strftime('%Y-%m-%d') }}
+            </p>
+            <p>
+                <b>{{ config.PAYMENT_SYSTEMS[campaign['chain']][0] }}:</b>
+                    {{ campaign['amount_coins'] }} <i
+                        class="fa fa-arrows-h"
+                        aria-hidden="true"></i><br/>
                 Confirmed? <a href="{{ config.PAYMENT_SYSTEMS[campaign['chain']][4] }}{{ campaign['address'] }}"
-                    target="_blank">
-                {{ campaign['ispaid'] }}</a></div>
+                        target="_blank">
+                        {{ campaign['ispaid'] }}</a>
+            </p>
+            <p><b>Impressions:</b> {{ campaign['impressions'] }}</p>
+        </div>
+    </div>
+    <div class="card-footer text-muted">
         {% for banner in banners %}
             {% if campaign['campaignId'] == banner[0] %}
                 {% if banner[1] %}
-                <div><img class="img-thumbnail thumbmax" 
-                    src="{{ banner[1][0]['imageURL'] }}"></div>
+                <img class="img-thumbnail thumbmax" 
+                    src="{{ banner[1][0]['imageURL'] }}"
+                    alt="[]">
                 {% endif %}
             {% endif %}
         {% endfor %}
-        <div><p>{{ campaign['comments'] }}</p></div>
-        <div><p><b>Impressions:</b> {{ campaign['impressions'] }}</p></div>
+        <p>{{ campaign['comments'] }}</p>
     </div>
 </div>
-{% endif %}
-{% endif %}
