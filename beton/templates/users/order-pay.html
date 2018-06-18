@@ -49,7 +49,7 @@ if (payid) {
                             $("p#btcdesc").replaceWith('');
                             $("p#minerfee").replaceWith('');
                             $("p#btcinfo").replaceWith('<p>to the bitcoin address:</p>');
-                            $("div.naglowek").replaceWith('<h1>You have not paid</h1><p>You did not pay on time or the paid amount was not enough. If you sent any money, contact us for a refund, please.</p>');
+                            $("div.naglowek").replaceWith('<h1>You have not paid</h1><p class="lead">You did not pay on time or the paid amount was not enough. If you sent any money, contact us for a refund, please.</p>');
                             // We can close WSS as we don't need to get any more data from Electrum
                             ws.close();
                         }

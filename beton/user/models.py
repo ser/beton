@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """User and other DB models."""
-# import uuid
 import datetime as dt
 
+from flask_sqlalchemy import SQLAlchemy
 from flask_user import UserMixin
 
-from beton.database import Column, Model, SurrogatePK, db, reference_col, relationship
+from beton.database import Column, Model, SurrogatePK, reference_col, relationship
+
+db = SQLAlchemy()
 
 
 class Role(SurrogatePK, Model):

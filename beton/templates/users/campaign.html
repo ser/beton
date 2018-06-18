@@ -42,8 +42,10 @@
             </div>
 
             <div class="card border-warning mb-3">
-                <div class="card-header">Unpaid campaigns</div>
+                <div class="card-header">Unpaid campaigns / expired</div>
                 <div class="card-body">
+                    <p class="card-title">Don't try to pay these campaigns as
+                        payment requests already have expired.</p>
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
                         {% if campaign['ispaid'] == False %}

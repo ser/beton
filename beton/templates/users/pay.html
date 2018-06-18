@@ -11,9 +11,11 @@
     <div class="jumbotron">
         <div class="naglowek">
             <h1>Just pay, {{ current_user.username }}</h1>
-            <p>You have <span class="youhave">twenty minutes from
+            <p class="lead">You have <span class="youhave lead">twenty minutes from
                 now</span> to pay. After you pay, we will automatically verify
                 the payment and show you that it's paid.</p>
+            <p class="lead">Plase do not close this page until you see here that you
+                have paid.</p>
         </div>
     </div>
     <div class="row">
@@ -21,10 +23,10 @@
             <h3>Statement of facts</h3>
             <p>You want to have {{ orders }} campaign(s).</p>
             <h3>Calculations</h3>
-            <p>1 {{ currency }} is now for {{ exrate }}
+            <p>1 {{ currency }} is now for {{ '%0.2f'| format(exrate|float) }}
                 <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
             <p>Total is:
-                {{ total }}<i class="fas fa-euro-sign" aria-hidden="true"></i> /
+                {{ total }} <i class="fas fa-euro-sign" aria-hidden="true"></i> /
                 {{ currency }}: {{ electrum['amount']|float / 100000000 }}
             </p>
             <p><b>Your campaign activates only after we receive one confirmation
