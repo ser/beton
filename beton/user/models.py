@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 """User and other DB models."""
 import datetime as dt
-
-from flask_sqlalchemy import SQLAlchemy
 from flask_user import UserMixin
-
-from beton.database import Column, Model, SurrogatePK, reference_col, relationship
-
-db = SQLAlchemy()
+from beton.database import Column, Model, SurrogatePK, db, reference_col, relationship
 
 
 class Role(SurrogatePK, Model):

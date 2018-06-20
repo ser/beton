@@ -11,17 +11,18 @@ from dateutil import parser
 from PIL import Image
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
+# from flask_sqlalchemy import SQLAlchemy
 from flask_login import current_user, login_required
 from flask_uploads import UploadSet, IMAGES
 
-# from beton.extensions import images
 from beton.logger import log
+# from beton.extensions import db
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Orders, Payments, Prices, User  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
 
-images = UploadSet('images', IMAGES)
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
+images = UploadSet('images', IMAGES)
 
 
 def amiadmin():
@@ -110,11 +111,15 @@ def minerfee(amount, electrum_url):
 def get_basket(endpoint, values):
     """We need basket on every view if authenticated"""
     if current_user.is_authenticated:
-        basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
-        if basket_sql:
-            g.basket = len(basket_sql)
-        else:
-            g.basket = 0
+        try:
+            basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
+            if basket_sql:
+                g.basket = len(basket_sql)
+            else:
+                g.basket = 0
+        except:
+            pass
+            # db.session.rollback()
 
     # keeping constant connection to Revive instance
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),

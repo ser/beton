@@ -1,35 +1,29 @@
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
 from flask_kvsession import KVSessionExtension
 from flask_moment import Moment
 from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
-from flask_user import UserManager, SQLAlchemyAdapter
 from simplekv.fs import FilesystemStore
 from werkzeug.contrib.fixers import ProxyFix
 
 from beton import commands, public, user
 from beton.assets import assets
-from beton.extensions import bcrypt, cache, csrf_protect
+from beton.extensions import bcrypt, cache, csrf_protect, db
 from beton.extensions import debug_toolbar, login_manager, mail, migrate
-from beton.user.models import User
+from beton.settings import ProdConfig
 
-db = SQLAlchemy()
 sesstore = FilesystemStore('./data')
 
 
-def create_app():
+def create_app(config_object=ProdConfig):
     """An application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
 
     :param config_object: The configuration object to use.
     """
     app = Flask(__name__.split('.')[0])
     app.wsgi_app = ProxyFix(app.wsgi_app)
-    app.config.from_pyfile('./settings.py')
-    app.config.from_envvar('BETON')
-    db.init_app(app)
-    db_adapter = SQLAlchemyAdapter(db, User)
-    user_manager = UserManager(db_adapter)
+    app.config.from_object(config_object)
+    #app.config.from_envvar('BETON')
     register_extensions(app)
     register_configuration(app)
     register_blueprints(app)
@@ -45,6 +39,7 @@ def register_extensions(app):
     bcrypt.init_app(app)
     cache.init_app(app)
     csrf_protect.init_app(app)
+    db.init_app(app)
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)

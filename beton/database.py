@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 """Database module, including the SQLAlchemy database object and DB-related utilities."""
 
-from flask_sqlalchemy import SQLAlchemy
-
 from .compat import basestring
-# from beton import db
+from .extensions import db
 
 # we need to fix this problem:
 # https://stackoverflow.com/questions/27972676/flask-sqlalchemy-mysql-server-has-gone-away-when-using-haproxy
-
-db = SQLAlchemy()
 
 # Alias common SQLAlchemy names
 Column = db.Column
