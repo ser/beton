@@ -34,7 +34,8 @@ flask-uploads>=0.2.1
 Pillow>=4.1.0
 
 # Auth
-Flask-Login==0.4.1
+#Flask-Login==0.4.1
+Flask-Security
 Flask-Bcrypt==0.7.1
 
 # Caching
@@ -47,6 +48,7 @@ Flask-DebugToolbar==0.10.1
 names>=0.3.0
 pymysql
 flask-admin
-flask-user
+# flask-user
 requests
 flask-kvsession
+dateutil

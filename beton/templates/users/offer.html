@@ -15,10 +15,10 @@
                             {{ zone.zoneName }}
                         </div>
                         <div class="card-body">
-                            <div id="size"><p>size: {{ zone.width }}x{{ zone.height }}</p></div>
                             <div id="widthheight"><img src="https://placehold.it/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
+                            <div id="size"><p>Size: {{ zone.width }}x{{ zone.height }}</p></div>
+                            <div id="impressions"><p>Monthly impression of all banners in this zones: {{ zone.impressions }}</p></div>
                             <div id="comments">{{ zone.comments }}</div>
-                            {#                            <div id="impressions">{{ zone.impressions }}</div> #}
                             <div id="price"><p>{{ zone.price / 100 }}<i class="fas
                                         fa-euro-sign fa-fw" aria-hidden="true"></i>/day</p></div>
                             {% if isadmin == True %}

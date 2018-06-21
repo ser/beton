@@ -3,20 +3,20 @@ import names
 import random
 import requests
 import uuid
+# All revive XML RPC commands:
+# https://github.com/revive-adserver/revive-adserver/blob/master/www/api/v2/xmlrpc/index.php
 import xmlrpc.client
 
 from datetime import datetime
 from datetime import timedelta
-from dateutil import parser
+from dateutil.relativedelta import *
 from PIL import Image
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
-# from flask_sqlalchemy import SQLAlchemy
 from flask_login import current_user, login_required
 from flask_uploads import UploadSet, IMAGES
 
 from beton.logger import log
-# from beton.extensions import db
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Orders, Payments, Prices, User  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
@@ -218,13 +218,13 @@ def offer():
 
             # ask for stats
             try:
-                ztatz = r.ox.getZoneDailyStatistics(sessionid,
+                ztatz = r.ox.advertiserZoneStatistics(sessionid,
                                                     zone['zoneId'],
-                                                    datetime.now() - parser.relativedelta(months=1),
+                                                    datetime.now() - relativedelta(months=1),
                                                     datetime.now()
                                                     )
-                # tmpdict['impressions'] = ztatz[0]['impressions']
-                tmpdict['impressions'] = ztatz
+                tmpdict['impressions'] = ztatz[0]['impressions']
+                # tmpdict['impressions'] = ztatz
             except Exception as e:
                 log.debug("Exception")
                 log.exception(e)

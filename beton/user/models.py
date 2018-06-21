@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """User and other DB models."""
 import datetime as dt
-from flask_user import UserMixin
-from beton.database import Column, Model, SurrogatePK, db, reference_col, relationship
+# from flask_user import UserMixin
+from flask_security import UserMixin, RoleMixin
+from beton.extensions import db
+from beton.database import Column, Model, SurrogatePK, reference_col, relationship
 
 
 class Role(SurrogatePK, Model):

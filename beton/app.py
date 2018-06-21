@@ -9,8 +9,11 @@ from werkzeug.contrib.fixers import ProxyFix
 from beton import commands, public, user
 from beton.assets import assets
 from beton.extensions import bcrypt, cache, csrf_protect, db
-from beton.extensions import debug_toolbar, login_manager, mail, migrate
+from beton.extensions import debug_toolbar, mail, migrate, security
 from beton.settings import ProdConfig
+
+from flask_security import SQLAlchemyUserDatastore
+from beton.user.models import User, Role
 
 sesstore = FilesystemStore('./data')
 
@@ -42,8 +45,10 @@ def register_extensions(app):
     db.init_app(app)
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
-    login_manager.init_app(app)
+    # login_manager.init_app(app)
     mail.init_app(app)
+    user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+    security.init_app(app, user_datastore)
     return None
 
 
