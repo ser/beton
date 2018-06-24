@@ -13,7 +13,7 @@ from dateutil.relativedelta import *
 from PIL import Image
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
-from flask_login import current_user, login_required
+from flask_security import current_user, login_required, roles_accepted
 from flask_uploads import UploadSet, IMAGES
 
 from beton.logger import log
@@ -730,12 +730,8 @@ def pay(payment):
 
 
 @blueprint.route('/admin/users', methods=['get', 'post'])
-@login_required
+@roles_accepted('admin')
 def listusers():
-    if amiadmin():  # only admins get see this list
-        all_users = User.query.all()
-        return render_template('users/listusers.html',
-                               all_users=all_users)
-    else:
-        flash('You need admin privileges.', 'info')
-        return redirect(url_for('public.home'))
+    all_users = User.query.all()
+    return render_template('users/listusers.html',
+                            all_users=all_users)

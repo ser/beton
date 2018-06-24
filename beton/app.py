@@ -15,7 +15,6 @@ from beton.settings import ProdConfig
 from flask_security import SQLAlchemyUserDatastore
 from beton.user.models import User, Role
 
-sesstore = FilesystemStore('./data')
 
 
 def create_app(config_object=ProdConfig):
@@ -26,7 +25,7 @@ def create_app(config_object=ProdConfig):
     app = Flask(__name__.split('.')[0])
     app.wsgi_app = ProxyFix(app.wsgi_app)
     app.config.from_object(config_object)
-    #app.config.from_envvar('BETON')
+    app.config.from_envvar('BETON')
     register_extensions(app)
     register_configuration(app)
     register_blueprints(app)
@@ -44,21 +43,23 @@ def register_extensions(app):
     csrf_protect.init_app(app)
     db.init_app(app)
     debug_toolbar.init_app(app)
-    migrate.init_app(app, db)
-    # login_manager.init_app(app)
     mail.init_app(app)
+    migrate.init_app(app, db)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security.init_app(app, user_datastore)
     return None
 
 
 def register_configuration(app):
-    KVSessionExtension(sesstore, app)
     moment = Moment()
+    sesstore = FilesystemStore('./data')
+
+    KVSessionExtension(sesstore, app)
     moment.init_app(app)
     images = UploadSet('images', IMAGES)
     configure_uploads(app, images)
     patch_request_class(app, size=577216)
+    return None
 
 
 def register_blueprints(app):

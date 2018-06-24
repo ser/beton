@@ -3,12 +3,10 @@
 import requests
 import uuid
 import xmlrpc
-from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
-# from flask_login import current_user, login_required, logout_user
-from flask_security import current_user, login_required
 
-# from beton.extensions import csrf_protect, login_manager
-from beton.extensions import csrf_protect
+from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
+from flask_security import current_user, login_required, logout_user
+
 from beton.logger import log
 from beton.user.models import Orders, Payments, User, db
 
@@ -16,9 +14,9 @@ blueprint = Blueprint('public', __name__, static_folder='../static')
 
 
 # @login_manager.user_loader
-def load_user(user_id):
-    """Load user by ID."""
-    return User.get_by_id(int(user_id))
+# def load_user(user_id):
+#    """Load user by ID."""
+#    return User.get_by_id(int(user_id))
 
 
 @blueprint.route('/', methods=['GET'])
