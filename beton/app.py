@@ -25,7 +25,7 @@ def create_app(config_object=ProdConfig):
     app = Flask(__name__.split('.')[0])
     app.wsgi_app = ProxyFix(app.wsgi_app)
     app.config.from_object(config_object)
-    app.config.from_envvar('BETON')
+    # app.config.from_envvar('BETON')
     register_extensions(app)
     register_configuration(app)
     register_blueprints(app)
