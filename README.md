@@ -2,7 +2,9 @@
 > Beton :cocktail: - a Czech drink containing becherovka and tonic
 
 This software is in active development. You should be an experienced admin of
-PHP/Python to start playing with Beton. Strictly no warranty.
+PHP/Python to start playing with Beton. Strictly no warranty. 
+
+[Sponsor this project](https://liberapay.com/ser/donate)
 
 ## What really is Beton?
 Beton is a cover plate (front end) over [Revive Ad Server](https://www.revive-adserver.com/).
