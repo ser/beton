@@ -11,32 +11,43 @@
         <div class="row">
             <div class="col-sm-6 col-xs-12">
                 <p class="lead">Here you can see your shopping basket.</p>
-                <p>In total whole basket is:
+                <h5>In total whole basket is:</h5>
+                <ul class="list-group">
                     {% set z = [] %}
                     {% for y in price %}
                         {% if y[1] == "EUR" %}
                             {% set z = z.append(y[2]|float) %}
                         {% endif %}
                     {% endfor %}
-                    <br/>
-                    <b>EUR:</b> {{ '%0.2f'| format(z|sum) }}
+                    <li class="list-group-item d-flex align-items-center">
+                        <b>EUR &nbsp;</b>
+                        <span class="badge badge-pill">
+                            {{ '%0.2f'| format(z|sum) }}
+                        </span>
+                    </li>
 
-                    {% for x in config.EXCHANGE_PRICES %}
+                    {% for x in config.EXCHANGE_COINS %}
                         {% set z = [] %}
                         {% for y in price %}
                             {% if y[1] == x %}
                                 {% set z = z.append(y[2]|float) %}
                             {% endif %}
                         {% endfor %}
-                        <br/>
-                        <b>{{ x }}:</b> {{ z|sum|round(9) }} ***
+                        <li class="list-group-item d-flex align-items-center">
+                            <b>{{ x }} &nbsp;</b>
+                            <span class="badge badge-pill">
+                                {{ z|sum|round(9) }} ***
+                            </span>
+                        </li>
                     {% endfor %}
+                </ul>
+                <br/>
                 <div>
                     <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger">Empty whole basket</a>
                 </div>
             </div>
             <div class="col-sm-6 col-xs-12">
-                <p>Pay for all items in the basket using:</p>
+                <h5>Pay for all items in the basket using:</h5>
                     {% for x in config.PAYMENT_SYSTEMS %}
                         <div>
                             <a href="{{ url_for('user.pay', payment=x) }}"

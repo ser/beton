@@ -105,6 +105,7 @@ ENV/
 .ropeproject
 
 data/
+cache/
 
 # temporary debugger fixes
 beton/static/css/toolbar.css

@@ -1,3 +1,4 @@
+import ccxt
 import json
 import names
 import random
@@ -17,6 +18,7 @@ from flask_security import current_user, login_required, roles_accepted
 from flask_uploads import UploadSet, IMAGES
 
 from beton.logger import log
+from beton.extensions import cache
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Orders, Payments, Prices, User  # , Zone2Campaign
 from beton.utils import flash_errors, reviveme
@@ -37,64 +39,28 @@ def random_color():
     color = "%03x" % random.randint(0, 0xFFF)
     return "#"+str(color)
 
-
-def krakenrate(coin):
-    # ask kraken for rate: https://api.kraken.com/0/public/AssetPairs
-    # Bitcoin to Euro:
-    if coin == "BTC":
-        base = "XXBTZEUR"
-    # Litecoin to Euro:
-    elif coin == "LTC":
-        base = "XLTCZEUR"
-    # Bitcoin Cash to Euro
-    elif coin == "BCH":
-        base = "BCHEUR"
-    exuri = "https://api.kraken.com/0/public/Ticker?pair="+base
-    rate = requests.get(exuri)
-    json_data = rate.text
-    fj = json.loads(json_data)
-    try:
-        exrate = fj["result"][base]["c"][0]
-    except Exception as e:
-        log.debug("Exception")
-        log.exception(e)
-        exrate = 0
-    return exrate
-
-
-def coinbasereate(coin):
-    # ask coinbase for rate
-    # Bitcoin to Euro:
-    if coin == "BTC":
-        exuri = "https://api.coinbase.com/v2/prices/BTC-EUR/buy"
-    # Litecoin to Euro
-    elif coin == "LTC":
-        exuri = "https://api.coinbase.com/v2/prices/LTC-EUR/buy"
-    # Bitcoin Cash to Euro
-    elif coin == "BCH":
-        exuri = "https://api.coinbase.com/v2/prices/BCH-EUR/buy"
-    rate = requests.get(exuri)
-    json_data = rate.text
-    fj = json.loads(json_data)
-    try:
-        exrate = fj['data']['amount']
-    except Exception as e:
-        log.debug("Exception")
-        log.exception(e)
-        exrate = 0
-    return exrate
-
-
+@cache.memoize(50)
 def getexrate(coin):
-    exrate = krakenrate(coin)
-    if exrate == 0:
-        exrate = coinbasereate(coin)
-    return exrate
+    '''Returns exchange rate from first positively responding exchange.
+       It is rather safe to cache that rate for 50 seconds.'''
+    exchanges = current_app.config.get('EXCHANGES')
+    # TODO: add other fiat currencies than EUR
+    exfiat = current_app.config.get('FIAT')
+    extrade = current_app.config.get('EXCHANGES_TRADE')
+    for id in exchanges:
+        exchange = getattr(ccxt, id)()
+        pair = coin+"/"+exfiat
+        exrate = exchange.fetch_ticker(pair)[extrade]
+        if exrate is not None:
+            return exrate
+    # if all attempts fail, we return zero rate to signal an error
+    return 0
 
-
+@cache.memoize(50)
 def minerfee(amount, electrum_url):
-    # ask electrum for an average miner fee
-    # we assume that an average transaction is about 258 bytes long
+    '''Ask electrum for an average miner fee.
+       We assume that an average transaction is about 258 bytes long.
+       We cache this for 50 seconds to avoid unnecessary traffic.'''
     log.debug("Asking Electrum for a miner fee")
     payload = {
         "id": str(uuid.uuid4()),
@@ -118,8 +84,10 @@ def get_basket(endpoint, values):
             else:
                 g.basket = 0
         except:
-            pass
+            ## TODO: it might be required for minor used servers,
+            ## as after 8 hours we are getting disconnected from mysqld
             # db.session.rollback()
+            pass
 
     # keeping constant connection to Revive instance
     r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
@@ -547,7 +515,7 @@ def order():
 @blueprint.route('/basket', methods=['get'])
 @login_required
 def basket():
-    """Present basket to customer."""
+    """Present his/her basket to customer."""
 
     basket = []
     price = []
@@ -564,8 +532,8 @@ def basket():
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
             price.append([item.campaigno, "EUR", totalcurrencyprice])
 
-            exchange_prices = current_app.config.get('EXCHANGE_PRICES')
-            for coin in exchange_prices:
+            excoins = current_app.config.get('EXCHANGE_COINS')
+            for coin in excoins:
                 # try to get exchange values from two sources, and give up
                 exrate = getexrate(coin)
                 if exrate == 0:
