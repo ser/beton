@@ -64,7 +64,7 @@ def ipn(payment):
         log.debug(ipn)
         # This is not a valid payment yet
         if not ipn['status']:
-            log.debug("Electrum acknowledged subscription. Not paid yet or expired.")
+            log.debug("Electrum acknowledged some operation. Not paid yet or expired.")
             return redirect(url_for('public.home'))
 
         # loading order datails from the database

@@ -13,14 +13,15 @@ from datetime import timedelta
 from dateutil.relativedelta import *
 from PIL import Image
 
-from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, current_app, flash, g, jsonify, redirect
+from flask import render_template, request, session, url_for
 from flask_security import current_user, login_required, roles_accepted
 from flask_uploads import UploadSet, IMAGES
 
-from beton.logger import log
 from beton.extensions import cache
+from beton.logger import log
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Basket, Orders, Payments, Prices, User  # , Zone2Campaign
+from beton.user.models import Banner, Basket, Orders, Payments, Prices, User
 from beton.utils import flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -205,7 +206,8 @@ def offer():
             for zone in all_zones:
                 if form.zoneid.data == zone['zoneId']:
                     if zone['price']:
-                        Prices.query.filter_by(zoneid=form.zoneid.data).update({"dayprice": form.zoneprice.data})
+                        Prices.query.filter_by(
+                            zoneid=form.zoneid.data).update({"dayprice": form.zoneprice.data})
                         Prices.commit()  # TODO: it should use .update
                     else:
                         Prices.create(zoneid=form.zoneid.data,
@@ -258,7 +260,8 @@ def campaign(no_weeks=None):
     if amiadmin():
         all_campaigns = []
         for advertiser in all_advertisers:
-            all_campaigns = all_campaigns + r.ox.getCampaignListByAdvertiserId(sessionid, advertiser['advertiserId'])
+            all_campaigns = all_campaigns + r.ox.getCampaignListByAdvertiserId(
+                sessionid, advertiser['advertiserId'])
     else:
         all_campaigns = r.ox.getCampaignListByAdvertiserId(sessionid, advertiser_id)
 
@@ -523,7 +526,8 @@ def basket():
     # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
-            order_sql = Orders.query.filter_by(campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
+            order_sql = Orders.query.filter_by(
+                campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
                 Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
             basket.append(order_sql)
             begin = order_sql[0].begins_at
@@ -585,6 +589,7 @@ def pay(payment):
     """Pay a campaign. We serve a few payment systems, so it depends on 'payment' value."""
 
     payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
+
     exrate = getexrate(payment_system[0])
     if exrate == 0:
         return render_template('users/electrum-problems.html')
@@ -593,11 +598,15 @@ def pay(payment):
     basket = []
     total = 0
     cointotal = 0
+    label = "%s ※ %s ※ " % (
+        current_app.config.get('USER_APP_NAME'),
+        current_user.username)
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
     # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
-            order_sql = Orders.query.filter_by(campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
+            order_sql = Orders.query.filter_by(
+                campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
                 Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
             basket.append(order_sql)
             begin = order_sql[0].begins_at
@@ -607,16 +616,24 @@ def pay(payment):
             totalcoinprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
             cointotal += totalcoinprice
+            label = label + "[C#%s Z#%s B#%s %s ↦ %s %s] ※ " % (
+                str(item.campaigno),
+                str(order_sql[0].zoneid),
+                str(order_sql[0].bannerid),
+                begin.strftime("%d/%m/%y"),
+                enddate.strftime("%d/%m/%y"),
+                str(totalcurrencyprice)+current_app.config.get('FIAT'))
     else:
         basket = 0
         log.error("Trying to pay for empty basket.")
         return redirect(url_for("user.basket"), code=302)
 
-    # kindly ask miss electrum for an invoice which expires in 20 minutes
-    # headers = {'content-type': 'application/json'}
+
+    # kindly ask miss electrum for an invoice which expires in ~20 minutes
     params = {
         "amount": cointotal,
-        "expiration": 1212
+        "expiration": 1212,
+        "memo": label
     }
     payload = {
         "id": str(uuid.uuid4()),
