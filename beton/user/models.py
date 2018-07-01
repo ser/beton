@@ -67,7 +67,7 @@ class Banner(SurrogatePK, Model):
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<filename: {}, owner: {}, created_at: {}, url: {}, height: {},\
-                width: {}, comment: {}>'.format(self.filename, self.owner,
+width: {}, comment: {}>'.format(self.filename, self.owner,
                                                 self.created_at,
                                                 self.url, self.height,
                                                 self.width, self.comments)
@@ -117,15 +117,15 @@ class Orders(SurrogatePK, Model):
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<campaigno: {}, zoneid: {}, created_at: {},\
-                begins_at: {}, stops_at: {},\
-                paymentno: {}, bannerid: {}>'.format(
-                                        self.campaigno,
-                                        self.zoneid,
-                                        self.created_at,
-                                        self.begins_at,
-                                        self.stops_at,
-                                        self.paymentno,
-                                        self.bannerid)
+begins_at: {}, stops_at: {},\
+paymentno: {}, bannerid: {}>'.format(
+                                    self.campaigno,
+                                    self.zoneid,
+                                    self.created_at,
+                                    self.begins_at,
+                                    self.stops_at,
+                                    self.paymentno,
+                                    self.bannerid)
 
 
 class Payments(SurrogatePK, Model):
@@ -149,7 +149,7 @@ class Payments(SurrogatePK, Model):
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<blockchain: {}, address: {}, txno: {},\
-                total_coins: {}, created_at: {}>'.format(
+total_coins: {}, created_at: {}>'.format(
                                 self.blockchain,
                                 self.address,
                                 self.txno,
