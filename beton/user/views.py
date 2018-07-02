@@ -661,18 +661,22 @@ def pay(payment):
         return render_template('users/electrum-problems.html')
     try:
         addr = result['address']
+        pramount = result['amount']  # amount in satoshi
     except Exception as e:
         log.debug("Exception")
         log.exception(e)
         return render_template('users/electrum-problems.html')
 
-    fee = minerfee(cointotal, electrum_url)
+    # We use amount taken from BIP70 Payment Request to avoid any distortions
+    # from rounding - plus satoshi to crypturrency convertion.
+    total_coins = (pramount/100000000.000000000)
+    fee = minerfee(total_coins, electrum_url)
 
-    # creating database record for payment and linking it into orders
+    # Creating database record for payment and linking it into orders.
     payment_sql = Payments.create(
         blockchain=payment,
         address=addr,
-        total_coins=cointotal,
+        total_coins=total_coins,
         txno=0,
         created_at=datetime.utcnow()
     )
