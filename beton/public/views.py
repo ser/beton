@@ -82,91 +82,92 @@ def ipn(payment):
                       (pay_db.blockchain, payment))
             return redirect(url_for('public.home'))
 
-        if int(pay_db.txno) == 0:  # If our invoice is already paid, do not bother
+        try:
+            if int(pay_db.txno) == 0:  # If our invoice is already paid, do not bother
 
-            # Get balance on payment address from Electrum
-            electrum_url = payment_system[3]
-            params = {
-                "address": ipn['address']
-            }
-            payload = {
-                "id": str(uuid.uuid4()),
-                "method": "getaddressbalance",
-                "params": params
-            }
-            log.debug("We have sent to electrum this payload:")
-            log.debug(payload)
-            get_balance = requests.post(electrum_url, json=payload).json()
-            log.debug("We got back from electrum:")
-            log.debug(get_balance)
-
-            # Electrum reports current state of transaction on this address
-            confirmed = float(get_balance['result']['confirmed'])
-            unconfirmed = float(get_balance['result']['unconfirmed'])
-
-            if unconfirmed > 0:
-                # Transcation is not confirmed yet so we simply register that
-                # and wait for another ping from Electrum
-                log.debug("Balance of %s is not confirmed yet." %
-                          str(unconfirmed))
-                return redirect(url_for('public.home'))
-
-            # No we check if received amount is equal or larger than expected 
-            weexpect = pay_db.total_coins
-            if confirmed >= weexpect:
-                # It is paid :-) so we activate banner(s)
-                log.debug("PAID! Confirmed balance on address is %s and we expected %s." %
-                          (str(confirmed), str(weexpect)))
-
-                # Get TX hash from Electrum
-                # params are the same so we do not declare them again
+                # Get balance on payment address from Electrum
+                electrum_url = payment_system[3]
+                params = {
+                    "address": ipn['address']
+                }
                 payload = {
                     "id": str(uuid.uuid4()),
-                    "method": "getaddresshistory",
+                    "method": "getaddressbalance",
                     "params": params
                 }
                 log.debug("We have sent to electrum this payload:")
                 log.debug(payload)
-                get_tx = requests.post(electrum_url, json=payload).json()
+                get_balance = requests.post(electrum_url, json=payload).json()
                 log.debug("We got back from electrum:")
-                log.debug(get_tx)
-                txno = get_tx['result'][0]['tx_hash']  # we analyze only first transaction
-                # TODO: maybe in future it's worth to record fee as well?
+                log.debug(get_balance)
 
-                # loading all orders related to payment
-                all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
-                log.debug("We are having these orders in the basket:")
-                log.debug(all_orders)
-                # Log in into Revive
-                r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                            verbose=False)
-                sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
-                                    current_app.config.get('REVIVE_MASTER_PASSWORD'))
-                for order in all_orders:
-                    # Linking the campaigna because it's paid!
-                    linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
-                    log.debug("Have we linked in Revive?")
-                    log.debug(linkme)
-                # and finally mark payment as paid
-                Payments.query.filter_by(address=ipn['address']).update({"txno":
-                                                                        txno})
-                Payments.commit()
+                # Electrum reports current state of transaction on this address
+                confirmed = float(get_balance['result']['confirmed'])
+                unconfirmed = float(get_balance['result']['unconfirmed'])
 
-                # Logout from Revive and presenting an ACKNOWLEDGEMENT
-                r.ox.logoff(sessionid)
-                return "<html>ACK</html>"
+                if unconfirmed > 0:
+                    # Transcation is not confirmed yet so we simply register that
+                    # and wait for another ping from Electrum
+                    log.debug("Balance of %s is not confirmed yet." %
+                            str(unconfirmed))
+                    return redirect(url_for('public.home'))
 
-            else:
-                log.debug("Confirmed balance on address is %s but we expected %s." %
-                          (str(confirmed), str(weexpect)))
+                # No we check if received amount is equal or larger than expected 
+                weexpect = pay_db.total_coins
+                if confirmed >= weexpect:
+                    # It is paid :-) so we activate banner(s)
+                    log.debug("PAID! Confirmed balance on address is %s and we expected %s." %
+                            (str(confirmed), str(weexpect)))
 
-        else:
-            log.debug("Invoice %s is already paid." % pay_db.txno)
-            return "<html>ACK</html>"
+                    # Get TX hash from Electrum
+                    # params are the same so we do not declare them again
+                    payload = {
+                        "id": str(uuid.uuid4()),
+                        "method": "getaddresshistory",
+                        "params": params
+                    }
+                    log.debug("We have sent to electrum this payload:")
+                    log.debug(payload)
+                    get_tx = requests.post(electrum_url, json=payload).json()
+                    log.debug("We got back from electrum:")
+                    log.debug(get_tx)
+                    txno = get_tx['result'][0]['tx_hash']  # we analyze only first transaction
+                    # TODO: maybe in future it's worth to record fee as well?
+
+                    # loading all orders related to payment
+                    all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
+                    log.debug("We are having these orders in the basket:")
+                    log.debug(all_orders)
+                    # Log in into Revive
+                    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
+                                                verbose=False)
+                    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
+                                        current_app.config.get('REVIVE_MASTER_PASSWORD'))
+                    for order in all_orders:
+                        # Linking the campaigna because it's paid!
+                        linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
+                        log.debug("Have we linked in Revive?")
+                        log.debug(linkme)
+                    # and finally mark payment as paid
+                    Payments.query.filter_by(address=ipn['address']).update({"txno":
+                                                                            txno})
+                    Payments.commit()
+
+                    # Logout from Revive and presenting an ACKNOWLEDGEMENT
+                    r.ox.logoff(sessionid)
+
+                else:
+                    log.debug("Confirmed balance on address is %s but we expected %s." %
+                            (str(confirmed), str(weexpect)))
+
+        except Exception as e:
+            log.debug("Transaction %s is already paid." % pay_db.txno)
+            return redirect(url_for('public.home'))
 
     except Exception as e:
         log.debug("Exception")
         log.exception(e)
+        return redirect(url_for('public.home'))
 
     # Return a redirect to main page
     return redirect(url_for('public.home'))
