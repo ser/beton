@@ -78,22 +78,38 @@ width: {}, comment: {}>'.format(
 
 
 class Prices(SurrogatePK, Model):
-    """Zone prices"""
+    """Zone prices.
+    Rectangle is constructed according to:
+        https://svgwrite.readthedocs.io/en/master/classes/shapes.html#rect
+    """
 
     __tablename__ = 'zoneprice'
     zoneid = Column(db.Integer(), unique=True, nullable=False)
     dayprice = Column(db.Integer(), unique=False, nullable=False)
+    left = Column(db.Integer(), unique=False, nullable=True)
+    upper = Column(db.Integer(), unique=False, nullable=True)
+    width = Column(db.Integer(), unique=False, nullable=True)
+    height = Column(db.Integer(), unique=False, nullable=True)
 
     def __init__(self, zoneid, dayprice):
         """Create instance."""
         self.zoneid = zoneid
         self.dayprice = dayprice
+        self.left = left
+        self.upper = upper
+        self.width = width
+        self.height = height
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<zoneid: {}, dayprice: {}>'.format(
+        return '<zoneid: {}, dayprice: {}, \
+square: {}x{}x{}x{}>'.format(
             self.zoneid,
-            self.dayprice
+            self.dayprice,
+            self.left,
+            self.upper,
+            self.width,
+            self.height
         )
 
 
@@ -197,7 +213,7 @@ class Log(SurrogatePK, Model):
 
     __tablename__ = 'log'
     user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
-    logdata = Column(db.String(4096), unique=False, nullable=False)
+    logdata = Column(db.Text(), unique=False, nullable=False)
 
     def __init__(self, user_id, logdata):
         """Create instance."""
