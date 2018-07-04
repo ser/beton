@@ -213,16 +213,19 @@ class Log(SurrogatePK, Model):
 
     __tablename__ = 'log'
     user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
+    datelog = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     logdata = Column(db.Text(), unique=False, nullable=False)
 
-    def __init__(self, user_id, logdata):
+    def __init__(self, user_id, datelog, logdata):
         """Create instance."""
         self.user_id = user_id
+        self.datelog = datelog
         self.logdata = logdata
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return 'user_id: {}, logdata: {}>'.format(
+        return 'user_id: {}, logdata: {}, datelog: {}>'.format(
             self.user_id,
-            self.logdata
+            self.logdata,
+            self.datelog
         )

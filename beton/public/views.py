@@ -10,6 +10,7 @@ from flask_security import current_user, login_required, logout_user
 from beton.logger import log
 from beton.extensions import csrf_protect, mail
 from beton.user.models import Orders, Payments, User, db
+from beton.utils import dblogger
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
@@ -71,13 +72,13 @@ def ipn(payment):
         log.debug(pay_db)
 
         if pay_db == None:
-            log.debug("There is no payment related to address %s - aborting." %
+            log.info("There is no payment related to address %s - aborting." %
                       ipn['address'])
             return redirect(url_for('public.home'))
 
         # Verify if payment is in expected coins
         if str(pay_db.blockchain) != str(payment):
-            log.debug("We expected payment in %s, it came in %s" %
+            log.info("We expected payment in %s, it came in %s" %
                       (pay_db.blockchain, payment))
             return redirect(url_for('public.home'))
 
@@ -115,8 +116,10 @@ def ipn(payment):
                 weexpect = float(pay_db.total_coins)
                 if confirmed >= weexpect:
                     # It is paid :-) so we activate banner(s)
-                    log.debug("PAID! Confirmed balance on address is %s and we expected %s" %
-                            (str(confirmed), str(weexpect)))
+                    logstr = ("PAID! Confirmed balance on address is " +
+                        "%s and we expected %s") % (str(confirmed), str(weexpect))
+                    log.debug(logstr)
+                    dblogger(pay_db.user_id, logstr)
 
                     # Get TX hash from Electrum
                     # params are the same so we do not declare them again

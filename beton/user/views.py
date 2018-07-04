@@ -22,7 +22,7 @@ from beton.extensions import cache
 from beton.logger import log
 from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Orders, Payments, Prices, User
-from beton.utils import flash_errors, reviveme
+from beton.utils import dblogger, flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
 images = UploadSet('images', IMAGES)
@@ -40,6 +40,7 @@ def random_color():
     color = "%03x" % random.randint(0, 0xFFF)
     return "#"+str(color)
 
+
 @cache.memoize(50)
 def getexrate(coin):
     '''Returns exchange rate from first positively responding exchange.
@@ -56,6 +57,7 @@ def getexrate(coin):
             return exrate
     # if all attempts fail, we return zero rate to signal an error
     return 0
+
 
 @cache.memoize(50)
 def minerfee(amount, electrum_url):
@@ -91,8 +93,10 @@ def get_basket(endpoint, values):
             pass
 
     # keeping constant connection to Revive instance
-    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                  verbose=False)
+    r = xmlrpc.client.ServerProxy(
+        current_app.config.get('REVIVE_XML_URI'),
+        verbose=False
+    )
     if 'revive' in session:
         sessionid = session['revive']
         try:
@@ -126,11 +130,19 @@ def add_bannerz():
             # get the width and height
             with Image.open(images.path(filename)) as img:
                 width, height = img.size
-            Banner.create(filename=filename, owner=current_user.id,
-                          url=form.banner_url.data, created_at=datetime.utcnow(),
-                          width=width, height=height,
-                          comments=form.banner_comments.data)
-            # flash(str(width)+' '+str(height), 'success')
+            Banner.create(
+                filename=filename,
+                owner=current_user.id,
+                url=form.banner_url.data,
+                created_at=datetime.utcnow(),
+                width=width,
+                height=height,
+                comments=form.banner_comments.data
+            )
+            dblogger(
+                current_user.id,
+                "Banner %s uploaded successfully." % filename
+            )
             flash('Your banner was uploaded sucessfully.', 'success')  # TODO:size
             return redirect(url_for('user.bannerz'))
         else:
@@ -147,8 +159,11 @@ def bannerz():
     for x in all_banners:
         url = images.url(x.filename)
         all_urls.append([x.id, url])
-    return render_template('users/bannerz.html', all_banners=all_banners,
-                           all_urls=all_urls)
+    return render_template(
+        'users/bannerz.html',
+        all_banners=all_banners,
+        all_urls=all_urls
+    )
 
 
 @blueprint.route('/offer', methods=['GET', 'POST'])
@@ -157,19 +172,25 @@ def offer():
     """Get and display all possible websites and zones in them."""
     form = ChangeOffer()
 
-    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                  verbose=False)
+    r = xmlrpc.client.ServerProxy(
+        current_app.config.get('REVIVE_XML_URI'),
+        verbose=False
+    )
     sessionid = session['revive']
 
     # Get all publishers (websites)
-    publishers = r.ox.getPublisherListByAgencyId(sessionid,
-                                                 current_app.config.get('REVIVE_AGENCY_ID'))
+    publishers = r.ox.getPublisherListByAgencyId(
+        sessionid,
+        current_app.config.get('REVIVE_AGENCY_ID')
+    )
 
     all_zones = []
     for website in publishers:
         # get zones from Revive
-        allzones = r.ox.getZoneListByPublisherId(sessionid,
-                                                 website['publisherId'])
+        allzones = r.ox.getZoneListByPublisherId(
+            sessionid,
+            website['publisherId']
+        )
         for zone in allzones:
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
@@ -187,11 +208,12 @@ def offer():
 
             # ask for stats
             try:
-                ztatz = r.ox.advertiserZoneStatistics(sessionid,
-                                                    zone['zoneId'],
-                                                    datetime.now() - relativedelta(months=1),
-                                                    datetime.now()
-                                                    )
+                ztatz = r.ox.advertiserZoneStatistics(
+                    sessionid,
+                    zone['zoneId'],
+                    datetime.now() - relativedelta(months=1),
+                    datetime.now()
+                )
                 tmpdict['impressions'] = ztatz[0]['impressions']
                 # tmpdict['impressions'] = ztatz
             except Exception as e:
@@ -216,9 +238,13 @@ def offer():
         return redirect(url_for('user.offer'))
 
     # Render the page and quit
-    return render_template('users/offer.html', allzones=all_zones,
-                           publishers=publishers, isadmin=amiadmin(),
-                           form=form)
+    return render_template(
+        'users/offer.html',
+        allzones=all_zones,
+        publishers=publishers,
+        isadmin=amiadmin(),
+        form=form
+    )
 
 
 @blueprint.route('/campaign')
@@ -228,12 +254,16 @@ def campaign(no_weeks=None):
     """Get and display all campaigns belonging to user."""
     if not no_weeks:  # we show 1 month of campaign by default
         no_weeks = 4
-    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                  verbose=False)
+    r = xmlrpc.client.ServerProxy(
+        current_app.config.get('REVIVE_XML_URI'),
+        verbose=False
+    )
     sessionid = session['revive']
 
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
-                                                       current_app.config.get('REVIVE_AGENCY_ID'))
+    all_advertisers = r.ox.getAdvertiserListByAgencyId(
+        sessionid,
+        current_app.config.get('REVIVE_AGENCY_ID')
+    )
 
     # Try to find out if the customer is already registered in Revive, if not,
     # register him
@@ -241,18 +271,20 @@ def campaign(no_weeks=None):
         next(x for x in all_advertisers if x['advertiserName'] ==
              current_user.username)
     except StopIteration:
-        # log.debug('Created user: ', current_user.username)
-        r.ox.addAdvertiser(sessionid, {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
-                                       'advertiserName': current_user.username,
-                                       'emailAddress': current_user.email,
-                                       # 'contactName': current_user.first_name+"
-                                       # "+current_user.lastname, # TODO: check if values are set
-                                       'contactName': current_user.username,
-                                       'comments': current_app.config.get('USER_APP_NAME')
-                                       })
+        r.ox.addAdvertiser(
+            sessionid,
+            {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
+                'advertiserName': current_user.username,
+                'emailAddress': current_user.email,
+                'contactName': current_user.username,
+                'comments': current_app.config.get('USER_APP_NAME')
+                }
+        )
 
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
-                                                       current_app.config.get('REVIVE_AGENCY_ID'))
+    all_advertisers = r.ox.getAdvertiserListByAgencyId(
+        sessionid,
+        current_app.config.get('REVIVE_AGENCY_ID')
+    )
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                         current_user.username)['advertiserId'])
 
@@ -269,8 +301,9 @@ def campaign(no_weeks=None):
     banners = []
     if len(all_campaigns) > 0:
         for x in all_campaigns:
-            banners.append([x['campaignId'], r.ox.getBannerListByCampaignId(sessionid,
-                                                                            x['campaignId'])])
+            banners.append([x['campaignId'], r.ox.getBannerListByCampaignId(
+                                                sessionid,
+                                                x['campaignId'])])
     all_campaigns_standardized = []
 
     for campaign in all_campaigns:
@@ -321,11 +354,12 @@ def campaign(no_weeks=None):
 
             # ask for stats
             try:
-                ztatz = r.ox.campaignBannerStatistics(sessionid,
-                                                      campaign['campaignId'],
-                                                      datetime(2011, 1, 1, 0, 0),
-                                                      datetime.now()
-                                                      )
+                ztatz = r.ox.campaignBannerStatistics(
+                    sessionid,
+                    campaign['campaignId'],
+                    datetime(2011, 1, 1, 0, 0),
+                    datetime.now()
+                )
                 tasks['impressions'] = ztatz[0]['impressions']
             except BaseException:
                 tasks['impressions'] = 0
@@ -335,12 +369,14 @@ def campaign(no_weeks=None):
                 all_campaigns_standardized.append(tasks)
 
     # Render the page and quit
-    return render_template('users/campaign.html',
-                           all_campaigns=all_campaigns_standardized,
-                           banners=banners,
-                           roles=current_user.roles,
-                           now=datetime.utcnow(),
-                           no_weeks=no_weeks)
+    return render_template(
+        'users/campaign.html',
+        all_campaigns=all_campaigns_standardized,
+        banners=banners,
+        roles=current_user.roles,
+        now=datetime.utcnow(),
+        no_weeks=no_weeks
+    )
 
 
 @blueprint.route('/api/all_campaigns_in_zone/<int:zone_id>')
@@ -366,9 +402,6 @@ def api_all_campaigns(zone_id):
         tasks['allDay'] = "true"
         tasks['color'] = random_color()
         tasks['resourceId'] = order.zoneid
-        # calendar['url'] = ''
-        # starttime = datetime.strptime(order.begins_at, '%Y%m%dT%H:%M:%S')
-        # endtime = datetime.strptime(order.stops_at, '%Y%m%dT%H:%M:%S')
         starttime = order.begins_at
         endtime = order.stops_at
         tasks['start'] = starttime.strftime("%Y-%m-%d")
@@ -404,15 +437,19 @@ def order():
         image_url = images.url(banner.filename)
 
         # Get all publishers (websites)
-        publishers = r.ox.getPublisherListByAgencyId(sessionid,
-                                                     current_app.config.get('REVIVE_AGENCY_ID'))
+        publishers = r.ox.getPublisherListByAgencyId(
+            sessionid,
+            current_app.config.get('REVIVE_AGENCY_ID')
+        )
 
         # Get zones from Revive
         all_zones = []
 
         for website in publishers:
-            allzones = r.ox.getZoneListByPublisherId(sessionid,
-                                                     website['publisherId'])
+            allzones = r.ox.getZoneListByPublisherId(
+                sessionid,
+                website['publisherId']
+            )
             for zone in allzones:
                 price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
                 if not price:
@@ -453,10 +490,14 @@ def order():
 
         # We are booking the campaign in Revive, but turning off by default
         # until payment is confirmed
-        all_advertisers = r.ox.getAdvertiserListByAgencyId(sessionid,
-                                                           current_app.config.get('REVIVE_AGENCY_ID'))
-        advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
-                            current_user.username)['advertiserId'])
+        all_advertisers = r.ox.getAdvertiserListByAgencyId(
+            sessionid,
+            current_app.config.get('REVIVE_AGENCY_ID')
+        )
+        advertiser_id = int(
+            next(x for x in all_advertisers if x['advertiserName'] ==
+                current_user.username)['advertiserId']
+        )
 
         try:
             begin = datetime.strptime(datestart, "%d/%m/%Y")
@@ -483,37 +524,47 @@ def order():
         diki['storageType'] = 'url'
         r.ox.addBanner(sessionid, diki)
 
-        # # ask for x rate
-        # exrate = getexrate()
-        # if exrate == 0:
-        #    return render_template('users/electrum-problems.html')
+        Orders.create(
+            campaigno=campaign,
+            zoneid=zone_id,
+            created_at=datetime.utcnow(),
+            begins_at=begin,
+            stops_at=enddate,
+            paymentno=0,
+            bannerid=banner_id,
+            user_id=current_user.id
+        )
 
-        # totalcurrencyprice = price.dayprice/100*(totaltime.days+1)
-        # totalcoinprice = totalcurrencyprice / float(exrate)
+        dblogger(
+            current_user.id,
+            ("Campaign #%s with name %s in zone %s, starting at %s, " +
+                "ending at %s, with banner %s created.")
+            % (
+                str(campaign),
+                randomname,
+                str(zone_id),
+                str(begin),
+                str(enddate),
+                str(banner_id)
+            )
+        )
 
-        Orders.create(campaigno=campaign,
-                      zoneid=zone_id,
-                      created_at=datetime.utcnow(),
-                      begins_at=begin,
-                      stops_at=enddate,
-                      paymentno=0,
-                      bannerid=banner_id,
-                      user_id=current_user.id
-                      )
+        Basket.create(
+            campaigno=campaign,
+            user_id=current_user.id
+        )
 
-        Basket.create(campaigno=campaign,
-                      user_id=current_user.id
-                      )
-
-        return render_template('users/order.html',
-                               banner_id=banner_id,
-                               datestart=datestart,
-                               datend=datend,
-                               image_url=image_url,
-                               zone_id=zone_id,
-                               days=totaltime.days,
-                               dayprice=price.dayprice,
-                               step='order')
+        return render_template(
+            'users/order.html',
+            banner_id=banner_id,
+            datestart=datestart,
+            datend=datend,
+            image_url=image_url,
+            zone_id=zone_id,
+            days=totaltime.days,
+            dayprice=price.dayprice,
+            step='order'
+        )
 
 
 @blueprint.route('/basket', methods=['get'])
@@ -711,18 +762,22 @@ def pay(payment):
     Basket.commit()
 
     # and display payment page
-    return render_template('users/pay.html',
-                           total=total,
-                           orders=len(basket),
-                           exrate=exrate,
-                           fee=fee,
-                           currency=payment_system[0],
-                           electrum=result)
+    return render_template(
+        'users/pay.html',
+        total=total,
+        orders=len(basket),
+        exrate=exrate,
+        fee=fee,
+        currency=payment_system[0],
+        electrum=result
+    )
 
 
 @blueprint.route('/admin/users', methods=['get', 'post'])
 @roles_accepted('admin')
 def listusers():
     all_users = User.query.all()
-    return render_template('users/listusers.html',
-                            all_users=all_users)
+    return render_template(
+        'users/listusers.html',
+        all_users=all_users
+    )
