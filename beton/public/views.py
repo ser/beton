@@ -10,7 +10,7 @@ from flask_security import current_user, login_required, logout_user
 from beton.logger import log
 from beton.extensions import csrf_protect, mail
 from beton.user.models import Orders, Payments, User, db
-from beton.utils import dblogger
+from beton.utils import dblogger, reviveme
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
@@ -116,8 +116,12 @@ def ipn(payment):
                 weexpect = float(pay_db.total_coins)
                 if confirmed >= weexpect:
                     # It is paid :-) so we activate banner(s)
-                    logstr = ("PAID! Confirmed balance on address is " +
-                        "%s and we expected %s") % (str(confirmed), str(weexpect))
+                    logstr = ("IPN PAID! Confirmed balance on address {adr} is " +
+                        "{bal} and we expected {expe}").format(
+                            ipn['address'],
+                            confirmed,
+                            weexpect
+                        )
                     log.debug(logstr)
                     dblogger(pay_db.user_id, logstr)
 
@@ -141,15 +145,17 @@ def ipn(payment):
                     log.debug("We are having these orders in the basket:")
                     log.debug(all_orders)
                     # Log in into Revive
-                    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                                verbose=False)
-                    sessionid = r.ox.logon(current_app.config.get('REVIVE_MASTER_USER'),
-                                        current_app.config.get('REVIVE_MASTER_PASSWORD'))
+                    r = xmlrpc.client.ServerProxy(
+                        current_app.config.get('REVIVE_XML_URI'),
+                        verbose=False
+                    )
+                    sessionid = reviveme(r)
                     for order in all_orders:
                         # Linking the campaigna because it's paid!
                         linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
-                        log.debug("Have we linked in Revive?")
-                        log.debug(linkme)
+                        log.debug("Have we linked in Revive? {result}").format(
+                            linkme
+                        )
                     # and finally mark payment as paid
                     Payments.query.filter_by(address=ipn['address']).update({"txno":
                                                                             txno})
@@ -161,7 +167,6 @@ def ipn(payment):
                     # Mailing customer that order is paid
                     msg = Message("Funds sent to address %s confirmed." %
                                   ipn['address'])
-
 
                 else:
                     log.debug("Confirmed balance on address is %s but we expected %s." %
