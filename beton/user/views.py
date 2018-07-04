@@ -497,7 +497,8 @@ def order():
                       begins_at=begin,
                       stops_at=enddate,
                       paymentno=0,
-                      bannerid=banner_id
+                      bannerid=banner_id,
+                      user_id=current_user.id
                       )
 
         Basket.create(campaigno=campaign,
@@ -678,7 +679,8 @@ def pay(payment):
         address=addr,
         total_coins=total_coins,
         txno=0,
-        created_at=datetime.utcnow()
+        created_at=datetime.utcnow(),
+        user_id=current_user.id
     )
     paymentno = payment_sql.id
     for item in basket:

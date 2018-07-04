@@ -8,16 +8,10 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for,
 from flask_security import current_user, login_required, logout_user
 
 from beton.logger import log
-from beton.extensions import csrf_protect
+from beton.extensions import csrf_protect, mail
 from beton.user.models import Orders, Payments, User, db
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
-
-
-# @login_manager.user_loader
-# def load_user(user_id):
-#    """Load user by ID."""
-#    return User.get_by_id(int(user_id))
 
 
 @blueprint.route('/', methods=['GET'])
@@ -76,6 +70,11 @@ def ipn(payment):
         log.debug("Payments related to address:")
         log.debug(pay_db)
 
+        if pay_db == None:
+            log.debug("There is no payment related to address %s - aborting." %
+                      ipn['address'])
+            return redirect(url_for('public.home'))
+
         # Verify if payment is in expected coins
         if str(pay_db.blockchain) != str(payment):
             log.debug("We expected payment in %s, it came in %s" %
@@ -113,10 +112,10 @@ def ipn(payment):
                     return redirect(url_for('public.home'))
 
                 # No we check if received amount is equal or larger than expected 
-                weexpect = pay_db.total_coins
+                weexpect = float(pay_db.total_coins)
                 if confirmed >= weexpect:
                     # It is paid :-) so we activate banner(s)
-                    log.debug("PAID! Confirmed balance on address is %s and we expected %s." %
+                    log.debug("PAID! Confirmed balance on address is %s and we expected %s" %
                             (str(confirmed), str(weexpect)))
 
                     # Get TX hash from Electrum
@@ -153,8 +152,13 @@ def ipn(payment):
                                                                             txno})
                     Payments.commit()
 
-                    # Logout from Revive and presenting an ACKNOWLEDGEMENT
+                    # Logout from Revive
                     r.ox.logoff(sessionid)
+
+                    # Mailing customer that order is paid
+                    msg = Message("Funds sent to address %s confirmed." %
+                                  ipn['address'])
+
 
                 else:
                     log.debug("Confirmed balance on address is %s but we expected %s." %

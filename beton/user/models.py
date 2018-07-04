@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """User and other DB models."""
 import datetime as dt
-# from flask_user import UserMixin
 from flask_security import UserMixin, RoleMixin
 from beton.extensions import db
 from beton.database import Column, Model, SurrogatePK, reference_col, relationship
@@ -66,11 +65,16 @@ class Banner(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<filename: {}, owner: {}, created_at: {}, url: {}, height: {},\
-width: {}, comment: {}>'.format(self.filename, self.owner,
-                                                self.created_at,
-                                                self.url, self.height,
-                                                self.width, self.comments)
+        return '<filename: {}, owner: {}, created_at: {}, url: {}, height: {}, \
+width: {}, comment: {}>'.format(
+            self.filename,
+            self.owner,
+            self.created_at,
+            self.url,
+            self.height,
+            self.width,
+            self.comments
+        )
 
 
 class Prices(SurrogatePK, Model):
@@ -87,8 +91,10 @@ class Prices(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<zoneid: {}, dayprice: {}>'.format(self.zoneid,
-                                                   self.dayprice)
+        return '<zoneid: {}, dayprice: {}>'.format(
+            self.zoneid,
+            self.dayprice
+        )
 
 
 class Orders(SurrogatePK, Model):
@@ -102,9 +108,10 @@ class Orders(SurrogatePK, Model):
     stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     paymentno = Column(db.Integer(), unique=False, nullable=True)
     bannerid = Column(db.Integer(), db.ForeignKey('banners.id'), nullable=False)
+    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
 
     def __init__(self, campaigno, zoneid, created_at, begins_at,
-                 stops_at, paymentno, bannerid):
+                 stops_at, paymentno, bannerid, user_id):
         """Create instance."""
         self.campaigno = campaigno
         self.zoneid = zoneid
@@ -113,19 +120,22 @@ class Orders(SurrogatePK, Model):
         self.stops_at = stops_at
         self.paymentno = paymentno
         self.bannerid = bannerid
+        self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<campaigno: {}, zoneid: {}, created_at: {},\
-begins_at: {}, stops_at: {},\
-paymentno: {}, bannerid: {}>'.format(
-                                    self.campaigno,
-                                    self.zoneid,
-                                    self.created_at,
-                                    self.begins_at,
-                                    self.stops_at,
-                                    self.paymentno,
-                                    self.bannerid)
+        return '<campaigno: {}, zoneid: {}, created_at: {}, \
+begins_at: {}, stops_at: {}, \
+paymentno: {}, bannerid: {}, user_id: {}>'.format(
+            self.campaigno,
+            self.zoneid,
+            self.created_at,
+            self.begins_at,
+            self.stops_at,
+            self.paymentno,
+            self.bannerid,
+            self.user_id
+        )
 
 
 class Payments(SurrogatePK, Model):
@@ -137,24 +147,29 @@ class Payments(SurrogatePK, Model):
     total_coins = Column(db.Numeric(16, 8))
     txno = Column(db.String(64), unique=False, nullable=True)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
 
-    def __init__(self, blockchain, address, txno, total_coins, created_at):
+    def __init__(self, blockchain, address, txno, total_coins, created_at,
+                 user_id):
         """ Create instance."""
         self.blockchain = blockchain
         self.address = address
         self.txno = txno
         self.total_coins = total_coins
         self.created_at = created_at
+        self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<blockchain: {}, address: {}, txno: {},\
-total_coins: {}, created_at: {}>'.format(
-                                self.blockchain,
-                                self.address,
-                                self.txno,
-                                self.total_coins,
-                                self.created_at)
+        return '<blockchain: {}, address: {}, txno: {}, \
+total_coins: {}, created_at: {}, user_id: {}>'.format(
+            self.blockchain,
+            self.address,
+            self.txno,
+            self.total_coins,
+            self.created_at,
+            self.user_id
+        )
 
 
 class Basket(SurrogatePK, Model):
@@ -172,25 +187,26 @@ class Basket(SurrogatePK, Model):
     def __repr__(self):
         """Represent instance as a unique string."""
         return 'user_id: {}, campaigno: {}>'.format(
-                                self.user_id,
-                                self.campaigno)
+            self.user_id,
+            self.campaigno
+        )
 
 
-class Zone2Campaign(Model):
-    """Relation from original DB, a quick hack."""
+class Log(SurrogatePK, Model):
+    """Operational logging."""
 
-    __bind_key__ = 'revive'
-    __tablename__ = 'rv_placement_zone_assoc'
-    placement_zone_assoc_id = Column(db.Integer(), unique=True,
-                                     primary_key=True, nullable=False)
-    zone_id = Column(db.Integer(), nullable=True, unique=False)
-    placement_id = Column(db.Integer(), nullable=True, unique=False)
+    __tablename__ = 'log'
+    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
+    logdata = Column(db.String(4096), unique=False, nullable=False)
 
-    def __init__(self, zone_id, placement_id):
+    def __init__(self, user_id, logdata):
         """Create instance."""
-        self.zone_id = zone_id
-        self.placement_id = placement_id
+        self.user_id = user_id
+        self.logdata = logdata
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<zone_id: {}>'.format(self.zone_id)
+        return 'user_id: {}, logdata: {}>'.format(
+            self.user_id,
+            self.logdata
+        )
