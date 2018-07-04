@@ -8,8 +8,7 @@ import uuid
 # https://github.com/revive-adserver/revive-adserver/blob/master/www/api/v2/xmlrpc/index.php
 import xmlrpc.client
 
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from dateutil.relativedelta import *
 from PIL import Image
 
@@ -610,8 +609,10 @@ def basket():
 @login_required
 def clear_basket(campaign_id):
     try:
-        r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                      verbose=False)
+        r = xmlrpc.client.ServerProxy(
+            current_app.config.get('REVIVE_XML_URI'),
+            verbose=False
+        )
         sessionid = session['revive']
         if campaign_id == 0:
             all_basket = Basket.query.filter_by(user_id=current_user.id).all()
@@ -619,15 +620,21 @@ def clear_basket(campaign_id):
             Basket.query.filter_by(user_id=current_user.id).delete()
             for order in all_basket:
                 removed = r.ox.deleteCampaign(sessionid, order.campaigno)
-                log.debug("Campaign removed from Revive:")
-                log.debug(order.campaigno)
-                log.debug(removed)
+                log.debug(
+                    "Campaign #%s removed from Revive?: %s" % (
+                        str(order.campaigno),
+                        str(removed)
+                    )
+                )
                 Orders.query.filter_by(campaigno=order.campaigno).delete()
         else:
             removed = r.ox.deleteCampaign(sessionid, campaign_id)
-            log.debug("Campaign removed from Revive:")
-            log.debug(campaign_id)
-            log.debug(removed)
+            log.debug(
+                "Campaign #%s removed from Revive?: %s" % (
+                        str(order.campaigno),
+                        str(removed)
+                    )
+            )
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
             Orders.query.filter_by(campaigno=campaign_id).delete()
         Basket.commit()

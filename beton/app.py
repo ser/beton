@@ -1,4 +1,7 @@
 """The app module, containing the app factory function."""
+
+import os
+
 from flask import Flask, render_template
 from flask_kvsession import KVSessionExtension
 from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
@@ -6,14 +9,10 @@ from simplekv.fs import FilesystemStore
 from werkzeug.contrib.fixers import ProxyFix
 
 from beton import commands
-# from beton import commands, public, user
 from beton.assets import assets
 from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar
 from beton.extensions import mail, migrate, moment, scheduler, security, user_datastore
 from beton.settings import ProdConfig
-
-# from flask_security import SQLAlchemyUserDatastore
-#from beton.user.models import User, Role
 
 
 def create_app(config_object=ProdConfig):
@@ -40,12 +39,12 @@ def register_extensions(app):
     bcrypt.init_app(app)
     cache.init_app(app)
     csrf_protect.init_app(app)
+    db.app = app
     db.init_app(app)
     debug_toolbar.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
     moment.init_app(app)
-    # user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     scheduler.init_app(app)
     security.init_app(app, user_datastore)
     return None
@@ -59,7 +58,12 @@ def register_configuration(app):
     configure_uploads(app, images)
     patch_request_class(app, size=577216)
 
-    scheduler.start()
+    # Setting up crontabs
+    # To avoid running twice in debug mode we need to make "if":
+    # https://stackoverflow.com/questions/14874782/apscheduler-in-flask-executes-twice
+    if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        scheduler.start()
+
     return None
 
 
