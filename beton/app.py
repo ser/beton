@@ -1,20 +1,19 @@
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
 from flask_kvsession import KVSessionExtension
-from flask_moment import Moment
 from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
 from simplekv.fs import FilesystemStore
 from werkzeug.contrib.fixers import ProxyFix
 
-from beton import commands, public, user
+from beton import commands
+# from beton import commands, public, user
 from beton.assets import assets
-from beton.extensions import bcrypt, cache, csrf_protect, db
-from beton.extensions import debug_toolbar, mail, migrate, security
+from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar
+from beton.extensions import mail, migrate, moment, scheduler, security, user_datastore
 from beton.settings import ProdConfig
 
-from flask_security import SQLAlchemyUserDatastore
-from beton.user.models import User, Role
-
+# from flask_security import SQLAlchemyUserDatastore
+#from beton.user.models import User, Role
 
 
 def create_app(config_object=ProdConfig):
@@ -45,25 +44,28 @@ def register_extensions(app):
     debug_toolbar.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
-    user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+    moment.init_app(app)
+    # user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+    scheduler.init_app(app)
     security.init_app(app, user_datastore)
     return None
 
 
 def register_configuration(app):
-    moment = Moment()
     sesstore = FilesystemStore('./data')
-
     KVSessionExtension(sesstore, app)
-    moment.init_app(app)
+
     images = UploadSet('images', IMAGES)
     configure_uploads(app, images)
     patch_request_class(app, size=577216)
+
+    scheduler.start()
     return None
 
 
 def register_blueprints(app):
     """Register Flask blueprints."""
+    from beton import public, user
     app.register_blueprint(public.views.blueprint,
                            url_prefix=app.config.get('SUBDIR'))
     app.register_blueprint(user.views.blueprint,

@@ -538,8 +538,7 @@ def order():
         dblogger(
             current_user.id,
             ("Campaign #%s with name %s in zone %s, starting at %s, " +
-                "ending at %s, with banner %s created.")
-            % (
+                "ending at %s, with banner %s created.") % (
                 str(campaign),
                 randomname,
                 str(zone_id),
@@ -599,8 +598,12 @@ def basket():
     else:
         basket = 0
 
-    return render_template('users/basket.html', basket=basket,
-                           price=price, present=datetime.now()-timedelta(days=1))
+    return render_template(
+        'users/basket.html',
+        basket=basket,
+        price=price,
+        present=datetime.now()-timedelta(days=1)
+    )
 
 
 @blueprint.route('/clear/basket/<int:campaign_id>')
