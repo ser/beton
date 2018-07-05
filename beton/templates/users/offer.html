@@ -12,12 +12,13 @@
                 {% if zone.publisherId == website.publisherId %}
                     <div class="card border-light">
                         <div class="card-header">
-                            {{ zone.zoneName }}
+                            Zone #{{ zone.zoneId }} ※ {{ zone.zoneName }}
                         </div>
+                        <img class="img-fluid" alt="zone {{ zone.zoneId }}"src="{{ config.UPLOADED_IMAGES_URL }}overview/zone-{{ zone.zoneId }}.png">
                         <div class="card-body">
                             <div id="widthheight"><img src="https://placehold.it/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                             <div id="size"><p>Size: {{ zone.width }}x{{ zone.height }}</p></div>
-                            <div id="impressions"><p>Monthly impression of all banners in this zones: {{ zone.impressions }}</p></div>
+                            <div id="impressions"><p>Last 30 days impressions of all banners in this zone: {{ zone.impressions }}</p></div>
                             <div id="comments">{{ zone.comments }}</div>
                             <div id="price"><p>{{ zone.price / 100 }}<i class="fas
                                         fa-euro-sign fa-fw" aria-hidden="true"></i>/day</p></div>

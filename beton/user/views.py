@@ -10,7 +10,7 @@ import xmlrpc.client
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import *
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect
 from flask import render_template, request, session, url_for
@@ -38,6 +38,47 @@ def amiadmin():
 def random_color():
     color = "%03x" % random.randint(0, 0xFFF)
     return "#"+str(color)
+
+
+def create_banner_overview(zone):
+    destpath = (current_app.config.get('UPLOADED_IMAGES_DEST') +
+        "/overview/zone-%s.png" % str(zone))
+    dwg = Image.new(
+        'RGB',
+        (
+            current_app.config.get('BANNER_OVERVIEW_WIDTH'),
+            current_app.config.get('BANNER_OVERVIEW_HEIGHT')
+        ),
+        color='red'
+    )
+
+    zonedata = Prices.query.filter_by(id=zone).first()
+    # font = ImageFont.load_default()
+
+    b = ImageDraw.Draw(dwg)
+    b.rectangle(
+        [
+            (
+                zonedata.x0,
+                zonedata.y0
+            ),
+            (
+                zonedata.x1,
+                zonedata.y1
+            )
+        ],
+        fill='yellow'
+    )
+    b.text(
+        (
+            zonedata.x0+3,
+            zonedata.y0+3
+        ),
+        str(zone),
+        fill='black',
+
+    )
+    dwg.save(destpath, 'PNG')
 
 
 @cache.memoize(50)
@@ -221,6 +262,11 @@ def offer():
                 tmpdict['impressions'] = 0
 
             all_zones.append(tmpdict)
+
+            # Prepare overview SVG 
+            create_banner_overview(
+                zone['zoneId']
+            )
 
     if request.method == 'POST':
         if form.validate_on_submit():

@@ -86,30 +86,30 @@ class Prices(SurrogatePK, Model):
     __tablename__ = 'zoneprice'
     zoneid = Column(db.Integer(), unique=True, nullable=False)
     dayprice = Column(db.Integer(), unique=False, nullable=False)
-    left = Column(db.Integer(), unique=False, nullable=True)
-    upper = Column(db.Integer(), unique=False, nullable=True)
-    width = Column(db.Integer(), unique=False, nullable=True)
-    height = Column(db.Integer(), unique=False, nullable=True)
+    x0 = Column(db.Integer(), unique=False, nullable=True)
+    y0 = Column(db.Integer(), unique=False, nullable=True)
+    x1 = Column(db.Integer(), unique=False, nullable=True)
+    y1 = Column(db.Integer(), unique=False, nullable=True)
 
-    def __init__(self, zoneid, dayprice):
+    def __init__(self, zoneid, dayprice, x0, y0, x1, y1):
         """Create instance."""
         self.zoneid = zoneid
         self.dayprice = dayprice
-        self.left = left
-        self.upper = upper
-        self.width = width
-        self.height = height
+        self.x0 = x0
+        self.y0 = y0
+        self.x1 = x1
+        self.y1 = y1
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<zoneid: {}, dayprice: {}, \
-square: {}x{}x{}x{}>'.format(
+square: {}x{} {}x{}>'.format(
             self.zoneid,
             self.dayprice,
-            self.left,
-            self.upper,
-            self.width,
-            self.height
+            self.x0,
+            self.y0,
+            self.x1,
+            self.y1
         )
 
 
