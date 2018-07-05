@@ -5,6 +5,7 @@ import uuid
 import xmlrpc
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
+from flask_mail import Message
 from flask_security import current_user, login_required, logout_user
 
 from beton.logger import log
@@ -83,7 +84,7 @@ def ipn(payment):
             return redirect(url_for('public.home'))
 
         try:
-            if int(pay_db.txno) == 0:  # If our invoice is already paid, do not bother
+            if pay_db.txno == "0":  # If our invoice is already paid, do not bother
 
                 # Get balance on payment address from Electrum
                 electrum_url = payment_system[3]
@@ -108,16 +109,25 @@ def ipn(payment):
                 if unconfirmed > 0:
                     # Transcation is not confirmed yet so we simply register that
                     # and wait for another ping from Electrum
-                    log.debug("Balance of %s is not confirmed yet." %
-                            str(unconfirmed))
+                    log.debug("Balance of {} is not confirmed yet.".format(
+                        unconfirmed
+                    ))
+                    dblogger(
+                        pay_db.user_id,
+                        "{} {} RECEIVED! We are waiting now for one confirmation.".format(
+                            unconfirmed,
+                            payment
+                        )
+                    )
                     return redirect(url_for('public.home'))
 
                 # No we check if received amount is equal or larger than expected 
                 weexpect = float(pay_db.total_coins)
                 if confirmed >= weexpect:
                     # It is paid :-) so we activate banner(s)
-                    logstr = ("IPN PAID! Confirmed balance on address {adr} is " +
-                        "{bal} and we expected {expe}").format(
+                    logstr = ('IPN PAID! Confirmed balance of {} on address {} is ' +
+                        '{} and we expected {}').format(
+                            payment,
                             ipn['address'],
                             confirmed,
                             weexpect
@@ -153,9 +163,7 @@ def ipn(payment):
                     for order in all_orders:
                         # Linking the campaigna because it's paid!
                         linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
-                        log.debug("Have we linked in Revive? {result}").format(
-                            linkme
-                        )
+                        log.debug("Have we linked in Revive? %s" % str(linkme))
                     # and finally mark payment as paid
                     Payments.query.filter_by(address=ipn['address']).update({"txno":
                                                                             txno})
@@ -164,16 +172,40 @@ def ipn(payment):
                     # Logout from Revive
                     r.ox.logoff(sessionid)
 
+                    # Getting detailed data of the customer
+                    userdb = User.query.filter_by(id=pay_db.user_id).first()
+
                     # Mailing customer that order is paid
-                    msg = Message("Funds sent to address %s confirmed." %
-                                  ipn['address'])
+                    msg = Message("Payment for your campaign(s) is confirmed")
+                    msg.recipients = [(userdb.email)]
+                    
+                    msgbody = ("Funds in {} sent to address {} are confirmed. \n\n" +
+                               "Your campaign(s) are ready to be run. \n\n" +
+                               "You can see all details on: \n    {}").format(
+                                    payment_system[0],
+                                    ipn['address'],
+                                    current_app.config.get('OUR_URL')+"campaign"
+                    )
+                    msg.body = msgbody
+                    mail.send(msg)
 
                 else:
-                    log.debug("Confirmed balance on address is %s but we expected %s." %
-                            (str(confirmed), str(weexpect)))
+                    logstr = ("PROBLEM. Confirmed balance on address is " +
+                              "{} but we expected {}.").format(
+                                confirmed,
+                                weexpect
+                            )
+                    log.debug(logstr)
+                    dblogger(
+                        pay_db.user_id,
+                        logstr
+                    )
+            else:
+                log.debug("Transaction {} is already paid.".format(pay_db.txno))
 
         except Exception as e:
-            log.debug("Transaction %s is already paid." % pay_db.txno)
+            log.debug("Exception")
+            log.exception(e)
             return redirect(url_for('public.home'))
 
     except Exception as e:
