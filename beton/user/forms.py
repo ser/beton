@@ -3,9 +3,7 @@
 from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
-# from wtforms import IntegerField, PasswordField, StringField
 from wtforms import IntegerField, StringField
-# from wtforms.validators import DataRequired, Email, EqualTo, Length
 from wtforms.validators import DataRequired, Length
 
 images = UploadSet('images', IMAGES)
@@ -31,6 +29,10 @@ class ChangeOffer(Form):
     """Modify zone prices."""
     zoneprice = IntegerField('Price per day')
     zoneid = IntegerField('Zone ID')
+    x0 = IntegerField('x0')
+    y0 = IntegerField('y0')
+    x1 = IntegerField('x1')
+    y1 = IntegerField('y1')
 
     def __init__(self, *args, **kwargs):
         """Create instance."""

@@ -22,13 +22,56 @@
                             <div id="comments">{{ zone.comments }}</div>
                             <div id="price"><p>{{ zone.price / 100 }}<i class="fas
                                         fa-euro-sign fa-fw" aria-hidden="true"></i>/day</p></div>
+                            <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>
                             {% if isadmin == True %}
-                                <form action="{{ url_for('user.offer') }}" method="post">
-                                    {{ form.csrf_token }}
-                                    {{ form.zoneprice(size=5) }}
-                                    <input type="hidden" name="zoneid" value="{{ zone.zoneId }}">
-                                    <input type="submit" value="Change">
-                                </form>
+                            <form action="{{ url_for('user.offer') }}" method="post">
+                                <div class="form-group">
+                                    <label class="control-label">Zone administration</label>
+                                    <input class="form-control" type="hidden" name="zoneid" value="{{ zone.zoneId }}">
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">price in cents</span>
+                                        </div>
+                                        {{ form.zoneprice(size=5, value=zone.price) }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">x0</span>
+                                        </div>
+                                        {{ form.x0(size=5, value=zone.x0) }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">x1</span>
+                                        </div>
+                                        {{ form.x1(size=5, value=zone.x1) }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">y0</span>
+                                        </div>
+                                        {{ form.y0(size=5, value=zone.y0) }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">y1</span>
+                                        </div>
+                                        {{ form.y1(size=5, value=zone.y1) }}
+                                    </div>
+                                </div>
+                                {{ form.csrf_token }}
+                                <input type="submit" value="Change">
+                            </form>
                             {% endif %}
                         </div>
                     </div>

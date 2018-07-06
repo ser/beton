@@ -85,11 +85,11 @@ class Prices(SurrogatePK, Model):
 
     __tablename__ = 'zoneprice'
     zoneid = Column(db.Integer(), unique=True, nullable=False)
-    dayprice = Column(db.Integer(), unique=False, nullable=False)
-    x0 = Column(db.Integer(), unique=False, nullable=True)
-    y0 = Column(db.Integer(), unique=False, nullable=True)
-    x1 = Column(db.Integer(), unique=False, nullable=True)
-    y1 = Column(db.Integer(), unique=False, nullable=True)
+    dayprice = Column(db.Integer(), unique=False, nullable=False, default=0)
+    x0 = Column(db.Integer(), unique=False, nullable=False, default=0)
+    y0 = Column(db.Integer(), unique=False, nullable=False, default=0)
+    x1 = Column(db.Integer(), unique=False, nullable=False, default=0)
+    y1 = Column(db.Integer(), unique=False, nullable=False, default=0)
 
     def __init__(self, zoneid, dayprice, x0, y0, x1, y1):
         """Create instance."""

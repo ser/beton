@@ -1,6 +1,7 @@
 import ccxt
 import json
 import names
+import pprint
 import random
 import requests
 import uuid
@@ -10,6 +11,7 @@ import xmlrpc.client
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import *
+from sqlalchemy import func
 from PIL import Image, ImageDraw
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect
@@ -39,7 +41,8 @@ def random_color():
     color = "%03x" % random.randint(0, 0xFFF)
     return "#"+str(color)
 
-
+# it is safe to cache it for 10 minutes or even more
+@cache.memoize(600)
 def create_banner_overview(zone):
     destpath = (current_app.config.get('UPLOADED_IMAGES_DEST') +
         "/overview/zone-%s.png" % str(zone))
@@ -232,19 +235,28 @@ def offer():
             website['publisherId']
         )
         for zone in allzones:
+            # First check if the zone from Revive is available in our Price
+            # database, of not, we are creating it with zero values 
+            howmany = Prices.query.filter_by(zoneid=zone['zoneId']).count()
+            if howmany is not 1:
+                Prices.create(zoneid=zone['zoneId'])
+
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
             tmpdict = {}
-            if price:
-                tmpdict['price'] = price.dayprice
-            else:
-                tmpdict['price'] = 0
+            
             tmpdict['publisherId'] = zone['publisherId']
             tmpdict['zoneName'] = zone['zoneName']
             tmpdict['width'] = zone['width']
             tmpdict['height'] = zone['height']
             tmpdict['zoneId'] = zone['zoneId']
             tmpdict['comments'] = zone['comments']
+
+            tmpdict['price'] = price.dayprice
+            tmpdict['x0'] = price.x0
+            tmpdict['x1'] = price.x1
+            tmpdict['y0'] = price.y0
+            tmpdict['y1'] = price.y1
 
             # ask for stats
             try:
@@ -255,7 +267,6 @@ def offer():
                     datetime.now()
                 )
                 tmpdict['impressions'] = ztatz[0]['impressions']
-                # tmpdict['impressions'] = ztatz
             except Exception as e:
                 log.debug("Exception")
                 log.exception(e)
@@ -263,32 +274,37 @@ def offer():
 
             all_zones.append(tmpdict)
 
-            # Prepare overview SVG 
+            # Prepare overview image
             create_banner_overview(
                 zone['zoneId']
             )
 
     if request.method == 'POST':
+        log.debug(pprint.pformat(request.form, depth=5))
         if form.validate_on_submit():
             for zone in all_zones:
                 if form.zoneid.data == zone['zoneId']:
-                    if zone['price']:
-                        Prices.query.filter_by(
-                            zoneid=form.zoneid.data).update({"dayprice": form.zoneprice.data})
-                        Prices.commit()  # TODO: it should use .update
-                    else:
-                        Prices.create(zoneid=form.zoneid.data,
-                                      dayprice=form.zoneprice.data)
+                    Prices.query.filter_by(
+                        zoneid=form.zoneid.data).update(
+                            {
+                                "dayprice": form.zoneprice.data,
+                                "x0": form.x0.data,
+                                "x1": form.x1.data,
+                                "y0": form.y0.data,
+                                "y1": form.y1.data
+                            }
+                        )
+                    Prices.commit()
 
         return redirect(url_for('user.offer'))
 
     # Render the page and quit
     return render_template(
         'users/offer.html',
-        allzones=all_zones,
-        publishers=publishers,
-        isadmin=amiadmin(),
-        form=form
+        allzones = all_zones,
+        publishers = publishers,
+        isadmin = amiadmin(),
+        form = form
     )
 
 
