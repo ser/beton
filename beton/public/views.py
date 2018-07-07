@@ -207,7 +207,6 @@ def ipn(payment):
                 "Payment %s for your campaign(s) is confirmed" % pay_db.bip70_id
             )
             msg.recipients = [(userdb.email)]
-            
             msgbody = ("Funds in {} sent to address {} are confirmed. \n\n" +
                        "{} \n\n" +
                        "Your campaign(s) are ready to be run. \n\n" +
@@ -222,15 +221,15 @@ def ipn(payment):
             mail.send(msg)
 
             # If configuration sets pushover.net, we send it in there
-            pushlog = (
-                "{} paid {} {} for {}".format(
-                    userdb.username,
-                    confirmed,
-                    payment,
-                    memo
-                )
-            )
             if current_app.config.get('PUSHOVER') is True:
+                pushlog = (
+                    "{} paid {} {} for {}".format(
+                        userdb.username,
+                        confirmed,
+                        payment,
+                        memo
+                    )
+                )
                 pushover.Client().send_message(pushlog, title="$$$")
 
 
@@ -260,7 +259,8 @@ def ipn(payment):
 
     # We need to establish a lock preventing from processing payment
     # for the same address several times concurrently which is possible in real
-    # situation. If it happens, for example mail is being sent twice.
+    # situation. If it happens, for example mail is being sent twice. We don't
+    # like it, then
     with lockutils.lock(ipn['address']):
         try:
             # This is not a valid payment yet
@@ -286,14 +286,12 @@ def ipn(payment):
 
             try:
                 if pay_db.txno == "0":  # If our invoice is already paid, do not bother
-
                     process_payment(
                         payment,
                         payment_system[3],
                         ipn['address'],
                         pay_db
                     )
-
                 else:
                     log.debug("Transaction {} is already paid.".format(pay_db.txno))
 
