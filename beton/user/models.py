@@ -163,12 +163,13 @@ class Payments(SurrogatePK, Model):
     total_coins = Column(db.Numeric(16, 8))
     txno = Column(db.String(64), unique=False, nullable=True)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    received_at = Column(db.DateTime, nullable=True)
-    confirmed_at = Column(db.DateTime, nullable=True)
+    received_at = Column(db.DateTime, nullable=False)
+    confirmed_at = Column(db.DateTime, nullable=False)
+    bip70_id = Column(db.String(10), nullable=False)
     user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
 
     def __init__(self, blockchain, address, txno, total_coins, created_at,
-                 received_at, confirmed_at, user_id):
+                 received_at, confirmed_at, bip70_id, user_id):
         """ Create instance."""
         self.blockchain = blockchain
         self.address = address
@@ -177,13 +178,14 @@ class Payments(SurrogatePK, Model):
         self.created_at = created_at
         self.received_at = received_at
         self.confirmed_at = confirmed_at
+        self.bip70_id = bip70_id
         self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<blockchain: {}, address: {}, txno: {}, \
 total_coins: {}, created_at: {}, user_id: {}, \
-received_at: {}, confirmed_at: {}>'.format(
+received_at: {}, confirmed_at: {}, bip70_id: {}>'.format(
             self.blockchain,
             self.address,
             self.txno,
@@ -191,6 +193,7 @@ received_at: {}, confirmed_at: {}>'.format(
             self.created_at,
             self.user_id,
             self.received_at,
+            self.bip70_id,
             self.confirmed_at
         )
 

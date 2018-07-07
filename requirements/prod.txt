@@ -55,3 +55,4 @@ requests
 python-dateutil
 ccxt
 oslo_concurrency
+python-pushover

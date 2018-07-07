@@ -808,6 +808,7 @@ def pay(payment):
     try:
         addr = result['address']
         pramount = result['amount']  # amount in satoshi
+        bip70_id = result['id']
     except Exception as e:
         log.debug("Exception")
         log.exception(e)
@@ -820,14 +821,15 @@ def pay(payment):
 
     # Creating database record for payment and linking it into orders.
     payment_sql = Payments.create(
-        blockchain=payment,
-        address=addr,
-        total_coins=total_coins,
-        txno=0,
-        created_at=datetime.utcnow(),
-        user_id=current_user.id,
-        confirmed_at='NULL',
-        received_at='NULL'
+        blockchain = payment,
+        address = addr,
+        total_coins = total_coins,
+        txno = 0,
+        created_at = datetime.utcnow(),
+        user_id = current_user.id,
+        bip70_id = bip70_id,
+        confirmed_at = datetime.min,
+        received_at = datetime.min
     )
     paymentno = payment_sql.id
     for item in basket:

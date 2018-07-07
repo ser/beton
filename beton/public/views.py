@@ -1,5 +1,6 @@
 """Public section, including homepage and signup."""
 
+import pushover
 import requests
 import uuid
 import xmlrpc
@@ -84,23 +85,58 @@ def ipn(payment):
         if unconfirmed > 0:
             # Transcation is not confirmed yet so we simply register that
             # and wait for another ping from Electrum
-            log.debug("Balance of {} is not confirmed yet.".format(
-                unconfirmed
-            ))
-            dblogger(
-                pay_db.user_id,
-                "{} {} to address {} RECEIVED! We are waiting now for one confirmation.".format(
-                    cryptoaddress,
-                    unconfirmed,
-                    payment
+            
+            # First check if it is not recorded yet
+            if pay_db.received_at == datetime.min:
+
+                log.debug("Balance of {} is not confirmed yet.".format(
+                    unconfirmed
+                ))
+                dblogger(
+                    pay_db.user_id,
+                    "{} {} to address {} RECEIVED! We are waiting now for one confirmation.".format(
+                        unconfirmed,
+                        payment,
+                        cryptoaddress
+                    )
+                )
+                # We record receiving payment in the Payment database
+                Payments.query.filter_by(
+                    address=cryptoaddress).update(
+                        {"received_at": datetime.utcnow()})
+                Payments.commit()
+            else:
+                log.debug("This IPN about unconfirmed balance was already processed.")
+            # and showing a standard page
+            return redirect(url_for('public.home'))
+
+        # Get also all related BIP70 Payment Request data
+        params = {
+            "key": cryptoaddress
+        }
+        payload = {
+            "id": str(uuid.uuid4()),
+            "method": "getrequest",
+            "params": params
+        }
+        log.debug("We have sent to electrum this payload:")
+        log.debug(payload)
+        get_bip70 = requests.post(electrum_url, json=payload).json()
+        log.debug("We got back from electrum:")
+        log.debug(get_bip70)
+        status = get_bip70['result']['status']
+        memo = get_bip70['result']['memo']
+
+        if status != "Paid":
+            # This transaction was not paid on time, thus we cannot confirm it
+            logstr = (
+                ('BIP70 PR {} was not paid on time or partially on time' +
+                'with expected amount.').format(
+                    pay_db.bip70_id
                 )
             )
-            # We record receiving payment in the Payment database
-            Payments.query.filter_by(
-                address=cryptoaddress).update(
-                    {"received_at": datetime.utcnow()})
-            Payments.commit()
-            # and showing a standard page
+            log.debug(logstr)
+            dblogger(pay_db.user_id, logstr)
             return redirect(url_for('public.home'))
 
         # No we check if received amount is equal or larger than expected 
@@ -110,7 +146,7 @@ def ipn(payment):
             logstr = ('PAID! Confirmed balance of {} on address {} is ' +
                 '{} and we expected {}').format(
                     payment,
-                    ipn['address'],
+                    cryptoaddress,
                     confirmed,
                     weexpect
                 )
@@ -118,7 +154,9 @@ def ipn(payment):
             dblogger(pay_db.user_id, logstr)
 
             # Get TX hash from Electrum
-            # params are the same so we do not declare them again
+            params = {
+                "address": cryptoaddress
+            }
             payload = {
                 "id": str(uuid.uuid4()),
                 "method": "getaddresshistory",
@@ -136,6 +174,7 @@ def ipn(payment):
             all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
             log.debug("We are having these orders in the basket:")
             log.debug(all_orders)
+
             # Log in into Revive
             r = xmlrpc.client.ServerProxy(
                 current_app.config.get('REVIVE_XML_URI'),
@@ -143,9 +182,10 @@ def ipn(payment):
             )
             sessionid = reviveme(r)
             for order in all_orders:
-                # Linking the campaigna because it's paid!
+                # Linking the campaign because it's paid!
                 linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
                 log.debug("Have we linked in Revive? %s" % str(linkme))
+
             # and finally mark payment as paid
             Payments.query.filter_by(
                 address=cryptoaddress).update(
@@ -163,23 +203,41 @@ def ipn(payment):
             userdb = User.query.filter_by(id=pay_db.user_id).first()
 
             # Mailing customer that order is paid
-            msg = Message("Payment for your campaign(s) is confirmed")
+            msg = Message(
+                "Payment %s for your campaign(s) is confirmed" % pay_db.bip70_id
+            )
             msg.recipients = [(userdb.email)]
             
             msgbody = ("Funds in {} sent to address {} are confirmed. \n\n" +
-                        "Your campaign(s) are ready to be run. \n\n" +
-                        "You can see all details on: \n    {}").format(
+                       "{} \n\n" +
+                       "Your campaign(s) are ready to be run. \n\n" +
+                       "You can see all details on: \n    {}\n\n" +
+                       "Thank you :-)").format(
                             payment_system[0],
                             ipn['address'],
+                            memo,
                             current_app.config.get('OUR_URL')+"campaign"
             )
             msg.body = msgbody
             mail.send(msg)
 
+            # If configuration sets pushover.net, we send it in there
+            pushlog = (
+                "{} paid {} {} for {}".format(
+                    userdb.username,
+                    confirmed,
+                    payment,
+                    memo
+                )
+            )
+            if current_app.config.get('PUSHOVER') is True:
+                pushover.Client().send_message(pushlog, title="$$$")
+
+
         else:
             logstr = ("PROBLEM. Confirmed balance on address {} is " +
                         "{} but we expected {}.").format(
-                        ipn['address'],
+                        cryptoaddress,
                         confirmed,
                         weexpect
                     )
