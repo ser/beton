@@ -665,6 +665,20 @@ def basket():
         present=datetime.now()-timedelta(days=1)
     )
 
+@blueprint.route('/clear/banner/<int:banner_id>')
+@login_required
+def clear_banner(banner_id):
+    try:
+        banner_data = Banner.query.filter_by(id=banner_id).first()
+        if banner_data.owner == current_user.id:
+            Banner.query.filter_by(id=banner_id).delete()
+            flash('Your banner was removed sucessfully.', 'success')
+            Banner.commit()
+    except Exception as e:
+        log.debug("Exception")
+        log.exception(e)
+    return redirect(url_for("user.bannerz"), code=302)
+
 
 @blueprint.route('/clear/basket/<int:campaign_id>')
 @login_required
@@ -688,6 +702,7 @@ def clear_basket(campaign_id):
                     )
                 )
                 Orders.query.filter_by(campaigno=order.campaigno).delete()
+                flash('Your basket was removed sucessfully.', 'success')
         else:
             removed = r.ox.deleteCampaign(sessionid, campaign_id)
             log.debug(
@@ -698,6 +713,7 @@ def clear_basket(campaign_id):
             )
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
             Orders.query.filter_by(campaigno=campaign_id).delete()
+            flash('Your planned campaign was removed sucessfully.', 'success')
         Basket.commit()
         Orders.commit()
     except Exception as e:
