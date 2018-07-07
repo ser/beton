@@ -1,0 +1,27 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="jumbotron">
+        <h1>All we know about</h1>
+        <span class="label label-info">
+            This is our secret log.</span>
+    </div>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">logid</th>
+                <th scope="col">date/time</th>
+                <th>logdata</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for onelog in userlog|reverse %}
+            <tr>
+                <th scope="row">{{ onelog.id }}</th>
+                <th> {{ onelog.datelog }}</th>
+                <td>{{ onelog.logdata }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

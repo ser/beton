@@ -17,13 +17,13 @@
             </tr>
         </thead>
         <tbody>
-            {% for user in all_users|reverse %}
+            {% for oneuser in all_users|reverse %}
             <tr>
-                <th scope="row">{{ user.id }}</th>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.confirmed_at }}</td>
-                <td>{{ user.is_enabled }}</td>
+                <th scope="row">{{ oneuser.id }}</th>
+                <td><a href="{{ url_for('user.logaboutuser', user_id=oneuser.id) }}">{{ oneuser.username }}</a></td>
+                <td>{{ oneuser.email }}</td>
+                <td>{{ oneuser.confirmed_at }}</td>
+                <td>{{ oneuser.is_enabled }}</td>
             </tr>
             {% endfor %}
         </tbody>

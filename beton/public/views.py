@@ -89,7 +89,8 @@ def ipn(payment):
             ))
             dblogger(
                 pay_db.user_id,
-                "{} {} RECEIVED! We are waiting now for one confirmation.".format(
+                "{} {} to address {} RECEIVED! We are waiting now for one confirmation.".format(
+                    cryptoaddress,
                     unconfirmed,
                     payment
                 )
@@ -106,7 +107,7 @@ def ipn(payment):
         weexpect = float(pay_db.total_coins)
         if confirmed >= weexpect:
             # It is paid :-) so we activate banner(s)
-            logstr = ('IPN PAID! Confirmed balance of {} on address {} is ' +
+            logstr = ('PAID! Confirmed balance of {} on address {} is ' +
                 '{} and we expected {}').format(
                     payment,
                     ipn['address'],
@@ -176,8 +177,9 @@ def ipn(payment):
             mail.send(msg)
 
         else:
-            logstr = ("PROBLEM. Confirmed balance on address is " +
+            logstr = ("PROBLEM. Confirmed balance on address {} is " +
                         "{} but we expected {}.").format(
+                        ipn['address'],
                         confirmed,
                         weexpect
                     )

@@ -6,10 +6,10 @@
             aria-hidden="true"></i></h1>
     <p class="lead">Here are your past, current and future campaigns, limited to those ending {{ no_weeks }} weeks ago or sooner.</p>
     <p>You can also see your older campaigns: 
-        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/8">2 months</a> or 
-        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/26">6 months</a> or 
-        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/52">12 months</a> or 
-        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign') }}/999">all of them</a>
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign', no_weeks=8) }}">2 months</a> or 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign', no_weeks=26) }}">6 months</a> or 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign', no_weeks=52) }}">12 months</a> or 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign', no_weeks=999) }}">all of them</a>
     </p>
     </div>
     <div class="row">

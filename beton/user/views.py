@@ -21,7 +21,7 @@ from flask_uploads import UploadSet, IMAGES
 from beton.extensions import cache
 from beton.logger import log
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Basket, Orders, Payments, Prices, User
+from beton.user.models import Banner, Basket, Log, Orders, Payments, Prices, User
 from beton.utils import dblogger, flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -672,7 +672,14 @@ def clear_banner(banner_id):
         banner_data = Banner.query.filter_by(id=banner_id).first()
         if banner_data.owner == current_user.id:
             Banner.query.filter_by(id=banner_id).delete()
-            flash('Your banner was removed sucessfully.', 'success')
+            flash(
+                ('Your banner was removed sucessfully. All running campaigns' +
+                  'are not affected.'), 'success'
+            )
+            dblogger(
+                current_user.id,
+                "User removed banner #{}".format(banner_id)
+            )
             Banner.commit()
     except Exception as e:
         log.debug("Exception")
@@ -862,11 +869,22 @@ def pay(payment):
     )
 
 
-@blueprint.route('/admin/users', methods=['get', 'post'])
 @roles_accepted('admin')
+@blueprint.route('/admin/users')
 def listusers():
     all_users = User.query.all()
     return render_template(
         'users/listusers.html',
         all_users=all_users
+    )
+
+
+# TODO: paging of data
+@roles_accepted('admin')
+@blueprint.route('/admin/log/<int:user_id>')
+def logaboutuser(user_id):
+    userlog = Log.query.filter_by(user_id=user_id).all()
+    return render_template(
+        'users/logaboutuser.html',
+        userlog = userlog
     )
