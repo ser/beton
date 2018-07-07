@@ -11,7 +11,6 @@ import xmlrpc.client
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import *
-from sqlalchemy import func
 from PIL import Image, ImageDraw
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect
@@ -803,7 +802,9 @@ def pay(payment):
         total_coins=total_coins,
         txno=0,
         created_at=datetime.utcnow(),
-        user_id=current_user.id
+        user_id=current_user.id,
+        confirmed_at='NULL',
+        received_at='NULL'
     )
     paymentno = payment_sql.id
     for item in basket:

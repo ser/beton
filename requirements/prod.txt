@@ -54,3 +54,4 @@ pymysql
 requests
 python-dateutil
 ccxt
+oslo_concurrency
