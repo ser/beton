@@ -308,11 +308,17 @@ def offer():
 
 
 @blueprint.route('/campaign')
-@blueprint.route('/campaign/<int:no_weeks>')
+@blueprint.route('/campaign/duration/<int:no_weeks>')
+@blueprint.route('/campaign/details/<int:campaign_no>')
 @login_required
-def campaign(no_weeks=None):
-    """Get and display all campaigns belonging to user."""
-    if not no_weeks:  # we show 1 month of campaign by default
+def campaign(no_weeks=None,campaign_no=None):
+    """
+    Details related to one campaign only.
+    or
+    Get and display all campaigns belonging to user.
+    """
+
+    if not no_weeks:  # we show 1 month of recent campaigns by default
         no_weeks = 4
     r = xmlrpc.client.ServerProxy(
         current_app.config.get('REVIVE_XML_URI'),
@@ -320,10 +326,17 @@ def campaign(no_weeks=None):
     )
     sessionid = session['revive']
 
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(
-        sessionid,
-        current_app.config.get('REVIVE_AGENCY_ID')
-    )
+    # We want to cache data which does not change frequently, as asking revive
+    # is time costly
+    @cache.memoize(timeout=666)
+    def all_advertisers_cached():
+        all_advertisers = r.ox.getAdvertiserListByAgencyId(
+            sessionid,
+            current_app.config.get('REVIVE_AGENCY_ID')
+        )
+        return all_advertisers
+
+    all_advertisers = all_advertisers_cached()
 
     # Try to find out if the customer is already registered in Revive, if not,
     # register him
@@ -340,15 +353,48 @@ def campaign(no_weeks=None):
                 'comments': current_app.config.get('USER_APP_NAME')
                 }
         )
+        cache.delete_memoized('all_advertisers_cached')
+        all_advertisers = all_advertisers_cached()
 
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(
-        sessionid,
-        current_app.config.get('REVIVE_AGENCY_ID')
-    )
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                         current_user.username)['advertiserId'])
 
-    # dirty auth hack, TODO to be rewritten
+    # We want details related to one campaign, not a list of all so we will
+    # display that data and quit this function
+    if campaign_no is not None:
+        dbquery = Orders.query.join(
+            Payments, Orders.paymentno==Payments.id).join(
+                Banner, Orders.bannerid==Banner.id).add_columns(
+                    Orders.user_id,
+                    Orders.begins_at,
+                    Orders.stops_at,
+                    Orders.created_at,
+                    Orders.zoneid,
+                    Orders.campaigno,
+                    Orders.bannerid,
+                    Orders.name,
+                    Orders.comments,
+                    Payments.address,
+                    Payments.bip70_id,
+                    Payments.confirmed_at,
+                    Payments.received_at,
+                    Payments.blockchain,
+                    Payments.total_coins,
+                    Payments.txno,
+                    Banner.filename,
+                    Banner.url,
+                    Banner.width,
+                    Banner.height
+                ).filter(Orders.campaigno==campaign_no).first()
+        log.debug(dbquery)
+
+        # Render the page and quit
+        return render_template(
+            'users/campaign-single.html',
+            dbquery = dbquery
+        )
+
+    # admin gets all campaigns for all users
     if amiadmin():
         all_campaigns = []
         for advertiser in all_advertisers:
@@ -585,14 +631,16 @@ def order():
         r.ox.addBanner(sessionid, diki)
 
         Orders.create(
-            campaigno=campaign,
-            zoneid=zone_id,
-            created_at=datetime.utcnow(),
-            begins_at=begin,
-            stops_at=enddate,
-            paymentno=0,
-            bannerid=banner_id,
-            user_id=current_user.id
+            campaigno = campaign,
+            zoneid = zone_id,
+            created_at = datetime.utcnow(),
+            begins_at = begin,
+            stops_at = enddate,
+            paymentno = 0,
+            bannerid = banner_id,
+            name = randomname,
+            comments = zone_name,
+            user_id = current_user.id
         )
 
         dblogger(
@@ -609,20 +657,20 @@ def order():
         )
 
         Basket.create(
-            campaigno=campaign,
-            user_id=current_user.id
+            campaigno = campaign,
+            user_id = current_user.id
         )
 
         return render_template(
             'users/order.html',
-            banner_id=banner_id,
-            datestart=datestart,
-            datend=datend,
-            image_url=image_url,
-            zone_id=zone_id,
-            days=totaltime.days,
-            dayprice=price.dayprice,
-            step='order'
+            banner_id = banner_id,
+            datestart = datestart,
+            datend = datend,
+            image_url = image_url,
+            zone_id = zone_id,
+            days = totaltime.days,
+            dayprice = price.dayprice,
+            step = 'order'
         )
 
 
@@ -660,9 +708,9 @@ def basket():
 
     return render_template(
         'users/basket.html',
-        basket=basket,
-        price=price,
-        present=datetime.now()-timedelta(days=1)
+        basket = basket,
+        price = price,
+        present = datetime.now()-timedelta(days=1)
     )
 
 @blueprint.route('/clear/banner/<int:banner_id>')
@@ -762,13 +810,14 @@ def pay(payment):
             totalcoinprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
             cointotal += totalcoinprice
-            label = label + "[C#%s Z#%s B#%s %s ↦ %s %s] ※ " % (
-                str(item.campaigno),
-                str(order_sql[0].zoneid),
-                str(order_sql[0].bannerid),
+            label = label + "[C#{} Z#{} B#{} {} ↦ {} {}] ※ ".format(
+                item.campaigno,
+                order_sql[0].zoneid,
+                order_sql[0].bannerid,
                 begin.strftime("%d/%m/%y"),
                 enddate.strftime("%d/%m/%y"),
-                str(totalcurrencyprice)+current_app.config.get('FIAT'))
+                str(totalcurrencyprice)+current_app.config.get('FIAT')
+            )
     else:
         basket = 0
         log.error("Trying to pay for empty basket.")
@@ -862,17 +911,17 @@ def pay(payment):
     # and display payment page
     return render_template(
         'users/pay.html',
-        total=total,
-        orders=len(basket),
-        exrate=exrate,
-        fee=fee,
-        currency=payment_system[0],
-        electrum=result
+        total = total,
+        orders = len(basket),
+        exrate = exrate,
+        fee = fee,
+        currency = payment_system[0],
+        electrum = result
     )
 
 
-@roles_accepted('admin')
 @blueprint.route('/admin/users')
+@roles_accepted('admin')
 def listusers():
     all_users = User.query.all()
     return render_template(
@@ -882,8 +931,8 @@ def listusers():
 
 
 # TODO: paging of data
-@roles_accepted('admin')
 @blueprint.route('/admin/log/<int:user_id>')
+@roles_accepted('admin')
 def logaboutuser(user_id):
     userlog = Log.query.filter_by(user_id=user_id).all()
     return render_template(

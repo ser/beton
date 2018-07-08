@@ -1,0 +1,35 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="jumbotron">
+    <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
+            aria-hidden="true"></i></h1>
+    <p class="lead">Here are all details we know about your particular campaign.</p>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card border-primary mb-3">
+                <div class="card-header">Campaign details: #{{ dbquery.campaigno }} {{ dbquery.name }}</div>
+                <div class="card-body">
+                    <div class="card-columns">
+                        <ul class="list-group">
+                            <h5 class="card-title">Zone #{{ dbquery.zoneid }}</h5>
+                            <li class="list-group-item d-flex align-items-left">{{ dbquery.comments }}</li>
+                            <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ dbquery.filename }}">
+                            <li class="list-group-item d-flex align-items-left">Size: {{ dbquery.width }}x{{ dbquery.height }}
+                            <li class="list-group-item d-flex align-items-left">Created at: {{ dbquery.created_at }}</li>
+                            <li class="list-group-item d-flex align-items-left">Start: {{ dbquery.begins_at.strftime('%Y-%m-%d') }}, End: {{ dbquery.stops_at.strftime('%Y-%m-%d') }}</li>
+                        </ul>
+                        <ul class="list-group">
+                            <h5 class="card-title">Payment</h5>
+                            <li class="list-group-item d-flex align-items-left">{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][0] }} {{ dbquery.total_coins }}</li>
+                            <li class="list-group-item d-flex align-items-left">ID: {{ dbquery.bip70_id }}</li>
+                            <li class="list-group-item d-flex align-items-left">Address:&nbsp; <kbd><a href="{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][4] }}{{ dbquery.address }}">{{ dbquery.address }}</a></kbd</li>
+                            <li class="list-group-item d-flex align-items-left">Received: {{ dbquery.received_at }}</li>
+                            <li class="list-group-item d-flex align-items-left">Confirmed: {{ dbquery.confirmed_at }}</li>
+                            <li class="list-group-item d-flex align-items-left">Transaction: {{ dbquery.txno }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+{% endblock %}

@@ -1,6 +1,6 @@
 <div class="card border-light">
     <div class="card-header">
-        #{{ campaign['campaignId']  }} {{ campaign['campaignName']  }}
+        <a href="{{ url_for('user.campaign', campaign_no=campaign['campaignId']) }}">#{{ campaign['campaignId']  }} {{ campaign['campaignName'] }}</a>
     </div>
     <div class="card-body">
         <div class="card-text">

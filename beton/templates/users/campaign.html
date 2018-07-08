@@ -45,7 +45,8 @@
                 <div class="card-header">Unpaid campaigns / expired</div>
                 <div class="card-body">
                     <p class="card-title">Don't try to pay these campaigns as
-                        payment requests already have expired.</p>
+                        payment requests already have expired. Unpaid campaigns
+                    are removed from the list after seven days.</p>
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
                         {% if campaign['ispaid'] == False %}

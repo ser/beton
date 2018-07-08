@@ -124,10 +124,13 @@ class Orders(SurrogatePK, Model):
     stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     paymentno = Column(db.Integer(), unique=False, nullable=True)
     bannerid = Column(db.Integer(), db.ForeignKey('banners.id'), nullable=False)
+    name = Column(db.Text, unique=False, nullable=False)
+    comments = Column(db.Text, unique=False, nullable=False)
     user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
 
     def __init__(self, campaigno, zoneid, created_at, begins_at,
-                 stops_at, paymentno, bannerid, user_id):
+                 stops_at, paymentno, bannerid, name, comments,
+                 user_id):
         """Create instance."""
         self.campaigno = campaigno
         self.zoneid = zoneid
@@ -136,18 +139,22 @@ class Orders(SurrogatePK, Model):
         self.stops_at = stops_at
         self.paymentno = paymentno
         self.bannerid = bannerid
+        self.name = name
+        self.comments = comments
         self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<campaigno: {}, zoneid: {}, created_at: {}, \
-begins_at: {}, stops_at: {}, \
+begins_at: {}, stops_at: {}, name: {}, comments: {}, \
 paymentno: {}, bannerid: {}, user_id: {}>'.format(
             self.campaigno,
             self.zoneid,
             self.created_at,
             self.begins_at,
             self.stops_at,
+            self.name,
+            self.comments,
             self.paymentno,
             self.bannerid,
             self.user_id
