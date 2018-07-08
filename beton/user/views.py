@@ -388,11 +388,17 @@ def campaign(no_weeks=None,campaign_no=None):
                 ).filter(Orders.campaigno==campaign_no).first()
         log.debug(dbquery)
 
-        # Render the page and quit
-        return render_template(
-            'users/campaign-single.html',
-            dbquery = dbquery
-        )
+        # we show details only to campaign owners or admins
+        if Orders.user_id == current_user.id or amiadmin():
+            # Render the page and quit
+            return render_template(
+                'users/campaign-single.html',
+                dbquery = dbquery
+            )
+        else:
+            # We politely redirecting 'hackers' to all campaigns
+            return redirect(url_for("user.campaign"), code=302)
+
 
     # admin gets all campaigns for all users
     if amiadmin():
