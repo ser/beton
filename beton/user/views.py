@@ -336,6 +336,20 @@ def campaign(no_weeks=None,campaign_no=None):
         )
         return all_advertisers
 
+    # ask for statz, it might be cached for an hour or so
+    @cache.memoize(timeout=3666)
+    def banner_ztatz_cached(campaignid):
+        try:
+            ztatz = r.ox.campaignBannerStatistics(
+                sessionid,
+                campaignid,
+                datetime(2011, 1, 1, 0, 0),
+                datetime.now()
+            )
+            return ztatz[0]['impressions']
+        except BaseException:
+            return 0
+
     all_advertisers = all_advertisers_cached()
 
     # Try to find out if the customer is already registered in Revive, if not,
@@ -359,34 +373,36 @@ def campaign(no_weeks=None,campaign_no=None):
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                         current_user.username)['advertiserId'])
 
+    # A universal JOIN across tables to get info about an order
+    dbqueryall = Orders.query.join(
+        Payments, Orders.paymentno==Payments.id).join(
+            Banner, Orders.bannerid==Banner.id).add_columns(
+                Orders.user_id,
+                Orders.begins_at,
+                Orders.stops_at,
+                Orders.created_at,
+                Orders.zoneid,
+                Orders.campaigno,
+                Orders.bannerid,
+                Orders.name,
+                Orders.comments,
+                Payments.address,
+                Payments.bip70_id,
+                Payments.confirmed_at,
+                Payments.received_at,
+                Payments.blockchain,
+                Payments.total_coins,
+                Payments.txno,
+                Banner.filename,
+                Banner.url,
+                Banner.width,
+                Banner.height
+            )
+
     # We want details related to one campaign, not a list of all so we will
     # display that data and quit this function
     if campaign_no is not None:
-        dbquery = Orders.query.join(
-            Payments, Orders.paymentno==Payments.id).join(
-                Banner, Orders.bannerid==Banner.id).add_columns(
-                    Orders.user_id,
-                    Orders.begins_at,
-                    Orders.stops_at,
-                    Orders.created_at,
-                    Orders.zoneid,
-                    Orders.campaigno,
-                    Orders.bannerid,
-                    Orders.name,
-                    Orders.comments,
-                    Payments.address,
-                    Payments.bip70_id,
-                    Payments.confirmed_at,
-                    Payments.received_at,
-                    Payments.blockchain,
-                    Payments.total_coins,
-                    Payments.txno,
-                    Banner.filename,
-                    Banner.url,
-                    Banner.width,
-                    Banner.height
-                ).filter(Orders.campaigno==campaign_no).first()
-        log.debug(dbquery)
+        dbquery = dbqueryall.filter(Orders.campaigno==campaign_no).first()
 
         # we show details only to campaign owners or admins
         if Orders.user_id == current_user.id or amiadmin():
@@ -399,95 +415,30 @@ def campaign(no_weeks=None,campaign_no=None):
             # We politely redirecting 'hackers' to all campaigns
             return redirect(url_for("user.campaign"), code=302)
 
-
     # admin gets all campaigns for all users
     if amiadmin():
-        all_campaigns = []
-        for advertiser in all_advertisers:
-            all_campaigns = all_campaigns + r.ox.getCampaignListByAdvertiserId(
-                sessionid, advertiser['advertiserId'])
+        all_campaigns = dbqueryall.all()
     else:
-        all_campaigns = r.ox.getCampaignListByAdvertiserId(sessionid, advertiser_id)
+        all_campaigns = dbqueryall.filter(Orders.user_id==current_user.id).all()
 
-    # find all banners related to campaigns
-    banners = []
-    if len(all_campaigns) > 0:
-        for x in all_campaigns:
-            banners.append([x['campaignId'], r.ox.getBannerListByCampaignId(
-                                                sessionid,
-                                                x['campaignId'])])
-    all_campaigns_standardized = []
-
+    ztatz = {}
     for campaign in all_campaigns:
-        endtime = datetime.strptime(campaign['endDate'].value,
-                                    '%Y%m%dT%H:%M:%S')
+        endtime = campaign.stops_at
         nowtime = datetime.now()
-        # limit campaigns to no_weeks only
+        # limit checked campaigns to no_weeks only to avoid unneccesery queries to revive
         if (nowtime - endtime) < timedelta(weeks=no_weeks):
-            # log.debug((nowtime - endtime))
-
-            # check orders what do we know about that campaign
-            orderinfo = Orders.query.filter_by(campaigno=campaign['campaignId']).first()
-            sql = Payments.query.filter_by(id=orderinfo.paymentno).first()
-            tasks = {}
-            tasks['campaignId'] = campaign['campaignId']
-            tasks['campaignName'] = campaign['campaignName']
-            tasks['comments'] = campaign['comments']
-            starttime = datetime.strptime(campaign['startDate'].value,
-                                          '%Y%m%dT%H:%M:%S')
-            tasks['startDate'] = starttime
-            tasks['endDate'] = endtime
-            present = datetime.now()
-            if endtime < present:
-                tasks['expired'] = True
-            else:
-                tasks['expired'] = False
-
-            try:
-                tasks['address'] = sql.address
-            except BaseException:
-                tasks['address'] = "0"
-
-            try:
-                tasks['amount_coins'] = sql.total_coins
-            except BaseException:
-                tasks['amount_coins'] = 0
-
-            try:
-                tasks['chain'] = sql.blockchain
-            except BaseException:
-                tasks['chain'] = "0"
-
-            try:
-                if int(sql.txno) == 0:
-                    tasks['ispaid'] = False
-            except BaseException:
-                tasks['ispaid'] = True
-
-            # ask for stats
-            try:
-                ztatz = r.ox.campaignBannerStatistics(
-                    sessionid,
-                    campaign['campaignId'],
-                    datetime(2011, 1, 1, 0, 0),
-                    datetime.now()
-                )
-                tasks['impressions'] = ztatz[0]['impressions']
-            except BaseException:
-                tasks['impressions'] = 0
-
-            # We ignore campaigns in the basket
-            if tasks['address'] != "0":
-                all_campaigns_standardized.append(tasks)
+            tmpdict = {campaign.campaigno: banner_ztatz_cached(campaign.campaigno)}
+            ztatz.update(tmpdict)
 
     # Render the page and quit
     return render_template(
         'users/campaign.html',
-        all_campaigns=all_campaigns_standardized,
-        banners=banners,
-        roles=current_user.roles,
-        now=datetime.utcnow(),
-        no_weeks=no_weeks
+        all_campaigns = all_campaigns,
+        ztatz = ztatz,
+        roles = current_user.roles,
+        now = datetime.utcnow(),
+        datemin = datetime.min,
+        no_weeks = no_weeks
     )
 
 
@@ -781,6 +732,12 @@ def clear_basket(campaign_id):
         log.debug("Exception")
         log.exception(e)
     return redirect(url_for("user.basket"), code=302)
+
+
+@blueprint.route('/clear/campaign/<int:campaign_no>')
+@login_required
+def clear_campaign(campaign_no):
+    pass
 
 
 @blueprint.route('/pay/<string:payment>')

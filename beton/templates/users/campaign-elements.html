@@ -1,35 +1,26 @@
 <div class="card border-light">
     <div class="card-header">
-        <a href="{{ url_for('user.campaign', campaign_no=campaign['campaignId']) }}">#{{ campaign['campaignId']  }} {{ campaign['campaignName'] }}</a>
+        <h6><a href="{{ url_for('user.campaign', campaign_no=campaign.campaigno) }}">#{{ campaign.campaigno }} {{ campaign.name }}</a></h6>
+        <img class="img-thumbnail thumbmax" 
+            src="{{ config.UPLOADED_IMAGES_URL}}{{ campaign.filename }}"
+            alt="[B{{ campaign.campaigno }}]">
+        <p class="text-muted">{{ campaign.comments }}</p>
     </div>
     <div class="card-body">
         <div class="card-text">
             <p>
-                <b>From:</b> {{ campaign['startDate'].strftime('%Y-%m-%d') }}<br/>
-                <b>To:</b> {{ campaign['endDate'].strftime('%Y-%m-%d') }}
+                <b>From:</b> {{ campaign.begins_at.strftime('%Y-%m-%d') }}<br/>
+                <b>To:</b> {{ campaign.stops_at.strftime('%Y-%m-%d') }}
             </p>
             <p>
-                <b>{{ config.PAYMENT_SYSTEMS[campaign['chain']][0] }}:</b>
-                    {{ campaign['amount_coins'] }} <i
-                        class="fa fa-arrows-h"
-                        aria-hidden="true"></i><br/>
-                Confirmed? <a href="{{ config.PAYMENT_SYSTEMS[campaign['chain']][4] }}{{ campaign['address'] }}"
-                        target="_blank">
-                        {{ campaign['ispaid'] }}</a>
+                <b>{{ config.PAYMENT_SYSTEMS[campaign.blockchain][0] }}:</b>
+                    {{ campaign.total_coins }}
             </p>
-            <p><b>Impressions:</b> {{ campaign['impressions'] }}</p>
+            <p><b>Impressions:</b> {{ ztatz[campaign.campaigno] }}</p>
         </div>
     </div>
-    <div class="card-footer text-muted">
-        {% for banner in banners %}
-            {% if campaign['campaignId'] == banner[0] %}
-                {% if banner[1] %}
-                <img class="img-thumbnail thumbmax" 
-                    src="{{ banner[1][0]['imageURL'] }}"
-                    alt="[]">
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-        <p>{{ campaign['comments'] }}</p>
+    <div class="card-footer">
+        <a href="{{ url_for('user.clear_campaign', campaign_no=campaign.campaigno) }}"
+            class="btn btn-danger btn-sm btn-block">Delete this campaign</a>
     </div>
 </div>
