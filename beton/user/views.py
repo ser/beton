@@ -409,6 +409,7 @@ def campaign(no_weeks=None,campaign_no=None):
             # Render the page and quit
             return render_template(
                 'users/campaign-single.html',
+                datemin = datetime.min,
                 dbquery = dbquery
             )
         else:
@@ -737,7 +738,35 @@ def clear_basket(campaign_id):
 @blueprint.route('/clear/campaign/<int:campaign_no>')
 @login_required
 def clear_campaign(campaign_no):
-    pass
+    try:
+        r = xmlrpc.client.ServerProxy(
+            current_app.config.get('REVIVE_XML_URI'),
+            verbose=False
+        )
+        sessionid = session['revive']
+
+        # getting data about this campaign 
+        # and confirming it belongs to the user
+        campaigndata = Orders.query.filter_by(campaigno=campaign_no).first()
+        if campaigndata.user_id != current_user.id:
+            return redirect(url_for("user.campaign"), code=302)
+
+        # removing campaign from all sources
+        removed = r.ox.deleteCampaign(sessionid, order.campaigno)
+        logdata = (
+            "Campaign #%s removed from Revive?: %s".format(
+                order.campaigno,
+                removed
+            )
+        )
+        debug.log(logdata)
+        Orders.query.filter_by(campaigno=campaign_no).delete()
+        flash('Your campaign was deleted sucessfully.', 'success')
+
+    except Exception as e:
+        log.debug("Exception")
+        log.exception(e)
+    return redirect(url_for("user.campaign"), code=302)
 
 
 @blueprint.route('/pay/<string:payment>')

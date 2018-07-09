@@ -1,6 +1,6 @@
 <div class="card border-light">
     <div class="card-header">
-        <h6><a href="{{ url_for('user.campaign', campaign_no=campaign.campaigno) }}">#{{ campaign.campaigno }} {{ campaign.name }}</a></h6>
+        <h5><a href="{{ url_for('user.campaign', campaign_no=campaign.campaigno) }}">#{{ campaign.campaigno }} {{ campaign.name }}</a></h5>
         <img class="img-thumbnail thumbmax" 
             src="{{ config.UPLOADED_IMAGES_URL}}{{ campaign.filename }}"
             alt="[B{{ campaign.campaigno }}]">

@@ -16,7 +16,7 @@
         <div class="col-sm-6">
 
             <div class="card border-primary mb-3">
-                <div class="card-header">Your current campaigns</div>
+                <h4 class="card-header">Your paid current and future campaigns</h4>
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
@@ -29,7 +29,7 @@
             </div>
 
             <div class="card border-success mb-3">
-                <div class="card-header">Your previous successful campaigns</div>
+                <h4 class="card-header">Your previous successfuly paid campaigns</h4>
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
@@ -42,10 +42,9 @@
             </div>
 
             <div class="card border-warning mb-3">
-                <div class="card-header">Unpaid campaigns / expired</div>
+                <h4 class="card-header">Unpaid campaigns</h4>
                 <div class="card-body">
-                    <p class="card-title">Don't try to pay these campaigns as
-                        payment requests already have expired. Unpaid campaigns
+                    <p class="card-title">Unpaid campaigns
                     are removed from the list after seven days.</p>
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}

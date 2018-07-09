@@ -9,27 +9,58 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="card border-primary mb-3">
-                <div class="card-header">Campaign details: #{{ dbquery.campaigno }} {{ dbquery.name }}</div>
+                <h4 class="card-header">
+                    Campaign details: #{{ dbquery.campaigno }} {{ dbquery.name }}
+
+                    {% if dbquery.received_at != datemin %}
+                    <span class="badge badge-info">PAID</span>
+                    {% else %}
+                    <span class="badge badge-danger">NOT PAID</span>
+                    {% endif %}
+
+                    {% if dbquery.confirmed_at != datemin %}
+                    <span class="badge badge-info">CONFIRMED</span>
+                    {% else %}
+                    <span class="badge badge-danger">NOT CONFIRMED</span>
+                    {% endif %}
+
+                </h4>
                 <div class="card-body">
                     <div class="card-columns">
                         <ul class="list-group">
-                            <h5 class="card-title">Zone #{{ dbquery.zoneid }}</h5>
-                            <li class="list-group-item d-flex align-items-left">{{ dbquery.comments }}</li>
+                            <h5 class="card-title">Banner</h5>
+                            <li class="list-group-item d-flex align-items-left"><b>Zone #{{ dbquery.zoneid }}</b>&nbsp; - {{ dbquery.comments }}</li>
                             <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ dbquery.filename }}">
-                            <li class="list-group-item d-flex align-items-left">Size: {{ dbquery.width }}x{{ dbquery.height }}
-                            <li class="list-group-item d-flex align-items-left">Created at: {{ dbquery.created_at }}</li>
-                            <li class="list-group-item d-flex align-items-left">Start: {{ dbquery.begins_at.strftime('%Y-%m-%d') }}, End: {{ dbquery.stops_at.strftime('%Y-%m-%d') }}</li>
+                            <li class="list-group-item d-flex align-items-left"><b>Size:</b>&nbsp; {{ dbquery.width }}x{{ dbquery.height }}
+                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
+                            <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ dbquery.begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ dbquery.stops_at.strftime('%Y-%m-%d') }}</li>
                         </ul>
                         <ul class="list-group">
                             <h5 class="card-title">Payment</h5>
-                            <li class="list-group-item d-flex align-items-left">{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][0] }} {{ dbquery.total_coins }}</li>
-                            <li class="list-group-item d-flex align-items-left">ID: {{ dbquery.bip70_id }}</li>
-                            <li class="list-group-item d-flex align-items-left">Address:&nbsp; <kbd><a href="{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][4] }}{{ dbquery.address }}">{{ dbquery.address }}</a></kbd</li>
-                            <li class="list-group-item d-flex align-items-left">Received: {{ dbquery.received_at }}</li>
-                            <li class="list-group-item d-flex align-items-left">Confirmed: {{ dbquery.confirmed_at }}</li>
-                            <li class="list-group-item d-flex align-items-left">Transaction: {{ dbquery.txno }}</li>
+                            <li class="list-group-item d-flex align-items-left"><b>{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][0] }}</b>&nbsp; {{ dbquery.total_coins }}</li>
+                            <li class="list-group-item d-flex align-items-left"><b>ID:</b>&nbsp; {{ dbquery.bip70_id }}</li>
+                            <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd><a href="{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][4] }}{{ dbquery.address }}">{{ dbquery.address }}</a></kbd></li>
+                            <li class="list-group-item d-flex align-items-left">
+                                {% if dbquery.received_at != datemin %}
+                                    <b>Received:</b>&nbsp; {{ dbquery.received_at }}
+                                {% else %}
+                                        <span class="badge badge-danger">NOT PAID!</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex align-items-left">
+                                {% if dbquery.confirmed_at != datemin %}
+                                    <b>Confirmed:</b>&nbsp; {{ dbquery.confirmed_at }}
+                                {% else %}
+                                    <span class="badge badge-danger">NOT CONFIRMED</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex align-items-left"><b>Transaction:</b>&nbsp; {{ dbquery.txno }}</li>
                         </ul>
                     </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('user.campaign') }}"
+                        class="btn btn-info btn-lg btn-block"><i class="far fa-arrow-alt-circle-left fa-2x"></i> Go back to see all your campaigns</a>
                 </div>
             </div>
 {% endblock %}
