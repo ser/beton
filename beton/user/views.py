@@ -336,20 +336,6 @@ def campaign(no_weeks=None,campaign_no=None):
         )
         return all_advertisers
 
-    # ask for statz, it might be cached for an hour or so
-    @cache.memoize(timeout=3666)
-    def banner_ztatz_cached(campaignid):
-        try:
-            ztatz = r.ox.campaignBannerStatistics(
-                sessionid,
-                campaignid,
-                datetime(2011, 1, 1, 0, 0),
-                datetime.now()
-            )
-            return ztatz[0]['impressions']
-        except BaseException:
-            return 0
-
     all_advertisers = all_advertisers_cached()
 
     # Try to find out if the customer is already registered in Revive, if not,
@@ -386,6 +372,7 @@ def campaign(no_weeks=None,campaign_no=None):
                 Orders.bannerid,
                 Orders.name,
                 Orders.comments,
+                Orders.impressions,
                 Payments.address,
                 Payments.bip70_id,
                 Payments.confirmed_at,
@@ -409,6 +396,7 @@ def campaign(no_weeks=None,campaign_no=None):
             # Render the page and quit
             return render_template(
                 'users/campaign-single.html',
+                now = datetime.utcnow(),
                 datemin = datetime.min,
                 dbquery = dbquery
             )
@@ -422,20 +410,10 @@ def campaign(no_weeks=None,campaign_no=None):
     else:
         all_campaigns = dbqueryall.filter(Orders.user_id==current_user.id).all()
 
-    ztatz = {}
-    for campaign in all_campaigns:
-        endtime = campaign.stops_at
-        nowtime = datetime.now()
-        # limit checked campaigns to no_weeks only to avoid unneccesery queries to revive
-        if (nowtime - endtime) < timedelta(weeks=no_weeks):
-            tmpdict = {campaign.campaigno: banner_ztatz_cached(campaign.campaigno)}
-            ztatz.update(tmpdict)
-
     # Render the page and quit
     return render_template(
         'users/campaign.html',
         all_campaigns = all_campaigns,
-        ztatz = ztatz,
         roles = current_user.roles,
         now = datetime.utcnow(),
         datemin = datetime.min,
@@ -460,7 +438,7 @@ def api_all_campaigns(zone_id):
     ac = []
     for order in all_orders:
         tasks = {}
-        fullname = names.get_full_name()
+        fullname = order.name
         tasks['id'] = order.campaigno
         tasks['title'] = fullname
         tasks['allDay'] = "true"
@@ -735,6 +713,7 @@ def clear_basket(campaign_id):
     return redirect(url_for("user.basket"), code=302)
 
 
+# TODO: better ask user twice if campaign is running
 @blueprint.route('/clear/campaign/<int:campaign_no>')
 @login_required
 def clear_campaign(campaign_no):

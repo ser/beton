@@ -6,7 +6,7 @@
             aria-hidden="true"></i></h1>
     <p class="lead">Here are all details we know about your particular campaign.</p>
     <a href="{{ url_for('user.campaign') }}"
-        class="btn btn-info btn-lg"><i class="far fa-arrow-alt-circle-left"></i> Go back to see all your campaigns</a>
+        class="btn btn-info btn-sm"><i class="far fa-arrow-alt-circle-left"></i>&nbsp;See all your campaigns</a>
     </div>
     <div class="row">
         <div class="col-sm-12">
@@ -15,15 +15,15 @@
                     Campaign details: #{{ dbquery.campaigno }} {{ dbquery.name }}
 
                     {% if dbquery.received_at != datemin %}
-                    <span class="badge badge-info">PAID</span>
+                    <span class="badge badge-pill badge-info">PAID</span>
                     {% else %}
-                    <span class="badge badge-danger">NOT PAID</span>
+                    <span class="badge badge-pill badge-danger">NOT PAID</span>
                     {% endif %}
 
                     {% if dbquery.confirmed_at != datemin %}
-                    <span class="badge badge-info">CONFIRMED</span>
+                    <span class="badge badge-pill badge-info">CONFIRMED</span>
                     {% else %}
-                    <span class="badge badge-danger">NOT CONFIRMED</span>
+                    <span class="badge badge-pill badge-danger">NOT CONFIRMED</span>
                     {% endif %}
 
                 </h4>
@@ -34,8 +34,17 @@
                             <li class="list-group-item d-flex align-items-left"><b>Zone #{{ dbquery.zoneid }}</b>&nbsp; - {{ dbquery.comments }}</li>
                             <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ dbquery.filename }}">
                             <li class="list-group-item d-flex align-items-left"><b>Size:</b>&nbsp; {{ dbquery.width }}x{{ dbquery.height }}
-                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
                             <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ dbquery.begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ dbquery.stops_at.strftime('%Y-%m-%d') }}</li>
+                            <li class="list-group-item d-flex align-items-left">
+                                {% if dbquery.begins_at <= now %}
+                                    <b>Impressions:</b>&nbsp; {{ dbquery.impressions }}
+                                {% else %}
+                                    Campaign starts in
+                                       {{ (dbquery.begins_at - now).days }}
+                                    day(s)
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
                         </ul>
                         <ul class="list-group">
                             <h5 class="card-title">Payment</h5>

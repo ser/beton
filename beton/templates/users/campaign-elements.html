@@ -16,11 +16,20 @@
                 <b>{{ config.PAYMENT_SYSTEMS[campaign.blockchain][0] }}:</b>
                     {{ campaign.total_coins }}
             </p>
-            <p><b>Impressions:</b> {{ ztatz[campaign.campaigno] }}</p>
+            {% if campaign.begins_at <= now %}
+                <p><b>Impressions:</b>&nbsp;
+                    {{ campaign.impressions }}
+                </p>
+            {% else %}
+            <p>Campaign starts in 
+                {{ (campaign.begins_at - now).days }}
+                day(s)
+            {% endif %}
+            </p>
         </div>
     </div>
     <div class="card-footer">
-        <a href="{{ url_for('user.clear_campaign', campaign_no=campaign.campaigno) }}"
-            class="btn btn-danger btn-sm btn-block">Delete this campaign</a>
+        <a href="{{ url_for('user.campaign', campaign_no=campaign.campaigno) }}"
+            class="btn btn-info btn-sm btn-block">More details</a>
     </div>
 </div>

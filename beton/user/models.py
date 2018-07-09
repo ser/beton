@@ -126,11 +126,12 @@ class Orders(SurrogatePK, Model):
     bannerid = Column(db.Integer(), db.ForeignKey('banners.id'), nullable=False)
     name = Column(db.Text, unique=False, nullable=False)
     comments = Column(db.Text, unique=False, nullable=False)
+    impressions = Column(db.Integer(), unique=False, nullable=True)
     user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
 
     def __init__(self, campaigno, zoneid, created_at, begins_at,
                  stops_at, paymentno, bannerid, name, comments,
-                 user_id):
+                 impressions, user_id):
         """Create instance."""
         self.campaigno = campaigno
         self.zoneid = zoneid
@@ -141,13 +142,14 @@ class Orders(SurrogatePK, Model):
         self.bannerid = bannerid
         self.name = name
         self.comments = comments
+        self.impressions = impressions
         self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<campaigno: {}, zoneid: {}, created_at: {}, \
 begins_at: {}, stops_at: {}, name: {}, comments: {}, \
-paymentno: {}, bannerid: {}, user_id: {}>'.format(
+paymentno: {}, bannerid: {}, impressions: {}, user_id: {}>'.format(
             self.campaigno,
             self.zoneid,
             self.created_at,
@@ -157,6 +159,7 @@ paymentno: {}, bannerid: {}, user_id: {}>'.format(
             self.comments,
             self.paymentno,
             self.bannerid,
+            self.impressions,
             self.user_id
         )
 
