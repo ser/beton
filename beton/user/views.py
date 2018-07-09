@@ -603,7 +603,7 @@ def order():
 
         dblogger(
             current_user.id,
-            ("Campaign #%s with name %s in zone %s, starting at %s, " +
+            ("NEW Campaign #%s with name %s in zone %s, starting at %s, " +
                 "ending at %s, with banner %s created.") % (
                 str(campaign),
                 randomname,
@@ -748,24 +748,32 @@ def clear_campaign(campaign_no):
         # getting data about this campaign 
         # and confirming it belongs to the user
         campaigndata = Orders.query.filter_by(campaigno=campaign_no).first()
-        if campaigndata.user_id != current_user.id:
+        if campaigndata.user_id != current_user.id or not amiadmin():
             return redirect(url_for("user.campaign"), code=302)
 
         # removing campaign from all sources
-        removed = r.ox.deleteCampaign(sessionid, order.campaigno)
+        Orders.query.filter_by(campaigno=campaign_no).delete()
+        Orders.commit()
+        removed = r.ox.deleteCampaign(sessionid, campaign_no)
         logdata = (
-            "Campaign #%s removed from Revive?: %s".format(
-                order.campaigno,
+            "Campaign #{} removed from Revive?: {}".format(
+                campaign_no,
                 removed
             )
         )
-        debug.log(logdata)
-        Orders.query.filter_by(campaigno=campaign_no).delete()
+        log.debug(logdata)
+        dblogger(
+            current_user.id,
+            "Campaign #{} was deleted by user.".format(
+                campaign_no
+            )
+        )
         flash('Your campaign was deleted sucessfully.', 'success')
 
     except Exception as e:
         log.debug("Exception")
         log.exception(e)
+
     return redirect(url_for("user.campaign"), code=302)
 
 

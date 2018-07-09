@@ -5,6 +5,8 @@
     <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
             aria-hidden="true"></i></h1>
     <p class="lead">Here are all details we know about your particular campaign.</p>
+    <a href="{{ url_for('user.campaign') }}"
+        class="btn btn-info btn-lg"><i class="far fa-arrow-alt-circle-left"></i> Go back to see all your campaigns</a>
     </div>
     <div class="row">
         <div class="col-sm-12">
@@ -59,8 +61,11 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <a href="{{ url_for('user.campaign') }}"
-                        class="btn btn-info btn-lg btn-block"><i class="far fa-arrow-alt-circle-left fa-2x"></i> Go back to see all your campaigns</a>
+                           <a href="{{ url_for('user.clear_campaign',
+                               campaign_no=dbquery.campaigno)  }}"
+                                           class="btn btn-danger btn-sm
+                                           btn-block">Delete this campaign</a>
+
                 </div>
             </div>
 {% endblock %}
