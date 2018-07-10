@@ -447,7 +447,11 @@ def api_all_campaigns(zone_id):
         starttime = order.begins_at
         endtime = order.stops_at
         tasks['start'] = starttime.strftime("%Y-%m-%d")
-        tasks['end'] = endtime.strftime("%Y-%m-%d")
+        if (endtime - starttime).days < 1:
+            calendarend = endtime
+        else:
+            calendarend = endtime + timedelta(days=1)
+        tasks['end'] = calendarend.strftime("%Y-%m-%d")
         ac.append(tasks)
 
     return jsonify(ac)
