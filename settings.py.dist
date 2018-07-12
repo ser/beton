@@ -6,7 +6,7 @@ import os
 class Config(object):
     """Base configuration."""
 
-    SECRET_KEY = os.environ.get('BETON_SECRET', 'secret-key')
+    SECRET_KEY = os.environ.get('BETON_SECRET', '')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
     BCRYPT_LOG_ROUNDS = 13
@@ -14,65 +14,171 @@ class Config(object):
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar - enable it only for development!
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
+    #CACHE_TYPE = "filesystem"
+    #CACHE_DIR = APP_DIR + '/cache/'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # User permissions
-    USER_ENABLE_CHANGE_PASSWORD = True  # Allow users to change their password
-    USER_ENABLE_CHANGE_USERNAME = False  # Allow users to change their username
-    USER_ENABLE_CONFIRM_EMAIL = True  # Force users to confirm their email
-    USER_ENABLE_FORGOT_PASSWORD = True  # Allow users to reset their passwords
-    USER_ENABLE_EMAIL = True  # Register with Email
-    USER_ENABLE_REGISTRATION = True  # Allow new users to register
-    USER_ENABLE_RETYPE_PASSWORD = True  # Prompt for `retype password`
-
     # You definitely want to add these
     USER_APP_NAME = ""
     SUBDIR = ""
     CONTACT_URL = ""
     OUR_URL = ""
+
     # flask-uploads
     UPLOADED_IMAGES_DEST = APP_DIR + ''
     UPLOADED_IMAGES_URL = ''
+
     # Revive-adserver XML access data
     REVIVE_MASTER_USER = ''
     REVIVE_MASTER_PASSWORD = ''
     REVIVE_XML_URI = ''
     REVIVE_AGENCY_ID = 1
-    # Electrum and coin related
-    ELECTRUM_RPC = ''
-    BLOCKCHAIN = 'https://www.blocktrail.com/BTC/address/'
+
     # Mail settings
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_SERVER = ''
     MAIL_PORT = 587
     MAIL_DEFAULT_SENDER = ''  # envelope address of system emails
-    # To speed up read-only operations, beton requires a direct access to revive database
-    MYDBPASS = ''
-    SQLALCHEMY_BINDS = {
-        'revive': 'mysql+pymysql://'
-    }
 
-    # UI
+    ## Pushover.net service
+    # set it it True and create file ~/.pushoverrc with content:
+    # [Default]
+    # api_token=aaaaaa
+    # user_key=xxxxxx
+    PUSHOVER = False
+
+	##### Electrum - you must modify it
+
+    ## You are able to deploy many Electrum-based blockchains
+    ## Every blockchain needs separate electrum wallet server
+	## Suggested nicknames:
+	# BTC = Bitcoin standard wallet
+	# BTCS = Bitcoin segwit Bech32 wallet
+    # BTCT = Bitcoin testnet standard wallet
+    # BTCST = Bitcoin testnet segwit Bech32 wallet
+	# LTC = Litecoin standard wallet
+	# LTCS = Litecoin Bech32 wallet
+    # LTCT = Litecoin testnet standard wallet
+    # LTCST = Litecoin testnet Bech32 wallet
+    # BCHT = Bitcoin Cash testnet standard wallet
+    # BCH = Bitcoin Cash standard wallet
+	# DASH = Dash
+	# DASHT = Dash Testnet
+
+    # Definition of every payment blockchain is a list and consists of:
+    # 0) Short Description
+    # 1) Long Description
+    # 2) Your Electrum RPC address
+    # 3) Blockchain external URI to show transaction details
+
+	# for example:
+#    PAYMENT_SYSTEMS = {
+#        'BTCT': 
+#            ["BTC", "Bitcoin Testnet / standard wallet",
+#                "* standard Bitcoin address",
+#                "",
+#                "https://www.blocktrail.com/tBTC/address/"
+#            ],
+#        'BTCST':
+#            ["BTC", "Bitcoin Testnet / segwit wallet",
+#                "* Bech32 Bitcoin address only (cheaper fees) - use electrum wallet",
+#                "",
+#                "https://chain.so/address/BTCTEST/"
+#            ],
+#        'LTCT':
+#            ["LTC", "Litecoin Testnet / standard wallet",
+#                "* standard Litecoin address",
+#                "",
+#                "https://testnet.litecore.io/address/"
+#            ],
+#        'DASHT':
+#            ["DASH", "DASH Testnet",
+#                "* standard DASH address",
+#                "",
+#                "https://test.explorer.dashninja.pl/address/"
+#			]
+#	}
+
+    # What is your fiat currency
+    # TODO: Only EUR is now supported!
+    FIAT = "EUR"
+
+    ## In which coins prices should be shown in the basket
+    # Possible values:
+    # BTC = Bitcoin
+    # BCH = Bitcoin Cash
+    # DASH = DASH
+    # LTC = Litecoin
+    EXCHANGE_COINS = ['BTC', 'LTC', 'BCH', 'DASH']
+
+    ## List of yoour favourite exchanges to serve prices
+    # Beton will always try to access first exchange on the list
+    # and if unsucccessful, move to next one.
+    # Use ids of exchanges from this list:
+    # https://github.com/ccxt/ccxt/wiki/Manual#exchanges
+    # Be sure that your selection of exchanges matches your coins!
+    EXCHANGES = ['kraken', 'bitbay', 'cex', 'wex' ]
+
+    ### Which price use - 'last' trade or 'vwap' (volume weighed average price)
+    # Note: not all exchanges support vwap
+    EXCHANGES_TRADE = 'last'
+
+    # banner overview graphics size for /offer
+    BANNER_OVERVIEW_WIDTH = 800
+    BANNER_OVERVIEW_HEIGHT = 600
+
+	# User permissions
+	USER_ENABLE_CHANGE_PASSWORD = True  # Allow users to change their password
+	USER_ENABLE_CHANGE_USERNAME = False  # Allow users to change their username
+	USER_ENABLE_CONFIRM_EMAIL = True  # Force users to confirm their email
+	USER_ENABLE_FORGOT_PASSWORD = True  # Allow users to reset their passwords
+	USER_ENABLE_EMAIL = True  # Register with Email
+	USER_ENABLE_REGISTRATION = True  # Allow new users to register
+	USER_ENABLE_RETYPE_PASSWORD = True  # Prompt for `retype password`
+
+    # UI (modifications are not necessary)
     USER_CHANGE_PASSWORD_URL      = SUBDIR+'/user/change-password'
+    SECURITY_CHANGE_URL           = SUBDIR+'/user/change-password'
     USER_CHANGE_USERNAME_URL      = SUBDIR+'/user/change-username'
     USER_CONFIRM_EMAIL_URL        = SUBDIR+'/user/confirm-email/<token>'
+    SECURITY_CONFIRM_URL          = SUBDIR+'/user/confirm'
     USER_EMAIL_ACTION_URL         = SUBDIR+'/user/email/<id>/<action>'
     USER_FORGOT_PASSWORD_URL      = SUBDIR+'/user/forgot-password'
     USER_INVITE_URL               = SUBDIR+'/user/invite'
     USER_LOGIN_URL                = SUBDIR+'/user/login'
+    SECURITY_LOGIN_URL            = SUBDIR+'/user/login'
     USER_LOGOUT_URL               = SUBDIR+'/user/logout'
+    SECURITY_LOGOUT_URL           = SUBDIR+'/user/logout'
     USER_MANAGE_EMAILS_URL        = SUBDIR+'/user/manage-emails'
     USER_REGISTER_URL             = SUBDIR+'/user/register'
+    SECURITY_REGISTER_URL         = SUBDIR+'/user/register'
     USER_RESEND_CONFIRM_EMAIL_URL = SUBDIR+'/user/resend-confirm-email'
     USER_RESET_PASSWORD_URL       = SUBDIR+'/user/reset-password/<token>'
-    USER_AFTER_CHANGE_PASSWORD_ENDPOINT      = 'user.campaign'
-    USER_AFTER_CHANGE_USERNAME_ENDPOINT      = 'user.campaign'
-    USER_AFTER_CONFIRM_ENDPOINT              = 'user.campaign'
-    USER_AFTER_FORGOT_PASSWORD_ENDPOINT      = 'user.campaign'
-    USER_AFTER_LOGIN_ENDPOINT                = 'user.campaign'
-    USER_AFTER_LOGOUT_ENDPOINT               = 'user.login'
-    USER_AFTER_REGISTER_ENDPOINT             = 'user.campaign'
-    USER_AFTER_RESEND_CONFIRM_EMAIL_ENDPOINT = 'user.campaign'
-    USER_AFTER_RESET_PASSWORD_ENDPOINT       = 'user.campaign'
-    USER_INVITE_ENDPOINT                     = 'user.campaign'
+    SECURITY_RESET_URL            = SUBDIR+'/user/reset'
+    SECURITY_POST_LOGIN_VIEW      = 'user.user_me'
+    SECURITY_POST_LOGOUT_VIEW     = SUBDIR
+    SECURITY_CONFIRMABLE          = True
+    SECURITY_REGISTERABLE         = True
+    SECURITY_RECOVERABLE          = True
+    SECURITY_CHANGEABLE           = True
+
+    # Crontab is removing unpaid stuff after 7 days, running every one hour
+	# Impressions are updated also every hour +-
+    SCHEDULER_API_ENABLED = True
+    JOBS = [
+        {
+            'id': 'unpaid_cleanup',
+            'func': 'beton.crontab:remove_unpaid_campaigns',
+            'args': {7},
+            'trigger': 'interval',
+            'seconds': 3555
+        },
+        {
+            'id': 'impressions',
+            'func': 'beton.crontab:update_impressions',
+            'trigger': 'interval',
+            'seconds': 3333
+        }
+    ]
 
 
 class ProdConfig(Config):
@@ -80,6 +186,13 @@ class ProdConfig(Config):
 
     ENV = 'prod'
     DEBUG = False
+	DEBUG_TB_ENABLED = False # Disable Debug toolbar
+	
+    SQLALCHEMY_SQL_PASSWORD = os.environ.get('SQLALCHEMY_SQL_PASSWORD')
+    SQLALCHEMY_DATABASE_NAME = ''
+    SQLALCHEMY_DATABASE_USER = ''
+    SQLALCHEMY_DATABASE_HOST = ''
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://"+SQLALCHEMY_DATABASE_USER+":"+SQLALCHEMY_SQL_PASSWORD+"@"+SQLALCHEMY_DATABASE_HOST+"/"+SQLALCHEMY_DATABASE_NAME
 
 
 class DevConfig(Config):
@@ -87,6 +200,9 @@ class DevConfig(Config):
 
     ENV = 'dev'
     DEBUG = True
+	DEBUG_TB_ENABLED = True
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
+    DEBUG_TB_PROFILER_ENABLED = True
 
 
 class TestConfig(Config):
@@ -95,6 +211,9 @@ class TestConfig(Config):
 
     TESTING = True
     DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    BCRYPT_LOG_ROUNDS = 4  # For faster tests; needs at least 4 to avoid "ValueError: Invalid rounds"
+    WTF_CSRF_ENABLED = False # Allows form testing
 
 
 # vim: set tabstop=4 softtabstop=4 shiftwidth=4 expandtab :
