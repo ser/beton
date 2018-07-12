@@ -26,6 +26,8 @@ class Config(object):
     # flask-uploads
     UPLOADED_IMAGES_DEST = APP_DIR + ''
     UPLOADED_IMAGES_URL = ''
+    UPLOADED_DEFAULT_DEST = UPLOADED_IMAGES_DEST
+    UPLOADED_DEFAULT_URL = UPLOADED_IMAGES_URL
 
     # Revive-adserver XML access data
     REVIVE_MASTER_USER = ''
