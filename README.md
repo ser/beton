@@ -60,12 +60,14 @@ Description=Electrum Server
 After=multi-user.target
 
 [Service]
-Environment="RUNAS=lcttest"
-ExecStart=/home/${RUNAS}/.virtualenvs/electrum/bin/electrum -w /home/pay/.electrum/wallets/default_wallet daemon start
-ExecStop=/home/${RUNAS}/.virtualenvs/electrum/bin/electrum daemon stop
-ExecStartPost=/home/${RUNAS}/.virtualenvs/electrum/bin/electrum daemon load_wallet
+Environment="RUNAS=electrum"
+ExecStart=/home/${RUNAS}/electrum/bin/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon start
+ExecStop=/home/${RUNAS}/electrum/bin/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon stop
+ExecStartPost=/home/${RUNAS}/electrum/bin/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon load_wallet
 Type=forking
 User=${RUNAS}
+RestartSec=10s
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
@@ -78,13 +80,8 @@ WantedBy=multi-user.target
 * Create a separate unix user in your system:
   * ```useradd -m beton```
 * Install system packages for python and web developement:
-  * ```apt install python3-pip python3-wheel python3-setuptools python3-dev virtualenvwrapper nodejs-legacy npm```
+  * ```apt install python3-pip python3-wheel python3-setuptools python3-dev nodejs-legacy npm```
   * ```npm install -g bower```
-* Create a virtual python environment for beton and activate it:
-  * ```su - beton```
-  * ```mkvirtualenv -p /usr/bin/python3 beton```
-* When you want to access your environment at a later date, you are just activating it:
-  * ```workon beton```
 * Clone the beton git repository:
   * ```git clone https://github.com/ser/beton```
 * Install required dependencies to your environment
@@ -114,14 +111,19 @@ After=multi-user.target
 
 [Service]
 Type=idle
+Environment="RUNAS=beton"
 Environment=BETON_SECRET=a_truly_random_characters_about_60_of_them
 Environment=REVIVE_MASTER_PASSWORD=password_to_access_main_admin_account_on_revive
 Environment=SQLALCHEMY_SQL_PASSWORD=password_to_access_beton_sql_database
 Environment=REVIVE_SQL_PASSWORD=password_to_access_revive_sql_database
 Environment=MAIL_PASSWORD=password_to_access_smtp_relay_server
 Environment=FLASK_APP=/home/beton/beton/autoapp.py
-ExecStart=/home/beton/.virtualenvs/beton/bin/flask run --host=127.0.0.1 --port=9234
-User=beton
+ExecStart=/home/${RUNAS}/.local/bin/flask run --host=127.0.0.1 --port=9234
+Type=forking
+RestartSec=10s
+Restart=always
+User=${RUNAS}
+
 
 [Install]
 WantedBy=multi-user.target
