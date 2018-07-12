@@ -46,23 +46,23 @@ class Config(object):
     # user_key=xxxxxx
     PUSHOVER = False
 
-	##### Electrum - you must modify it
+    ##### Electrum - you must modify it
 
     ## You are able to deploy many Electrum-based blockchains
     ## Every blockchain needs separate electrum wallet server
-	## Suggested nicknames:
-	# BTC = Bitcoin standard wallet
-	# BTCS = Bitcoin segwit Bech32 wallet
+    ## Suggested nicknames:
+    # BTC = Bitcoin standard wallet
+    # BTCS = Bitcoin segwit Bech32 wallet
     # BTCT = Bitcoin testnet standard wallet
     # BTCST = Bitcoin testnet segwit Bech32 wallet
-	# LTC = Litecoin standard wallet
-	# LTCS = Litecoin Bech32 wallet
+    # LTC = Litecoin standard wallet
+    # LTCS = Litecoin Bech32 wallet
     # LTCT = Litecoin testnet standard wallet
     # LTCST = Litecoin testnet Bech32 wallet
     # BCHT = Bitcoin Cash testnet standard wallet
     # BCH = Bitcoin Cash standard wallet
-	# DASH = Dash
-	# DASHT = Dash Testnet
+    # DASH = Dash
+    # DASHT = Dash Testnet
 
     # Definition of every payment blockchain is a list and consists of:
     # 0) Short Description
@@ -70,7 +70,7 @@ class Config(object):
     # 2) Your Electrum RPC address
     # 3) Blockchain external URI to show transaction details
 
-	# for example:
+    # for example:
 #    PAYMENT_SYSTEMS = {
 #        'BTCT': 
 #            ["BTC", "Bitcoin Testnet / standard wallet",
@@ -95,8 +95,8 @@ class Config(object):
 #                "* standard DASH address",
 #                "",
 #                "https://test.explorer.dashninja.pl/address/"
-#			]
-#	}
+#           ]
+#   }
 
     # What is your fiat currency
     # TODO: Only EUR is now supported!
@@ -126,14 +126,14 @@ class Config(object):
     BANNER_OVERVIEW_WIDTH = 800
     BANNER_OVERVIEW_HEIGHT = 600
 
-	# User permissions
-	USER_ENABLE_CHANGE_PASSWORD = True  # Allow users to change their password
-	USER_ENABLE_CHANGE_USERNAME = False  # Allow users to change their username
-	USER_ENABLE_CONFIRM_EMAIL = True  # Force users to confirm their email
-	USER_ENABLE_FORGOT_PASSWORD = True  # Allow users to reset their passwords
-	USER_ENABLE_EMAIL = True  # Register with Email
-	USER_ENABLE_REGISTRATION = True  # Allow new users to register
-	USER_ENABLE_RETYPE_PASSWORD = True  # Prompt for `retype password`
+    # User permissions
+    USER_ENABLE_CHANGE_PASSWORD = True  # Allow users to change their password
+    USER_ENABLE_CHANGE_USERNAME = False  # Allow users to change their username
+    USER_ENABLE_CONFIRM_EMAIL = True  # Force users to confirm their email
+    USER_ENABLE_FORGOT_PASSWORD = True  # Allow users to reset their passwords
+    USER_ENABLE_EMAIL = True  # Register with Email
+    USER_ENABLE_REGISTRATION = True  # Allow new users to register
+    USER_ENABLE_RETYPE_PASSWORD = True  # Prompt for `retype password`
 
     # UI (modifications are not necessary)
     USER_CHANGE_PASSWORD_URL      = SUBDIR+'/user/change-password'
@@ -162,7 +162,7 @@ class Config(object):
     SECURITY_CHANGEABLE           = True
 
     # Crontab is removing unpaid stuff after 7 days, running every one hour
-	# Impressions are updated also every hour +-
+    # Impressions are updated also every hour +-
     SCHEDULER_API_ENABLED = True
     JOBS = [
         {
@@ -186,8 +186,8 @@ class ProdConfig(Config):
 
     ENV = 'prod'
     DEBUG = False
-	DEBUG_TB_ENABLED = False # Disable Debug toolbar
-	
+    DEBUG_TB_ENABLED = False # Disable Debug toolbar
+    
     SQLALCHEMY_SQL_PASSWORD = os.environ.get('SQLALCHEMY_SQL_PASSWORD')
     SQLALCHEMY_DATABASE_NAME = ''
     SQLALCHEMY_DATABASE_USER = ''
@@ -200,7 +200,7 @@ class DevConfig(Config):
 
     ENV = 'dev'
     DEBUG = True
-	DEBUG_TB_ENABLED = True
+    DEBUG_TB_ENABLED = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     DEBUG_TB_PROFILER_ENABLED = True
 
