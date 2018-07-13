@@ -61,9 +61,9 @@ After=multi-user.target
 
 [Service]
 Environment="RUNAS=electrum"
-ExecStart=/home/${RUNAS}/electrum/bin/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon start
-ExecStop=/home/${RUNAS}/electrum/bin/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon stop
-ExecStartPost=/home/${RUNAS}/electrum/bin/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon load_wallet
+ExecStart=/home/${RUNAS}/electrum/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon start
+ExecStop=/home/${RUNAS}/electrum/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon stop
+ExecStartPost=/home/${RUNAS}/electrum/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon load_wallet
 Type=forking
 User=${RUNAS}
 RestartSec=10s
@@ -88,9 +88,6 @@ WantedBy=multi-user.target
   * ```cd beton```
   * ```pip3 install -r requirements/prod.txt```
   * ```bower install```
-  * ```flask db init```
-  * ```flask db migrate```
-  * ```flask db upgrade```
   
 ### Configuration of beton
 
@@ -127,6 +124,23 @@ User=${RUNAS}
 
 [Install]
 WantedBy=multi-user.target
+```
+This file can be found also in the project tree: [beton.service](beton.service)
+
+When you are ready with settings and setting environment in systemd, you should export the environment locally once to inititate the database, being logged as the user which runs Beton:
+
+```
+beton$ export BETON_SECRET=a_truly_random_characters_about_60_of_them
+beton$ export REVIVE_MASTER_PASSWORD=password_to_access_main_admin_account_on_revive
+beton$ export SQLALCHEMY_SQL_PASSWORD=password_to_access_beton_sql_database¬
+beton$ export MAIL_PASSWORD=password_to_access_smtp_relay_server
+beton$ export FLASK_APP=/home/beton/beton/autoapp.py
+beton$ export FLASK_DEBUG=1
+beton$ export FLASK_ENV=development
+
+beton$ flask db init
+beton$ flask db migrate
+beton$ flask db upgrade
 ```
 
 When you are ready with all configuration steps, add and enable beton service (as root):
