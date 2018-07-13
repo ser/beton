@@ -6,11 +6,11 @@
 <div class="jumbotron">
     {% if not current_user or not current_user.is_authenticated %}
         <h1>Welcome!</h1>
-        <p>This is a magic place, where you can manage web adverts. To see
+        <p class="lead">This is a magic place, where you can manage web adverts. To see
             options and prices, please register first.</p>
     {% else %}
         <h1>Welcome, {{ current_user.username }}</h1>
-        <p>This is our friendly adserver. It's really simple: check prices for
+        <p class="lead">This is our friendly adserver. It's really simple: check prices for
             our websites, upload your banner and order your
             campaign.</p>
         <p>Your previous and ongoing campaigns are available in the user menu on top
@@ -27,7 +27,7 @@
             </div>
             <div class="card-body">
                 <p>Sleek, intuitive - just three steps. First, create an account.</p>
-                <a class="btn btn-lg btn-block" role="button" href="user/register">Create an account &raquo;</a>
+                <a class="btn btn-block btn-primary" role="button" href="{{ url_for('user.register') }}">Create an account &raquo;</a>
     {% else %}
                 <h4 class="my-0 font-weight-normal"><i class="fab fa-elementor"></i> Check zones and prices</h4>
             </div>

@@ -32,8 +32,8 @@
             </div>
         </li>
     {% else %}
-        <li class="nav-item"><a href="{{ config.USER_LOGIN_URL }}">Sign in</a></li>
-        <li class="nav-item"><a href="{{ config.USER_REGISTER_URL }}">Create account</a></li>
+        <li class="nav-item"><a href="{{ config.USER_LOGIN_URL }}"><span class="badge badge-pill badge-primary">Sign in</span></a>&nbsp;</li>
+        <li class="nav-item"><a href="{{ config.USER_REGISTER_URL }}"><span class="badge badge-pill badge-primary">Create account</span></a></li>
     {% endif %}
     </ul>
     </div>
