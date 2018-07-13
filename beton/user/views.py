@@ -580,6 +580,7 @@ def order():
             bannerid = banner_id,
             name = randomname,
             comments = zone_name,
+            impressions = 0,
             user_id = current_user.id
         )
 
