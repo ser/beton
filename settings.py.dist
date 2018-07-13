@@ -21,9 +21,11 @@ class Config(object):
     USER_APP_NAME = ""
     SUBDIR = ""
     CONTACT_URL = ""
+    # Remember about / at the end of the OUR_URL
     OUR_URL = ""
 
     # flask-uploads
+    # Remember about / at the end of all these URLs
     UPLOADED_IMAGES_DEST = APP_DIR + ''
     UPLOADED_IMAGES_URL = ''
     UPLOADED_DEFAULT_DEST = UPLOADED_IMAGES_DEST
@@ -32,7 +34,9 @@ class Config(object):
     # Revive-adserver XML access data
     REVIVE_MASTER_USER = ''
     REVIVE_MASTER_PASSWORD = ''
+    # for example 'https://revive.example.com/www/api/v2/xmlrpc/index.php'
     REVIVE_XML_URI = ''
+    # Nearly in all cases it must be == 1
     REVIVE_AGENCY_ID = 1
 
     # Mail settings
@@ -42,10 +46,12 @@ class Config(object):
     MAIL_DEFAULT_SENDER = ''  # envelope address of system emails
 
     ## Pushover.net service
+    # More help: https://github.com/Thibauth/python-pushover
     # set it it True and create file ~/.pushoverrc with content:
     # [Default]
     # api_token=aaaaaa
     # user_key=xxxxxx
+    ##device=Xiaomi13
     PUSHOVER = False
 
     ##### Electrum - you must modify it
