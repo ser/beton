@@ -33,7 +33,7 @@ class Config(object):
 
     # Revive-adserver XML access data
     REVIVE_MASTER_USER = ''
-    REVIVE_MASTER_PASSWORD = ''
+    REVIVE_MASTER_PASSWORD = os.environ.get('REVIVE_MASTER_PASSWORD')
     # for example 'https://revive.example.com/www/api/v2/xmlrpc/index.php'
     REVIVE_XML_URI = ''
     # Nearly in all cases it must be == 1
