@@ -7,7 +7,7 @@
     {% if not current_user or not current_user.is_authenticated %}
         <h1>Welcome!</h1>
         <p class="lead">This is a magic place, where you can manage web adverts. To see
-            options and prices, please register first.</p>
+            options and prices, please register and log in first.</p>
     {% else %}
         <h1>Welcome, {{ current_user.username }}</h1>
         <p class="lead">This is our friendly adserver. It's really simple: check prices for
@@ -23,11 +23,14 @@
         <div class="card mb-4 box-shadow">
             <div class="card-header">
     {% if not current_user or not current_user.is_authenticated %}
-                <h4 class="my-0 font-weight-normal">Create an account</h4>
+                <h4 class="my-0 font-weight-normal"><i class="far fa-user"></i> Create an account</h4>
             </div>
             <div class="card-body">
                 <p>Sleek, intuitive - just three steps. First, create an account.</p>
                 <a class="btn btn-block btn-primary" role="button" href="{{ url_for('security.register') }}">Create an account &raquo;</a>
+                <br/>
+                <p>If you already have an account, log in.</p>
+                <a class="btn btn-block btn-primary" role="button" href="{{ url_for('security.login') }}">Log in &raquo;</a>
     {% else %}
                 <h4 class="my-0 font-weight-normal"><i class="fab fa-elementor"></i> Check zones and prices</h4>
             </div>
