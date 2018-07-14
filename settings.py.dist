@@ -10,6 +10,8 @@ class Config(object):
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
     BCRYPT_LOG_ROUNDS = 13
+    # You must set SECURITY_PASSWORD_SALT to a pretty random string
+    SECURITY_PASSWORD_SALT = ""
     ASSETS_DEBUG = False
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar - enable it only for development!
     DEBUG_TB_INTERCEPT_REDIRECTS = False
