@@ -29,8 +29,8 @@ class User(UserMixin, SurrogatePK, Model):
 
     __tablename__ = 'users'
     username = Column(db.String(80), unique=True, nullable=False)
-    email = Column(db.Text(), unique=True, nullable=False)
-    password = db.Column(db.Text(), nullable=False, default='')
+    email = Column(db.String(255), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False, default='')
     active = Column(db.Boolean(), default=True)
     confirmed_at = Column(db.DateTime, nullable=True)
 

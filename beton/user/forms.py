@@ -3,8 +3,9 @@
 from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
+from flask_security import ConfirmRegisterForm
 from wtforms import IntegerField, StringField
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, Required
 
 images = UploadSet('images', IMAGES)
 
@@ -37,3 +38,8 @@ class ChangeOffer(Form):
     def __init__(self, *args, **kwargs):
         """Create instance."""
         super(ChangeOffer, self).__init__(*args, **kwargs)
+
+
+class ExtendedConfirmRegisterForm(ConfirmRegisterForm):
+    '''user registration'''
+    username = StringField('Username', [Required()])

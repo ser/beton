@@ -13,6 +13,7 @@ from beton.assets import assets
 from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar
 from beton.extensions import mail, migrate, moment, scheduler, security, user_datastore
 from beton.settings import ProdConfig
+from beton.user.forms import ExtendedConfirmRegisterForm
 
 
 def create_app(config_object=ProdConfig):
@@ -46,7 +47,9 @@ def register_extensions(app):
     migrate.init_app(app, db)
     moment.init_app(app)
     scheduler.init_app(app)
-    security.init_app(app, user_datastore)
+    security.init_app(app,
+                      user_datastore,
+                      confirm_register_form=ExtendedConfirmRegisterForm)
     return None
 
 
