@@ -13,6 +13,7 @@ class Role(SurrogatePK, Model):
     name = Column(db.String(80), unique=True, nullable=False)
     user_id = reference_col('users', nullable=True)
     user = relationship('User', backref='roles')
+    description = Column(db.Text, nullable=True)
 
     def __init__(self, name, **kwargs):
         """Create instance."""
@@ -28,12 +29,18 @@ class User(UserMixin, SurrogatePK, Model):
 
     __tablename__ = 'users'
     username = Column(db.String(80), unique=True, nullable=False)
-    email = Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False, default='')
+    email = Column(db.Text(), unique=True, nullable=False)
+    password = db.Column(db.Text(), nullable=False, default='')
+    active = Column(db.Boolean(), default=True)
     confirmed_at = Column(db.DateTime, nullable=True)
-    first_name = Column(db.String(30), nullable=True)
-    last_name = Column(db.String(30), nullable=True)
-    is_enabled = Column(db.Boolean(), default=False)
+
+    def get_security_payload(self):
+        '''Custom User Payload'''
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email
+        }
 
     def __repr__(self):
         """Represent instance as a unique string."""
