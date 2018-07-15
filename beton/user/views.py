@@ -119,7 +119,7 @@ def minerfee(amount, electrum_url):
 
 
 @cache.memoize(timeout=666)
-def all_advertisers_cached():
+def all_advertisers_cached(r):
     '''We want to cache data which does not change frequently
        as asking revive is time costly.'''
     sessionid = session['revive']
@@ -133,8 +133,12 @@ def all_advertisers_cached():
 def get_advertiser_id():
     '''Try to find out if the customer is already registered
        in Revive, if not, register him.'''
+    r = xmlrpc.client.ServerProxy(
+        current_app.config.get('REVIVE_XML_URI'),
+        verbose=False
+    )
     sessionid = session['revive']
-    all_advertisers = all_advertisers_cached()
+    all_advertisers = all_advertisers_cached(r)
 
     try:
         next(x for x in all_advertisers if x['advertiserName'] ==
@@ -142,15 +146,17 @@ def get_advertiser_id():
     except StopIteration:
         r.ox.addAdvertiser(
             sessionid,
-            {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
+            {
+                'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
                 'advertiserName': current_user.username,
                 'emailAddress': current_user.email,
                 'contactName': current_user.username,
                 'comments': current_app.config.get('USER_APP_NAME')
-                }
+            }
         )
         log.info("Added {} as new advertiser.".format(current_user.username))
         cache.delete_memoized('all_advertisers_cached')
+        all_advertisers = all_advertisers_cached(r)
 
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                              current_user.username)['advertiserId'])
