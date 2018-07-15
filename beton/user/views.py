@@ -155,7 +155,7 @@ def get_advertiser_id():
             }
         )
         log.info("Added {} as new advertiser.".format(current_user.username))
-        cache.delete_memoized('all_advertisers_cached')
+        cache.delete_memoized(all_advertisers_cached(r))
         all_advertisers = all_advertisers_cached(r)
 
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
