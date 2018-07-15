@@ -22,8 +22,8 @@
                             <div id="comments">{{ zone.comments }}</div>
                             <div id="price"><p>{{ zone.price / 100 }}<i class="fas
                                         fa-euro-sign fa-fw" aria-hidden="true"></i>/day</p></div>
-                            <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>
                             {% if isadmin == True %}
+                            <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>
                             <form action="{{ url_for('user.offer') }}" method="post">
                                 <div class="form-group">
                                     <label class="control-label">Zone administration</label>
