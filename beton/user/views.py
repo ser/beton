@@ -251,7 +251,7 @@ def offer():
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
             tmpdict = {}
-            
+
             tmpdict['publisherId'] = zone['publisherId']
             tmpdict['zoneName'] = zone['zoneName']
             tmpdict['width'] = zone['width']
@@ -334,15 +334,17 @@ def campaign(no_weeks=None,campaign_no=None):
     )
     sessionid = session['revive']
 
+
     # We want to cache data which does not change frequently, as asking revive
     # is time costly
-    @cache.memoize(timeout=666)
+    @cache.memoize(timeout=666, key_prefix='advertisers')
     def all_advertisers_cached():
         all_advertisers = r.ox.getAdvertiserListByAgencyId(
             sessionid,
             current_app.config.get('REVIVE_AGENCY_ID')
         )
         return all_advertisers
+
 
     all_advertisers = all_advertisers_cached()
 
@@ -361,7 +363,8 @@ def campaign(no_weeks=None,campaign_no=None):
                 'comments': current_app.config.get('USER_APP_NAME')
                 }
         )
-        cache.delete_memoized('all_advertisers_cached')
+        log.info("Added {} as new advertiser.".format(current_user.username))
+        cache.delete_memoized('advertisers')
         all_advertisers = all_advertisers_cached()
 
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
