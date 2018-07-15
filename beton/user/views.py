@@ -118,6 +118,45 @@ def minerfee(amount, electrum_url):
     return format(int(fee_kb)*0.258/100000000, '.9f')
 
 
+@cache.memoize(timeout=666, key_prefix='advertisers')
+def all_advertisers_cached():
+    '''We want to cache data which does not change frequently
+       as asking revive is time costly.'''
+    sessionid = session['revive']
+    all_advertisers = r.ox.getAdvertiserListByAgencyId(
+        sessionid,
+        current_app.config.get('REVIVE_AGENCY_ID')
+    )
+    return all_advertisers
+
+
+def get_advertiser_id():
+    '''Try to find out if the customer is already registered
+       in Revive, if not, register him.'''
+    sessionid = session['revive']
+    all_advertisers = all_advertisers_cached()
+
+    try:
+        next(x for x in all_advertisers if x['advertiserName'] ==
+             current_user.username)
+    except StopIteration:
+        r.ox.addAdvertiser(
+            sessionid,
+            {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
+                'advertiserName': current_user.username,
+                'emailAddress': current_user.email,
+                'contactName': current_user.username,
+                'comments': current_app.config.get('USER_APP_NAME')
+                }
+        )
+        log.info("Added {} as new advertiser.".format(current_user.username))
+        cache.delete_memoized('advertisers')
+
+    advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
+                             current_user.username)['advertiserId'])
+    return advertiser_id
+
+
 @blueprint.url_value_preprocessor
 def get_basket(endpoint, values):
     """We need basket on every view if authenticated"""
@@ -219,6 +258,7 @@ def offer():
         verbose=False
     )
     sessionid = session['revive']
+    advertiser_id = get_advertiser_id()
 
     # Get all publishers (websites)
     publishers = r.ox.getPublisherListByAgencyId(
@@ -334,41 +374,7 @@ def campaign(no_weeks=None,campaign_no=None):
     )
     sessionid = session['revive']
 
-
-    # We want to cache data which does not change frequently, as asking revive
-    # is time costly
-    @cache.memoize(timeout=666, key_prefix='advertisers')
-    def all_advertisers_cached():
-        all_advertisers = r.ox.getAdvertiserListByAgencyId(
-            sessionid,
-            current_app.config.get('REVIVE_AGENCY_ID')
-        )
-        return all_advertisers
-
-
-    all_advertisers = all_advertisers_cached()
-
-    # Try to find out if the customer is already registered in Revive, if not,
-    # register him
-    try:
-        next(x for x in all_advertisers if x['advertiserName'] ==
-             current_user.username)
-    except StopIteration:
-        r.ox.addAdvertiser(
-            sessionid,
-            {'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
-                'advertiserName': current_user.username,
-                'emailAddress': current_user.email,
-                'contactName': current_user.username,
-                'comments': current_app.config.get('USER_APP_NAME')
-                }
-        )
-        log.info("Added {} as new advertiser.".format(current_user.username))
-        cache.delete_memoized('advertisers')
-        all_advertisers = all_advertisers_cached()
-
-    advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
-                        current_user.username)['advertiserId'])
+    advertiser_id = get_advertiser_id()
 
     # A universal JOIN across tables to get info about an order
     dbqueryall = Orders.query.join(
@@ -547,14 +553,7 @@ def order():
 
         # We are booking the campaign in Revive, but turning off by default
         # until payment is confirmed
-        all_advertisers = r.ox.getAdvertiserListByAgencyId(
-            sessionid,
-            current_app.config.get('REVIVE_AGENCY_ID')
-        )
-        advertiser_id = int(
-            next(x for x in all_advertisers if x['advertiserName'] ==
-                current_user.username)['advertiserId']
-        )
+        advertiser_id = get_advertiser_id()
 
         try:
             begin = datetime.strptime(datestart, "%d/%m/%Y")
