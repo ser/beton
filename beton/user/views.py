@@ -118,7 +118,7 @@ def minerfee(amount, electrum_url):
     return format(int(fee_kb)*0.258/100000000, '.9f')
 
 
-@cache.memoize(timeout=666, key_prefix='advertisers')
+@cache.memoize(timeout=666)
 def all_advertisers_cached():
     '''We want to cache data which does not change frequently
        as asking revive is time costly.'''
@@ -150,7 +150,7 @@ def get_advertiser_id():
                 }
         )
         log.info("Added {} as new advertiser.".format(current_user.username))
-        cache.delete_memoized('advertisers')
+        cache.delete_memoized('all_advertisers_cached')
 
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
                              current_user.username)['advertiserId'])
