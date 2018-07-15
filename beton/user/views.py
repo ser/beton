@@ -246,6 +246,7 @@ def offer():
                     y0 = 0,
                     y1 = 0
                 )
+                Prices.commit()
 
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
