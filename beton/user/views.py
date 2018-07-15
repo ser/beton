@@ -238,7 +238,14 @@ def offer():
             # database, of not, we are creating it with zero values 
             howmany = Prices.query.filter_by(zoneid=zone['zoneId']).count()
             if howmany is not 1:
-                Prices.create(zoneid=zone['zoneId'])
+                Prices.create(
+                    zoneid = zone['zoneId'],
+                    dayprice = 0,
+                    x0 = 0,
+                    x1 = 0,
+                    y0 = 0,
+                    y1 = 0
+                )
 
             price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
 
