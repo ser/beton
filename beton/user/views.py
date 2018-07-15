@@ -54,7 +54,7 @@ def create_banner_overview(zone):
         color='red'
     )
 
-    zonedata = Prices.query.filter_by(id=zone).first()
+    zonedata = Prices.query.filter_by(zoneid=zone).first()
     # font = ImageFont.load_default()
 
     b = ImageDraw.Draw(dwg)
@@ -155,7 +155,7 @@ def get_advertiser_id():
             }
         )
         log.info("Added {} as new advertiser.".format(current_user.username))
-        cache.delete_memoized(all_advertisers_cached(r))
+        cache.delete_memoized(all_advertisers_cached)
         all_advertisers = all_advertisers_cached(r)
 
     advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
