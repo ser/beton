@@ -7,18 +7,31 @@
             options and prices, please login first.</p>
 </div><!-- /.jumbotron -->
 
-{% from "security/_macros.html" import render_field_with_errors, render_field %}
-{% include "security/_messages.html" %}
-<h1>{{ _('Login') }}</h1>
-<form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
-<div class="form-group">
-  {{ login_user_form.hidden_tag() }}
-  {{ render_field_with_errors(login_user_form.email) }}
-  {{ render_field_with_errors(login_user_form.password) }}
-  {{ render_field_with_errors(login_user_form.remember) }}
-  {{ render_field(login_user_form.next) }}
-  {{ render_field(login_user_form.submit) }}
+<div class="row">
+    <div class="col-lg-12">
+
+        {% from "security/_macros.html" import render_field_with_errors, render_field %}
+        {% include "security/_messages.html" %}
+        <h1>{{ _('Login') }}</h1>
+        <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+            <fieldset>
+                <div class="form-group">
+                    {{ login_user_form.hidden_tag() }}
+                    {{ render_field_with_errors(login_user_form.email) }}
+                    {{ render_field_with_errors(login_user_form.password) }}
+                    {{ render_field_with_errors(login_user_form.remember) }}
+                    {{ render_field(login_user_form.next) }}
+                    <br/>
+                    {{ render_field(login_user_form.submit) }}
+                </div>
+            <fieldset>
+        </form>
+
+        <br/>
+        <p><a href="{{ url_for_security('forgot_password') }}">Forgot password?</a></p>
+        <p><a href="{{ url_for_security('send_confirmation') }}">Resend confirmation email</a></p>
+
+    </div>
 </div>
-</form>
 
 {% endblock %}

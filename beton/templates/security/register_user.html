@@ -7,19 +7,35 @@
             options and prices, please register first.</p>
 </div><!-- /.jumbotron -->
 
-{% from "security/_macros.html" import render_field_with_errors, render_field %}
-{% include "security/_messages.html" %}
-<h1>{{ _('Register') }}</h1>
-<form action="{{ url_for_security('register') }}" method="POST" name="register_user_form">
-    <fieldset>
-  {{ register_user_form.hidden_tag() }}
-  {{ render_field_with_errors(register_user_form.username) }}
-  {{ render_field_with_errors(register_user_form.email) }}
-  {{ render_field_with_errors(register_user_form.password) }}
-  {% if register_user_form.password_confirm %}
-    {{ render_field_with_errors(register_user_form.password_confirm) }}
-  {% endif %}
-  {{ render_field(register_user_form.submit) }}
-  </fieldset>
-</form>
+     <div class="row">
+         <div class="col-lg-12">
+
+            {% from "security/_macros.html" import render_field_with_errors, render_field %}
+            {% include "security/_messages.html" %}
+
+            <h1>{{ _('Register') }}</h1>
+
+            <form action="{{ url_for_security('register') }}" method="POST" name="register_user_form">
+                <fieldset>
+                    <div class="form-group">
+                        {{ register_user_form.hidden_tag() }}
+                        {{ render_field_with_errors(register_user_form.username) }}
+                        {{ render_field_with_errors(register_user_form.email) }}
+                        {{ render_field_with_errors(register_user_form.password) }}
+                        {% if register_user_form.password_confirm %}
+                            {{ render_field_with_errors(register_user_form.password_confirm) }}
+                        {% endif %}
+                        <br/>
+                        {{ render_field(register_user_form.submit) }}
+                    </div>
+                </fieldset>
+            </form>
+
+            <br/>
+
+            <p><a href="{{ url_for_security('send_confirmation') }}">Resend confirmation email?</a></p>
+
+        </div>
+    </div>
+
 {% endblock %}
