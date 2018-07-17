@@ -40,7 +40,7 @@
                                     <b>Impressions:</b>&nbsp; {{ dbquery.impressions }}
                                 {% else %}
                                     Campaign starts in
-                                       {{ (dbquery.begins_at - now).days }}
+                                       {{ ((dbquery.begins_at - now).days) + 1 }}
                                     day(s)
                                 {% endif %}
                             </li>

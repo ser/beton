@@ -22,7 +22,7 @@
                 </p>
             {% else %}
             <p>Campaign starts in 
-                {{ (campaign.begins_at - now).days }}
+                {{ ((campaign.begins_at - now).days + 1) }}
                 day(s)
             {% endif %}
             </p>
