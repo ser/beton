@@ -810,13 +810,14 @@ def pay(payment):
             totalcoinprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
             cointotal += totalcoinprice
-            label = label + "[C#{} Z#{} B#{} {} ↦ {} {}] ※ ".format(
+            label = label + "[C#{} Z#{} B#{} {} ↦ {} {0:.2f}{}] ※ ".format(
                 item.campaigno,
                 order_sql[0].zoneid,
                 order_sql[0].bannerid,
                 begin.strftime("%d/%m/%y"),
                 enddate.strftime("%d/%m/%y"),
-                str(totalcurrencyprice)+current_app.config.get('FIAT')
+                totalcurrencyprice,
+                current_app.config.get('FIAT')
             )
     else:
         basket = 0

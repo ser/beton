@@ -193,6 +193,17 @@ def ipn(payment):
                         "confirmed_at": datetime.utcnow()
                     }
                 )
+
+            # It might happen by a chance that we missed one IPN from electrum
+            # related to initial payment confirmation. In that case we should
+            # update it now.
+            if pay_db.received_at == datetime.min:
+                Payments.query.filter_by(
+                    address=cryptoaddress).update(
+                        {"received_at": datetime.utcnow()}
+                    )
+
+            # Commiting to SQL server
             Payments.commit()
 
             # Logout from Revive
@@ -209,7 +220,7 @@ def ipn(payment):
             msgbody = ("Funds in {} sent to address {} are confirmed. \n\n" +
                        "{} \n\n" +
                        "Your campaign(s) are ready to be run. \n\n" +
-                       "You can see all details on: \n    {}\n\n" +
+                       "You can see all your campaigns on: \n    {}\n\n" +
                        "Thank you :-)").format(
                             payment_system[0],
                             ipn['address'],
@@ -230,7 +241,6 @@ def ipn(payment):
                     )
                 )
                 pushover.Client().send_message(pushlog, title="$$$")
-
 
         else:
             logstr = ("PROBLEM. Confirmed balance on address {} is " +
