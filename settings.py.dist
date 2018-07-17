@@ -164,7 +164,7 @@ class Config(object):
     USER_RESEND_CONFIRM_EMAIL_URL = SUBDIR+'/user/resend-confirm-email'
     USER_RESET_PASSWORD_URL       = SUBDIR+'/user/reset-password/<token>'
     SECURITY_RESET_URL            = SUBDIR+'/user/reset'
-    SECURITY_POST_LOGIN_VIEW      = 'user.user_me'
+    SECURITY_POST_LOGIN_VIEW      = SUBDIR
     SECURITY_POST_LOGOUT_VIEW     = SUBDIR
     SECURITY_CONFIRMABLE          = True
     SECURITY_REGISTERABLE         = True
