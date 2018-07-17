@@ -415,7 +415,7 @@ def campaign(no_weeks=None,campaign_no=None):
         dbquery = dbqueryall.filter(Orders.campaigno==campaign_no).first()
 
         # we show details only to campaign owners or admins
-        if Orders.user_id == current_user.id or amiadmin():
+        if dbquery.user_id == current_user.id or amiadmin():
             # Render the page and quit
             return render_template(
                 'users/campaign-single.html',
