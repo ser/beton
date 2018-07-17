@@ -810,7 +810,7 @@ def pay(payment):
             totalcoinprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
             cointotal += totalcoinprice
-            label = label + "[C#{} Z#{} B#{} {} ↦ {} {0:.2f}{}] ※ ".format(
+            label = label + "[C#{} Z#{} B#{} {} ↦ {} {.2f}{}] ※ ".format(
                 item.campaigno,
                 order_sql[0].zoneid,
                 order_sql[0].bannerid,
