@@ -210,8 +210,8 @@ received_at: {}, confirmed_at: {}, bip70_id: {}>'.format(
             self.created_at,
             self.user_id,
             self.received_at,
-            self.bip70_id,
-            self.confirmed_at
+            self.confirmed_at,
+            self.bip70_id
         )
 
 
