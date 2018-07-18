@@ -49,13 +49,15 @@
             <div class="col-sm-6 col-xs-12">
                 <h5>Pay for all items in the basket using:</h5>
                     {% for x in config.PAYMENT_SYSTEMS %}
-                        <div>
-                            <a href="{{ url_for('user.pay', payment=x) }}"
-                                class="btn btn-success btn-xs">{{ config.PAYMENT_SYSTEMS[x][1] }}</a>
-                            <p class="text-info"><em>{{ config.PAYMENT_SYSTEMS[x][2] }}</em></p>
-                        </div>
-                        {% if loop.last == False %}
-                            or
+                        {% if config.PAYMENT_SYSTEMS[x][5] %}
+                            <div>
+                                <a href="{{ url_for('user.pay', payment=x) }}"
+                                    class="btn btn-success btn-xs">{{ config.PAYMENT_SYSTEMS[x][1] }}</a>
+                                <p class="text-info"><em>{{ config.PAYMENT_SYSTEMS[x][2] }}</em></p>
+                            </div>
+                            {% if loop.last == False %}
+                                or
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
             </div>

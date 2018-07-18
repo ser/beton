@@ -4,8 +4,9 @@
     <div class="jumbotron">
         <h1><i class="fa fa-ambulance"></i> We have problems,
             {{ current_user.username }}</h1>
-        <p>We can't connect to our payment system. If the situation repeats,
-            please contact us.</p>
+        <p class="lead">We can't connect to our payment system. If the situation repeats,
+            please contact us.</p>    
+        <p>Meanwhile you can try an other cryptocurrency from our list.</p>
         <p><a href="{{ url_for('user.basket') }}"
             class="btn btn-default">Return to your basket</a></p>
     </div>

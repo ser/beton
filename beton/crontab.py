@@ -185,18 +185,23 @@ def ping_electrum():
             payment_systems = current_app.config.get('PAYMENT_SYSTEMS')
             for payment_system in payment_systems:
                 log.debug(payment_system)
-                payload = {
-                    "id": str(uuid.uuid4()),
-                    "method": "is_synchronized"
-                }
-                electrum_url = payment_systems[payment_system][3]
-                log.debug("We have sent to electrum this payload:")
-                log.debug(payload)
-                get_health = requests.post(electrum_url, json=payload).json()
-                log.debug("We got back from electrum:")
-                log.debug(get_health)
-                if not get_health['result']:
-                    sendwarning(payment_system)
+                # We check only enabled payments
+                if payment_systems[payment_system][5]:
+                    payload = {
+                        "id": str(uuid.uuid4()),
+                        "method": "is_synchronized"
+                    }
+                    electrum_url = payment_systems[payment_system][3]
+                    log.debug("We have sent to electrum this payload:")
+                    log.debug(payload)
+                    get_health = requests.post(electrum_url, json=payload).json()
+                    log.debug("We got back from electrum:")
+                    log.debug(get_health)
+                    if not get_health['result']:
+                        sendwarning(payment_system)
+                else:
+                    log.debug("Payment system disabled.")
+
         except Exception as e:
             log.debug("Exception")
             log.exception(e)

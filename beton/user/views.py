@@ -781,7 +781,17 @@ def clear_campaign(campaign_no):
 def pay(payment):
     """Pay a campaign. We serve a few payment systems, so it depends on 'payment' value."""
 
-    payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
+    try:
+        payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
+    except Exception as e:
+        log.debug("Exception")
+        log.exception(e)
+        return render_template('users/electrum-problems.html')
+
+    # First check if the payment system is enabled in settings
+    if payment_system[5] is not True:
+        log.info("User tried to pay with disabled {} currency".format(payment))
+        return render_template('users/electrum-problems.html')
 
     exrate = getexrate(payment_system[0])
     if exrate == 0:

@@ -266,6 +266,11 @@ def ipn(payment):
     lockutils.set_defaults(current_app.config.get('CACHE_DIR'))
     payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
 
+    # We need to be sure that we accept only enable means of payments
+    if payment_system[5] is not True:
+        log.debug("This payment system is disabled. Enable it in settings.")
+        return redirect(url_for('public.home'))
+
     # We need to establish a lock preventing from processing payment
     # for the same address several times concurrently which is possible in real
     # situation. If it happens, for example mail is being sent twice. We don't
