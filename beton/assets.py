@@ -1,10 +1,12 @@
 """Application assets."""
 """
-'libs/bootswatch/dist/superhero/bootstrap.css'
-
-bootswatch = app.config.get('BOOTSWATCH')
-'libs/bootswatch/dist/' + bootswatch + '/bootstrap.css',
+    TODO:
+    'libs/bootswatch/dist/' + bootswatch + '/bootstrap.css',
+    bootswatch = app.config.get('BOOTSWATCH')
 """
+
+from flask_assets import Bundle, Environment
+
 
 css = Bundle(
     'libs/bootswatch/dist/superhero/bootstrap.css',
