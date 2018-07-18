@@ -189,6 +189,12 @@ class Config(object):
             'func': 'beton.crontab:update_impressions',
             'trigger': 'interval',
             'seconds': 3333
+        },
+        {
+            'id': 'health',
+            'func': 'beton.crontab:ping_electrum',
+            'trigger': 'interval',
+            'seconds': 333
         }
     ]
 
