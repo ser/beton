@@ -26,6 +26,9 @@ class Config(object):
     # Remember about / at the end of the OUR_URL
     OUR_URL = ""
 
+    # Bootswatch https://bootswatch.com/ selection
+    BOOTSWATCH = 'darkly'
+
     # flask-uploads
     # Remember about / at the end of all these URLs
     UPLOADED_IMAGES_DEST = APP_DIR + ''
