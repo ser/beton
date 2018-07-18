@@ -21,7 +21,7 @@ from flask_uploads import UploadSet, IMAGES
 from beton.extensions import cache
 from beton.logger import log
 from beton.user.forms import AddBannerForm, ChangeOffer
-from beton.user.models import Banner, Basket, Log, Orders, Payments, Prices, User
+from beton.user.models import Banner, Basket, Impressions, Log, Orders, Payments, Prices, User
 from beton.utils import dblogger, flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -294,7 +294,9 @@ def offer():
                 )
                 Prices.commit()
 
-            price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
+            price = Prices.query.filter_by(
+                        zoneid=zone['zoneId']
+                    ).first()
 
             tmpdict = {}
 
@@ -311,15 +313,12 @@ def offer():
             tmpdict['y0'] = price.y0
             tmpdict['y1'] = price.y1
 
-            # ask for stats
+            # get stats and ignore if none
             try:
-                ztatz = r.ox.advertiserZoneStatistics(
-                    sessionid,
-                    zone['zoneId'],
-                    datetime.now() - relativedelta(months=1),
-                    datetime.now()
-                )
-                tmpdict['impressions'] = ztatz[0]['impressions']
+                ztatz = Impressions.query.filter_by(
+                            zoneid=zone['zoneId']
+                        ).first()
+                tmpdict['impressions'] = ztatz.impressions
             except Exception as e:
                 log.debug("Exception")
                 log.exception(e)

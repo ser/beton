@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """Various cron jobs."""
 
-from datetime import datetime, timedelta
+import requests
+import uuid
 import xmlrpc.client
+
+from datetime import datetime, timedelta
+from dateutil.relativedelta import *
 
 from flask import current_app
 
@@ -11,21 +15,42 @@ from beton.logger import log
 from beton.utils import dblogger, reviveme
 
 
+# we cache login session to speed things up
+@cache.memoize(timeout=120)
+def sessionid(r):
+    return reviveme(r)
+
+
+# we cache it as we don't want to send emails more often than once an hour
+@cache.memoize(timeout=60)
+def sendwarning(blockchain):
+    '''Notifying admins that Electrum is fcuked'''
+    with db.app.app_context():
+        from beton.user.models import Log, Role, User
+        dbquery = Role.query.join(User).add_columns(
+            User.id,
+            User.username,
+            User.email
+        ).all()
+        # log.debug(dbquery)
+        for admin in dbquery:
+            dblogger(admin.id, "Electrum {} is failing.".format(blockchain))
+
+
 def update_impressions():
+    '''This cron job gets stats from Revive and puts them into SQL database
+    which is much faster to reach from Beton.'''
     with db.app.app_context():
 
-        # we cache login session to speed things up
-        @cache.memoize(timeout=120)
-        def sessionid(r):
-            return reviveme(r)
+        log.info("Running crontab: updating impressions.")
+        r = xmlrpc.client.ServerProxy(
+            current_app.config.get('REVIVE_XML_URI'),
+            verbose=False
+        )
 
+        # Updating detailed impressions for user's campaigns
         try:
-            log.info("Running crontab: updating impressions.")
             from beton.user.models import Orders
-            r = xmlrpc.client.ServerProxy(
-                current_app.config.get('REVIVE_XML_URI'),
-                verbose=False
-            )
             now = datetime.utcnow()
             # we update only currently ongoing campaigns
             ordersdata = Orders.query.filter(Orders.stops_at >= now).all()
@@ -45,7 +70,6 @@ def update_impressions():
                         campaigno=order.campaigno).update(
                             {"impressions": value}
                     )
-                    Orders.commit()
                 except Exception as e:
                     # log.debug("Exception in {}".format(order.campaigno))
                     # log.exception(e)
@@ -53,6 +77,44 @@ def update_impressions():
                     # we ignore errors as they probably mean that there's no
                     # relevant data in Revive
                     pass
+            Orders.commit()
+
+        except Exception as e:
+            log.debug("Exception")
+            log.exception(e)
+
+        # Get stats related to all zones aggregated across all customers
+        try:
+            from beton.user.models import Impressions
+            now = datetime.utcnow()
+            ztatz = r.ox.agencyZoneStatistics(
+                sessionid(r),
+                1,
+                datetime.now() - relativedelta(months=1),
+                datetime.now()
+            )
+            # try to update the table if not available, create it
+            log.debug(ztatz)
+            for zone in ztatz:
+                howmany = Impressions.query.filter_by(
+                    zoneid = zone['zoneId']
+                ).count()
+                if howmany is not 1:
+                    Impressions.create(
+                        zoneid = zone['zoneId'],
+                        impressions = zone['impressions'],
+                        clicks = zone['clicks']
+                    )
+                else:
+                    Impressions.query.filter_by(
+                        zoneid = zone['zoneId']
+                    ).update(
+                        {
+                            "impressions": zone['impressions'],
+                            "clicks": zone['clicks']
+                        }
+                    )
+            Impressions.commit()
 
         except Exception as e:
             log.debug("Exception")
@@ -84,7 +146,7 @@ def remove_unpaid_campaigns(timeperiod=7):
                         all_campaigns = Orders.query.filter_by(paymentno=payment.id)
                         for campaign in all_campaigns:
                             removed = r.ox.deleteCampaign(
-                                reviveme(r),
+                                sessionid(r),
                                 campaign.campaigno
                             )
                             Orders.query.filter_by(campaigno=campaign.campaigno).delete()
@@ -114,3 +176,27 @@ def remove_unpaid_campaigns(timeperiod=7):
             log.debug("Exception")
             log.exception(e)
 
+
+def ping_electrum():
+    '''Checking Electrum servers health'''
+    with db.app.app_context():
+        try:
+            log.info("Electrum health check.")
+            payment_systems = current_app.config.get('PAYMENT_SYSTEMS')
+            for payment_system in payment_systems:
+                log.debug(payment_system)
+                payload = {
+                    "id": str(uuid.uuid4()),
+                    "method": "is_synchronized"
+                }
+                electrum_url = payment_systems[payment_system][3]
+                log.debug("We have sent to electrum this payload:")
+                log.debug(payload)
+                get_health = requests.post(electrum_url, json=payload).json()
+                log.debug("We got back from electrum:")
+                log.debug(get_health)
+                if not get_health['result']:
+                    sendwarning(payment_system)
+        except Exception as e:
+            log.debug("Exception")
+            log.exception(e)

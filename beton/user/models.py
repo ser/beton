@@ -256,3 +256,26 @@ class Log(SurrogatePK, Model):
             self.logdata,
             self.datelog
         )
+
+
+class Impressions(SurrogatePK, Model):
+    """Impressions cache"""
+
+    __tablename__ = 'impressions'
+    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid'), nullable=False)
+    impressions = Column(db.Integer(), unique=False, nullable=True)
+    clicks = Column(db.Integer(), unique=False, nullable=True)
+
+    def __init__(self, zoneid, impressions, clicks):
+        """Create instance."""
+        self.zoneid = zoneid
+        self.impressions = impressions
+        self.clicks = clicks
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return 'zoneid: {}, impressions: {}, clicks: {}>'.format(
+            self.zoneid,
+            self.impressions,
+            self.clicks
+        )
