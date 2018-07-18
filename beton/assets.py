@@ -3,6 +3,7 @@
 'libs/bootswatch/dist/superhero/bootstrap.css'
 """
 
+from flask import current_app
 from flask_assets import Bundle, Environment
 
 bootswatch = current_app.config.get('BOOTSWATCH')
