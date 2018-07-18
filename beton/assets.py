@@ -5,8 +5,10 @@
 
 from flask_assets import Bundle, Environment
 
+bootswatch = current_app.config.get('BOOTSWATCH')
+
 css = Bundle(
-    'libs/bootswatch/dist/darkly/bootstrap.css',
+    'libs/bootswatch/dist/' + bootswatch + '/bootstrap.css',
     'libs/fullcalendar/dist/fullcalendar.css',
     'libs/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css',
     'css/style.css',
