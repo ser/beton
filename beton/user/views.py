@@ -224,6 +224,8 @@ def add_bannerz():
                 created_at=datetime.utcnow(),
                 width=width,
                 height=height,
+                type="file",
+                content="NULL",
                 comments=form.banner_comments.data
             )
             dblogger(
@@ -306,6 +308,7 @@ def offer():
             tmpdict['height'] = zone['height']
             tmpdict['zoneId'] = zone['zoneId']
             tmpdict['comments'] = zone['comments']
+            tmpdict['type'] = zone['type']
 
             tmpdict['price'] = price.dayprice
             tmpdict['x0'] = price.x0

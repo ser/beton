@@ -51,16 +51,18 @@ class Banner(SurrogatePK, Model):
     """Banner files."""
 
     __tablename__ = 'banners'
-    filename = Column(db.String(191), unique=True, nullable=False)
+    filename = Column(db.String(191), unique=True, nullable=True)
     owner = Column(db.Integer(), unique=False, nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     url = Column(db.String(2083), nullable=False)
-    height = Column(db.Integer(), nullable=False)
-    width = Column(db.Integer(), nullable=False)
+    height = Column(db.Integer(), nullable=True)
+    width = Column(db.Integer(), nullable=True)
     comments = Column(db.String(512), nullable=True)
+    type = Column(db.String(21), unique=False, nullable=False)
+    content = Column(db.String(256), unique=False, nullable=True)
     bannerid = db.relationship("Orders")
 
-    def __init__(self, filename, owner, created_at, url, height, width, comments):
+    def __init__(self, filename, owner, created_at, url, height, width, comments, type, content):
         """Create instance."""
         self.filename = filename
         self.owner = owner
@@ -69,18 +71,22 @@ class Banner(SurrogatePK, Model):
         self.height = height
         self.width = width
         self.comments = comments
+        self.type = type
+        self.content = content
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<filename: {}, owner: {}, created_at: {}, url: {}, height: {}, \
-width: {}, comment: {}>'.format(
+width: {}, comment: {}, type: {}, content: {}>'.format(
             self.filename,
             self.owner,
             self.created_at,
             self.url,
             self.height,
             self.width,
-            self.comments
+            self.comments,
+            self.type,
+            self.content
         )
 
 

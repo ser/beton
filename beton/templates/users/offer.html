@@ -14,16 +14,22 @@
                         <div class="card-header">
                             Zone #{{ zone.zoneId }} ※ {{ zone.zoneName }}
                         </div>
+                        {% if zone.type == 0 %}
                         <img class="img-fluid" alt="zone {{ zone.zoneId }}"src="{{ config.UPLOADED_IMAGES_URL }}overview/zone-{{ zone.zoneId }}.png">
+                        {% endif %}
                         <div class="card-body">
-                            <div id="comments">{{ zone.comments }}</div>
+                            <div id="comments"><p class="card-subtitle text-muted">{{ zone.comments }}</p><br/></div>
+                            {% if zone.type == 0 %}
                             <div id="widthheight"><img src="https://placehold.it/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
                             <div id="size"><p>Size: {{ zone.width }}x{{ zone.height }}</p></div>
+                            {% endif %}
                             <div id="impressions"><p>Last 30 days impressions of all banners in this zone: {{ zone.impressions }}</p></div>
                             <div id="price"><p>{{ zone.price / 100 }}<i class="fas
                                         fa-euro-sign fa-fw" aria-hidden="true"></i>/day</p></div>
                             {% if isadmin == True %}
+                            {% if zone.type == 0 %}
                             <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>
+                            {% endif %}
                             <form action="{{ url_for('user.offer') }}" method="post">
                                 <div class="form-group">
                                     <label class="control-label">Zone administration</label>
@@ -37,6 +43,7 @@
                                         {{ form.zoneprice(size=5, value=zone.price) }}
                                     </div>
                                 </div>
+                                {% if zone.type == 0 %}
                                 <div class="form-group">
                                     <div class="input-group mb-3">
                                         <div class="input-group-prepend">
@@ -69,6 +76,7 @@
                                         {{ form.y1(size=5, value=zone.y1) }}
                                     </div>
                                 </div>
+                                {% endif %}
                                 {{ form.csrf_token }}
                                 <input type="submit" value="Change">
                             </form>
