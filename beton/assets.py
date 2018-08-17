@@ -18,7 +18,6 @@ css = Bundle(
 )
 
 js = Bundle(
-    'libs/jQuery/dist/jquery.js',
     'libs/bootstrap/dist/js/bootstrap.js',
     'libs/jquery-timeago/jquery.timeago.js',
     'libs/gasparesganga-jquery-loading-overlay/src/loadingoverlay.js',
@@ -28,7 +27,6 @@ js = Bundle(
     'libs/fullcalendar/dist/fullcalendar.js',
     'libs/bootstrap-datepicker/js/bootstrap-datepicker.js',
     'libs/enquire/dist/enquire.js',
-    'libs/savvior/dist/savvior.js',
     'libs/progresspiesvg/js/jquery-progresspiesvg.js',
     'libs/progresspiesvg/js/jquery-progresspiesvg-valueDisplay.js',
     'libs/qrious/dist/qrious.js',

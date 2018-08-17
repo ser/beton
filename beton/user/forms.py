@@ -15,7 +15,8 @@ class AddBannerForm(Form):
 
     banner_url = StringField('URL to your advertised page',
                              validators=[DataRequired(), Length(min=10, max=2000)])
-    banner_comments = StringField('Comments (optional)')
+    banner_comments = StringField('Comments (optional)',
+                                 validators=[Length(max=500)])
     banner_image = FileField('Banner image file',
                              validators=[FileRequired(), FileAllowed(images, 'Images only!')])
 
@@ -24,6 +25,23 @@ class AddBannerForm(Form):
         super(AddBannerForm, self).__init__(*args, **kwargs)
 
     # TODO: validate if size of the image is not bigger than 500kb
+
+
+class AddBannerTextForm(Form):
+    """Upload banner form."""
+
+    banner_url = StringField('URL to your advertised page',
+                             validators=[DataRequired(), Length(min=10, max=2000)])
+    banner_content = StringField('Banner text content (20 to 255 characters)',
+                                validators=[DataRequired(), Length(min=20, max=255)]) 
+    banner_comments = StringField('Comments (optional)',
+                                  validators=[Length(max=500)])
+    banner_icon = StringField('Web Icon',
+                              validators=[Length(max=120)])
+
+    def __init__(self, *args, **kwargs):
+        """Create instance."""
+        super(AddBannerTextForm, self).__init__(*args, **kwargs)
 
 
 class ChangeOffer(Form):

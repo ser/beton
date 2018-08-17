@@ -1,9 +1,16 @@
 <div class="card border-light">
     <div class="card-header">
         <h5><a href="{{ url_for('user.campaign', campaign_no=campaign.campaigno) }}">#{{ campaign.campaigno }} {{ campaign.name }}</a></h5>
-        <img class="img-thumbnail thumbmax" 
-            src="{{ config.UPLOADED_IMAGES_URL}}{{ campaign.filename }}"
-            alt="[B{{ campaign.campaigno }}]">
+        {% if campaign.type == "text" %}
+            <div class="card-header">
+            <i class="{{ campaign.icon }}" aria-hidden="true"></i>&nbsp;
+            {{ campaign.content }}
+        </div>
+        {% else %}
+            <img class="img-thumbnail thumbmax" 
+                src="{{ config.UPLOADED_IMAGES_URL}}{{ campaign.filename }}"
+                alt="[B{{ campaign.campaigno }}]">
+        {% endif %}
         <p class="text-muted">{{ campaign.comments }}</p>
     </div>
     <div class="card-body">

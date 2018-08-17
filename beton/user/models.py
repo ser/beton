@@ -60,9 +60,10 @@ class Banner(SurrogatePK, Model):
     comments = Column(db.String(512), nullable=True)
     type = Column(db.String(21), unique=False, nullable=False)
     content = Column(db.String(256), unique=False, nullable=True)
+    icon = Column(db.String(128), unique=False, nullable=True)
     bannerid = db.relationship("Orders")
 
-    def __init__(self, filename, owner, created_at, url, height, width, comments, type, content):
+    def __init__(self, filename, owner, created_at, url, height, width, comments, type, content, icon):
         """Create instance."""
         self.filename = filename
         self.owner = owner
@@ -73,11 +74,12 @@ class Banner(SurrogatePK, Model):
         self.comments = comments
         self.type = type
         self.content = content
+        self.icon = icon
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<filename: {}, owner: {}, created_at: {}, url: {}, height: {}, \
-width: {}, comment: {}, type: {}, content: {}>'.format(
+width: {}, comment: {}, type: {}, content: {}, icon: {}>'.format(
             self.filename,
             self.owner,
             self.created_at,
@@ -86,7 +88,8 @@ width: {}, comment: {}, type: {}, content: {}>'.format(
             self.width,
             self.comments,
             self.type,
-            self.content
+            self.content,
+            self.icon
         )
 
 

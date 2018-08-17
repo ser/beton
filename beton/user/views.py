@@ -20,7 +20,7 @@ from flask_uploads import UploadSet, IMAGES
 
 from beton.extensions import cache
 from beton.logger import log
-from beton.user.forms import AddBannerForm, ChangeOffer
+from beton.user.forms import AddBannerForm, AddBannerTextForm, ChangeOffer
 from beton.user.models import Banner, Basket, Impressions, Log, Orders, Payments, Prices, User
 from beton.utils import dblogger, flash_errors, reviveme
 
@@ -206,7 +206,7 @@ def user_me():
     return render_template('public/home.html')
 
 
-@blueprint.route('/add_bannerz', methods=['GET', 'POST'])
+@blueprint.route('/add/bannerz', methods=['GET', 'POST'])
 @login_required
 def add_bannerz():
     """Add a banner."""
@@ -226,6 +226,7 @@ def add_bannerz():
                 height=height,
                 type="file",
                 content="NULL",
+                icon="NULL",
                 comments=form.banner_comments.data
             )
             dblogger(
@@ -237,6 +238,36 @@ def add_bannerz():
         else:
             flash_errors(form)
     return render_template('users/upload_bannerz.html', form=form)
+
+
+@blueprint.route('/add/text', methods=['GET', 'POST'])
+@login_required
+def add_text():
+    """Add a text banner."""
+    form = AddBannerTextForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            Banner.create(
+                filename="NULL",
+                owner=current_user.id,
+                url=form.banner_url.data,
+                created_at=datetime.utcnow(),
+                width="NULL",
+                height="NULL",
+                type="text",
+                content=form.banner_content.data,
+                icon=form.banner_icon.data,
+                comments=form.banner_comments.data
+            )
+            dblogger(
+                current_user.id,
+                "Text Banner set successfully. %s" % form.banner_content.data
+            )
+            flash('Your banner was set sucessfully.', 'success')  # TODO:size
+            return redirect(url_for('user.bannerz'))
+        else:
+            flash_errors(form)
+    return render_template('users/upload_text.html', form=form)
 
 
 @blueprint.route('/bannerz')
@@ -408,7 +439,10 @@ def campaign(no_weeks=None,campaign_no=None):
                 Banner.filename,
                 Banner.url,
                 Banner.width,
-                Banner.height
+                Banner.height,
+                Banner.content,
+                Banner.icon,
+                Banner.type
             )
 
     # We want details related to one campaign, not a list of all so we will
@@ -542,7 +576,8 @@ def order():
         zone_name = request.form['zone_name']
         return render_template('users/order.html', banner_id=banner_id,
                                zone_id=zone_id, image_url=image_url,
-                               zone_name=zone_name, step='chose-date')
+                               zone_name=zone_name, banner=banner,
+                               step='chose-date')
 
     elif request.form['step'] == 'order':
         randomname = names.get_full_name()
@@ -623,6 +658,7 @@ def order():
         return render_template(
             'users/order.html',
             banner_id = banner_id,
+            banner = banner,
             datestart = datestart,
             datend = datend,
             image_url = image_url,
@@ -646,7 +682,8 @@ def basket():
         for item in basket_sql:
             order_sql = Orders.query.filter_by(
                 campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
-                Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
+                    Banner.filename, Banner.url, Banner.width, Banner.height,
+                    Banner.content, Banner.icon, Banner.type, Prices.dayprice).first()
             basket.append(order_sql)
             begin = order_sql[0].begins_at
             enddate = order_sql[0].stops_at

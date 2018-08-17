@@ -21,12 +21,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="{{ config.SUBDIR }}/static/libs/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css">
+  <script type="text/javascript" src="{{ config.SUBDIR }}/static/libs/jquery/dist/jquery.min.js"></script>
+
   {% assets "css_all" %}
     <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}">
   {% endassets %}
 
   {% block css %}{% endblock %}
+
+  <link rel="stylesheet" type="text/css" href="{{ config.SUBDIR }}/static/libs/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css">
 
   <!--
    <link
@@ -94,13 +97,13 @@
 <!-- end scripts -->
 {% endblock %}
 
+<script type="text/javascript">
 {% if not config['DEBUG'] %}
-<script>
     $(document).ready(function() {
         $("#loader").fadeOut(1000);
-    })
-</script>
+    });
 {% endif %}
+</script>
 
 </body>
 </html>

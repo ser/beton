@@ -80,8 +80,15 @@
                     <div class="thumbnail">
                         <div class="caption">
                             <div>
-                                <img class="img-thumbnail thumbmax"
-                                src="{{ config.UPLOADED_IMAGES_URL }}{{ order.filename }}">
+                                {% if order.type == "text" %}
+                                <div class="card-header">
+                                    <i class="{{ order.icon }}" aria-hidden="true"></i>&nbsp;
+                                    {{ order.content }}
+                                </div>
+                                {% else %}
+                                    <img class="img-thumbnail thumbmax"
+                                        src="{{ config.UPLOADED_IMAGES_URL }}{{ order.filename }}">
+                                {% endif %}
                                 <br/>
                                 {{ order.url }}
                                 <br/>

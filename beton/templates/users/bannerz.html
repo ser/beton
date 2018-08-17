@@ -3,31 +3,53 @@
 {% block content %}
     <div class="jumbotron">
         <h1>Your banners, {{ current_user.username }}</h1>
-        <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new banner</a></p>
-        <span class="label label-info">
-            Your banner must have exactly the same size as the
-            zone you want to put it in!</span>
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_bannerz') }}">Add a new image banner</a></p>
+                <span class="label label-info">
+                    Your image banner must have exactly the same size as the
+                    zone you want to put it in - or smaller.</span>
+            </div>
+            <div class="col-sm-6 col-xs-12">
+                <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_text') }}">Add a new text banner</a></p>
+                <span class="label label-info">
+                    Text only banner must have no more than 255
+                    characters.</span>
+            </div>
+        </div>
     </div>
     <div class="card-columns">
         {% for banner in all_banners|reverse %}
             <div class="card border-light">
                 <div class="card-header">
                     Banner #{{ banner.id }}
+                    {% if banner.type == "text" %}
+                        <span class="badge badge-pill badge-info">TEXT</span>
+                    {% endif %}
                 </div>
                 <div class="card-body">
+                    {% if banner.type == "text" %}
+                        <div class="card-header">
+                            <i class="{{ banner.icon }}" aria-hidden="true"></i>&nbsp;
+                            {{ banner.content }}
+                        </div>
+                    {% else %}
                     <div class="thumbnail">
                         {% for url in all_urls %}
                             {% if url[0] == banner.id %}
                                 <img src="{{ url[1] }}" class="img-thumbnail">
                                 {#% break %#}
                             {% endif %}
-                        {% endfor %}
-                        <div class="card-text">
-                            <div id="created_at">{{ banner.created_at }}</div>
-                            <div id="url">{{ banner.url }}</div>
+                            {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="card-text">
+                        <div id="created_at">{{ banner.created_at }}</div>
+                        <div id="url">{{ banner.url }}</div>
+                        {% if banner.type == "file" %}
                             <div id="size">{{ banner.width }} x {{ banner.height }}</div>
-                            <div id="comment">{{ banner.comment }}</div>
-                        </div>
+                        {% endif %}
+                        <div id="comment">{{ banner.comment }}</div>
                     </div>
                 </div>
                 <div class="card-footer">

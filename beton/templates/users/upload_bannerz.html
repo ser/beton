@@ -2,10 +2,10 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container-narrow">
-    <h1>Upload a new banner</h1>
-    <h3>No banner can be bigger than 500kb!</h3>
-    <h4>Recommended size is 100kb.</h4>
-    <br/>
+    <div class="jumbotron">
+        <h1>Upload a new banner</h1>
+        <p class="lead">No banner can be bigger than 500kb! Recommended size is 100kb.</p>
+    </div>
     <form id="uploadForm" action="" role="form" method="post" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="form-group">

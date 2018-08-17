@@ -27,26 +27,37 @@
                     Banner #{{ banner.id }}
                 </div>
                 <div class="card-body">
-                    <div class="thumbnail">
-                        {% for url in all_urls %}
-                            {% if url[0] == banner.id %}
-                                <img src="{{ url[1] }}" class="img-thumbnail">
-                            {% endif %}
-                        {% endfor %}
-                        <div class="caption">
-                            <div id="created_at">{{ banner.created_at }}</div>
-                            <div id="url">{{ banner.url }}</div>
-                            <div id="size"><p>size: {{ banner.width }}x{{ banner.height }}</p></div>
-                            <div id="comment">{{ banner.comment }}</div>
+                    {% if banner.type == "text" %}
+                        <div class="card-header">
+                            <i class="{{ banner.icon  }}"
+                                aria-hidden="true"></i>&nbsp;
+                            {{ banner.content  }}
                         </div>
-                        <form action="{{ url_for('user.order') }}" method="post">
+                    {% else %}
+                        <div class="thumbnail">
+                            {% for url in all_urls %}
+                                {% if url[0] == banner.id %}
+                                    <img src="{{ url[1] }}" class="img-thumbnail">
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="caption">
+                        <div id="created_at">{{ banner.created_at }}</div>
+                        <div id="url">{{ banner.url }}</div>
+                        {% if banner.type == "file" %}
+                            <div id="size"><p>size: {{ banner.width }}x{{ banner.height }}</p></div>
+                        {% endif %}
+                        <div id="comment">{{ banner.comment }}</div>
+                    </div>
+                    <br/>
+                    <form action="{{ url_for('user.order') }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="banner_id" value="{{ banner.id }}">
                             <input type="hidden" name="step" value="chose-zone">
                             <button type="submit" value="chose-zone" class="btn
                                 btn-primary">Choose this banner</button>
-                        </form>
-                    </div>
+                    </form>
                 </div>
             </div>
         {% endfor %}
@@ -57,7 +68,14 @@
         <div class="row">
             <div class="col-sm-6 col-xs-12">
                 <p class="lead">In which zone do you want to display this banner?</p>
+                {% if banner.type == "text" %}
+                <div class="card-header">
+                    <i class="{{ banner.icon }}" aria-hidden="true"></i>&nbsp;
+                    {{ banner.content }}
+                </div>
+                {% else %}
                 <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+                {% endif %}
             </div>
             <div class="col-sm-6 col-xs-12">
                 <h4>Alternatively</h4>
@@ -78,9 +96,11 @@
                     </div>
                     <div class="card-body">
                         <div id="zonename">{{ zone.zoneName }}</div>
-                        <div id="zonesizetxt"><p>size: {{ zone.width }}x{{ zone.height }}; price: {{ zone.price.dayprice / 100 }} <i
-                                    class="fas fa-euro-sign" aria-hidden="true"></i>/day</p></div>
-                        <div id="zonesize"><img src="https://placehold.it/{{ zone.width}}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
+                        <div id="zoneprice"><p>price: {{ zone.price.dayprice / 100 }} <i class="fas fa-euro-sign" aria-hidden="true"></i>/day</p></div>
+                        {% if banner.type == "file" %}
+                            <div id="zonesizetxt"><p>size: {{ zone.width }}x{{ zone.height }}</p>
+                            <div id="zonesize"><img src="https://placehold.it/{{ zone.width}}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
+                        {% endif %}
                         <form action="{{ url_for('user.order') }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                             <input type="hidden" name="banner_id" value="{{ banner.id }}" />
@@ -105,7 +125,14 @@
         <div class="row">
             <div class="col-sm-6 col-xs-12">
                 <p class="lead">Please select time period for this banner</p>
-                <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+                {% if banner.type == "text" %}
+                    <div class="card-header">
+                        <i class="{{ banner.icon }}" aria-hidden="true"></i>&nbsp;
+                        {{ banner.content }}
+                    </div>
+                {% else %}
+                    <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+                {% endif %}
             </div>
             <div class="col-sm-6 col-xs-12">
                 <h4>Alternatively</h4>
@@ -177,13 +204,20 @@
     <div class="row">
         <div class="col">
             <p>You want to have a campaign with banner #{{ banner_id }}</p>
-            <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+            {% if banner.type == "text" %}
+                <div class="card-header">
+                    <i class="{{ banner.icon }}" aria-hidden="true"></i>&nbsp;
+                    {{ banner.content }}
+                </div>
+            {% else %}
+                <p><img class="img-thumbnail thumbmax" src="{{ image_url }}"></p>
+            {% endif %}
             <p>for period: {{ datestart }} -  {{ datend }}.</p>
         </div>
         <div class="col">
             <h3>Calculations</h3>
             <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
-            <p>Total is: {{ dayprice/100*(days+1) }} <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
+            <h4><span class="badge badge-info">Total is: {{ dayprice/100*(days+1) }} <i class="fas fa-euro-sign" aria-hidden="true"></i></span></h4>
         </div>
     </div>
 
