@@ -9,7 +9,6 @@ from flask_assets import Bundle, Environment
 
 
 css = Bundle(
-    'libs/bootswatch/dist/superhero/bootstrap.css',
     'libs/fullcalendar/dist/fullcalendar.css',
     'libs/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css',
     'css/style.css',
