@@ -4,7 +4,7 @@
 Flask>=1.0.2
 MarkupSafe
 Werkzeug
-Jinja2
+Jinja2>=2.10
 itsdangerous
 click>=5.0
 flask_moment>=0.5.1
@@ -56,3 +56,4 @@ python-dateutil
 ccxt
 oslo_concurrency
 python-pushover
+icinga2api
