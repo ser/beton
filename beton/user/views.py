@@ -20,7 +20,7 @@ from flask_uploads import UploadSet, IMAGES
 
 from beton.extensions import cache
 from beton.logger import log
-from beton.user.forms import AddBannerForm, AddBannerTextForm, ChangeOffer
+from beton.user.forms import AddBannerForm, ChangeOffer
 from beton.user.models import Banner, Basket, Impressions, Log, Orders, Payments, Prices, User
 from beton.utils import dblogger, flash_errors, reviveme
 
@@ -206,7 +206,7 @@ def user_me():
     return render_template('public/home.html')
 
 
-@blueprint.route('/add/bannerz', methods=['GET', 'POST'])
+@blueprint.route('/add_bannerz', methods=['GET', 'POST'])
 @login_required
 def add_bannerz():
     """Add a banner."""
@@ -224,9 +224,6 @@ def add_bannerz():
                 created_at=datetime.utcnow(),
                 width=width,
                 height=height,
-                type="file",
-                content="NULL",
-                icon="NULL",
                 comments=form.banner_comments.data
             )
             dblogger(
@@ -238,36 +235,6 @@ def add_bannerz():
         else:
             flash_errors(form)
     return render_template('users/upload_bannerz.html', form=form)
-
-
-@blueprint.route('/add/text', methods=['GET', 'POST'])
-@login_required
-def add_text():
-    """Add a text banner."""
-    form = AddBannerTextForm()
-    if request.method == 'POST':
-        if form.validate_on_submit():
-            Banner.create(
-                filename="NULL",
-                owner=current_user.id,
-                url=form.banner_url.data,
-                created_at=datetime.utcnow(),
-                width="NULL",
-                height="NULL",
-                type="text",
-                content=form.banner_content.data,
-                icon=form.banner_icon.data,
-                comments=form.banner_comments.data
-            )
-            dblogger(
-                current_user.id,
-                "Text Banner set successfully. %s" % form.banner_content.data
-            )
-            flash('Your banner was set sucessfully.', 'success')  # TODO:size
-            return redirect(url_for('user.bannerz'))
-        else:
-            flash_errors(form)
-    return render_template('users/upload_text.html', form=form)
 
 
 @blueprint.route('/bannerz')
@@ -339,7 +306,6 @@ def offer():
             tmpdict['height'] = zone['height']
             tmpdict['zoneId'] = zone['zoneId']
             tmpdict['comments'] = zone['comments']
-            tmpdict['type'] = zone['type']
 
             tmpdict['price'] = price.dayprice
             tmpdict['x0'] = price.x0
@@ -439,10 +405,7 @@ def campaign(no_weeks=None,campaign_no=None):
                 Banner.filename,
                 Banner.url,
                 Banner.width,
-                Banner.height,
-                Banner.content,
-                Banner.icon,
-                Banner.type
+                Banner.height
             )
 
     # We want details related to one campaign, not a list of all so we will
@@ -576,8 +539,7 @@ def order():
         zone_name = request.form['zone_name']
         return render_template('users/order.html', banner_id=banner_id,
                                zone_id=zone_id, image_url=image_url,
-                               zone_name=zone_name, banner=banner,
-                               step='chose-date')
+                               zone_name=zone_name, step='chose-date')
 
     elif request.form['step'] == 'order':
         randomname = names.get_full_name()
@@ -658,7 +620,6 @@ def order():
         return render_template(
             'users/order.html',
             banner_id = banner_id,
-            banner = banner,
             datestart = datestart,
             datend = datend,
             image_url = image_url,
@@ -682,8 +643,7 @@ def basket():
         for item in basket_sql:
             order_sql = Orders.query.filter_by(
                 campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
-                    Banner.filename, Banner.url, Banner.width, Banner.height,
-                    Banner.content, Banner.icon, Banner.type, Prices.dayprice).first()
+                Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
             basket.append(order_sql)
             begin = order_sql[0].begins_at
             enddate = order_sql[0].stops_at
@@ -745,23 +705,37 @@ def clear_basket(campaign_id):
             # Removing these campaigns from Revive as not useful in future
             Basket.query.filter_by(user_id=current_user.id).delete()
             for order in all_basket:
-                removed = r.ox.deleteCampaign(sessionid, order.campaigno)
-                log.debug(
-                    "Campaign #%s removed from Revive?: %s" % (
-                        str(order.campaigno),
-                        str(removed)
+                try:
+                    removed = r.ox.deleteCampaign(sessionid, order.campaigno)
+                    log.debug(
+                        "Campaign #%s removed from Revive?: %s" % (
+                            str(order.campaigno),
+                            str(removed)
+                            )
                     )
-                )
+                except:
+                    log.info(
+                        "Campaign %s was not removed from Revive because it was not found in there. It can be an error or you removed it manually before in Revive interface." % (
+                            str(order.campaigno)
+                            )
+                    )
                 Orders.query.filter_by(campaigno=order.campaigno).delete()
                 flash('Your basket was removed sucessfully.', 'success')
         else:
-            removed = r.ox.deleteCampaign(sessionid, campaign_id)
-            log.debug(
-                "Campaign #%s removed from Revive?: %s" % (
-                        str(order.campaigno),
-                        str(removed)
-                    )
-            )
+            try:
+                removed = r.ox.deleteCampaign(sessionid, campaign_id)
+                log.debug(
+                    "Campaign #%s removed from Revive?: %s" % (
+                            str(campaign_id),
+                            str(removed)
+                        )
+                )
+            except:
+                log.info(
+                    "Campaign %s was not removed from Revive because it was not found in there. It can be an error or you removed it manually before in Revive interface." % (
+                        str(campaign_id)
+                        )
+                )
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
             Orders.query.filter_by(campaigno=campaign_id).delete()
             flash('Your planned campaign was removed sucessfully.', 'success')
@@ -770,6 +744,7 @@ def clear_basket(campaign_id):
     except Exception as e:
         log.debug("Exception")
         log.exception(e)
+        flash('There was an error in processing your request. If situation repeats, please contact us.', 'error')
     return redirect(url_for("user.basket"), code=302)
 
 

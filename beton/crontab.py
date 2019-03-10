@@ -145,17 +145,24 @@ def remove_unpaid_campaigns(timeperiod=7):
                         )
                         all_campaigns = Orders.query.filter_by(paymentno=payment.id)
                         for campaign in all_campaigns:
-                            removed = r.ox.deleteCampaign(
-                                sessionid(r),
-                                campaign.campaigno
-                            )
-                            Orders.query.filter_by(campaigno=campaign.campaigno).delete()
-                            log.debug(
-                                "Campaign #%d removed from Revive?: %s" % (
-                                    campaign.campaigno,
-                                    str(removed)
+                            try:
+                                removed = r.ox.deleteCampaign(
+                                    sessionid(r),
+                                    campaign.campaigno
                                 )
-                            )
+                                log.debug(
+                                    "Campaign #%d removed from Revive?: %s" % (
+                                        campaign.campaigno,
+                                        str(removed)
+                                    )
+                                )
+                            except:
+                                log.info(
+                                    "WARNING! Campaign %s was not removed from Revive - it has not existed over there. It may be an error." % (
+                                        campaign.campaigno
+                                    )
+                                )
+                            Orders.query.filter_by(campaigno=campaign.campaigno).delete()
                             dblogger(
                                 campaign.user_id,
                                 ("Removed campaign #%d for zone %d with banner %d, " +

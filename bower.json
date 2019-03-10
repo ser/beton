@@ -4,15 +4,16 @@
     "jQuery": ">=1.6",
     "bootstrap": "",
     "bootstrap-datepicker": "",
-    "fontIconPicker": "",
     "progresspiesvg": "",
     "bootswatch": "",
+    "savvior": "",
     "gasparesganga-jquery-loading-overlay": "",
     "qrious": "",
     "jquery-timeago": "",
     "font-awesome": "",
     "moment-timezone": "",
     "underscore": "",
-    "fullcalendar": ""
+    "fullcalendar": "",
+    "holderjs": ""
   }
 }

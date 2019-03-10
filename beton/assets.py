@@ -29,6 +29,7 @@ js = Bundle(
     'libs/progresspiesvg/js/jquery-progresspiesvg.js',
     'libs/progresspiesvg/js/jquery-progresspiesvg-valueDisplay.js',
     'libs/qrious/dist/qrious.js',
+    'libs/holderjs/holder.js',
     'js/plugins.js',
     filters='jsmin',
     output='public/js/common.js'
