@@ -411,7 +411,7 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
                 Banner.content,
                 Banner.icon,
                 Banner.type
-            ).filter(Orders.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
+            )
 
     # We are converting invoice UUID we generated for campaing_no
     # to quickly find an invoice from payment processor user interface
@@ -439,6 +439,7 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
         # we are getting overview of particular campaign from local database
         dbquery = dbqueryall.filter(Orders.campaigno == campaign_no).first()
         # and now we check details of that payment from downstream payment processor
+        log.debug(dbquery)
         if dbquery.btcpayserver_id:  # we are checking it only for historical
                                      # purposes to achieve compatibility with previous releases
             btcpayinv = btcpayclient.get_invoice(dbquery.btcpayserver_id)
@@ -464,7 +465,8 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
             # We politely redirecting 'hackers' to all campaigns
             return redirect(url_for("user.campaign"), code=302)
 
-    # admin gets all campaigns for all users
+    # admin gets all campaigns for all users limited to requested time period
+    dbqueryall = dbqueryall.filter(Orders.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
     if amiadmin():
         all_campaigns = dbqueryall.all()
     else:
