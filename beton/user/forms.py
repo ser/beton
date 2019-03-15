@@ -5,7 +5,7 @@ from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
 from flask_security import ConfirmRegisterForm
 from wtforms import IntegerField, StringField
-from wtforms.validators import DataRequired, Length, Required
+from wtforms.validators import DataRequired, Length, Required, URL
 
 images = UploadSet('images', IMAGES)
 
@@ -13,10 +13,10 @@ images = UploadSet('images', IMAGES)
 class AddBannerForm(Form):
     """Upload banner form."""
 
-    banner_url = StringField('URL to your advertised page',
-                             validators=[DataRequired(), Length(min=10, max=2000)])
+    banner_url = StringField('URL to your advertised page - must include https:// or http://',
+                             validators=[DataRequired(), Length(max=2000), URL()])
     banner_comments = StringField('Comments (optional)',
-                                 validators=[Length(max=500)])
+                                  validators=[Length(max=500)])
     banner_image = FileField('Banner image file',
                              validators=[FileRequired(), FileAllowed(images, 'Images only!')])
 
@@ -30,10 +30,10 @@ class AddBannerForm(Form):
 class AddBannerTextForm(Form):
     """Upload banner form."""
 
-    banner_url = StringField('URL to your advertised page',
-                             validators=[DataRequired(), Length(min=10, max=2000)])
+    banner_url = StringField('URL to your advertised page - must include https:// or http://',
+                             validators=[DataRequired(), Length(max=2000), URL()])
     banner_content = StringField('Banner text content (20 to 255 characters)',
-                                validators=[DataRequired(), Length(min=20, max=255)]) 
+                                 validators=[DataRequired(), Length(min=20, max=255)])
     banner_comments = StringField('Comments (optional)',
                                   validators=[Length(max=500)])
     banner_icon = StringField('Web Icon',
@@ -42,6 +42,17 @@ class AddBannerTextForm(Form):
     def __init__(self, *args, **kwargs):
         """Create instance."""
         super(AddBannerTextForm, self).__init__(*args, **kwargs)
+
+
+class AddPairingTextForm(Form):
+    """Payment processor pairing form."""
+
+    pairing_code = StringField('Type access token pairing code generated in your payment processor:',
+                               validators=[DataRequired(), Length(min=7, max=7)])
+
+    def __init__(self, *args, **kwargs):
+        """Create instance."""
+        super(AddPairingTextForm, self).__init__(*args, **kwargs)
 
 
 class ChangeOffer(Form):

@@ -8,6 +8,7 @@ Jinja2>=2.10
 itsdangerous
 click>=5.0
 flask_moment>=0.5.1
+Flask-API
 
 # Database
 Flask-SQLAlchemy
@@ -48,12 +49,16 @@ Flask-DebugToolbar
 # Crontab
 Flask-APScheduler
 
+# Payment system
+btcpay-python
+
+# Notifications
+python-pushover
+#icinga2api
+
 # Other
 names>=0.3.0
 pymysql
 requests
 python-dateutil
-ccxt
 oslo_concurrency
-python-pushover
-icinga2api

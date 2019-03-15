@@ -134,16 +134,16 @@ class Orders(SurrogatePK, Model):
 
     __tablename__ = 'orders'
     campaigno = Column(db.Integer(), unique=True, nullable=False)
-    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid'), nullable=False)
+    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid', ondelete='CASCADE'), nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     begins_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     paymentno = Column(db.Integer(), unique=False, nullable=True)
-    bannerid = Column(db.Integer(), db.ForeignKey('banners.id'), nullable=False)
+    bannerid = Column(db.Integer(), db.ForeignKey('banners.id', ondelete='CASCADE'), nullable=False)
     name = Column(db.Text, unique=False, nullable=False)
     comments = Column(db.Text, unique=False, nullable=False)
     impressions = Column(db.Integer(), unique=False, nullable=True)
-    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
+    user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, campaigno, zoneid, created_at, begins_at,
                  stops_at, paymentno, bannerid, name, comments,
@@ -184,43 +184,40 @@ class Payments(SurrogatePK, Model):
     """All payments"""
 
     __tablename__ = 'payments'
-    blockchain = Column(db.String(10), unique=False, nullable=False)
-    address = Column(db.String(64), unique=True, nullable=False)
-    total_coins = Column(db.Numeric(16, 8))
-    txno = Column(db.String(64), unique=False, nullable=True)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     received_at = Column(db.DateTime, nullable=False)
     confirmed_at = Column(db.DateTime, nullable=False)
-    bip70_id = Column(db.String(10), nullable=False)
-    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
+    btcpayserver_id = Column(db.String(22), nullable=False)
+    posdata = Column(db.String(36), nullable=False)
+    fiat = Column(db.String(3), unique=False, nullable=False)
+    fiat_amount = Column(db.Numeric(16, 8), nullable=False)
+    user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
-    def __init__(self, blockchain, address, txno, total_coins, created_at,
-                 received_at, confirmed_at, bip70_id, user_id):
+    def __init__(self, fiat, fiat_amount, created_at, posdata,
+                 received_at, confirmed_at, btcpayserver_id, user_id):
         """ Create instance."""
-        self.blockchain = blockchain
-        self.address = address
-        self.txno = txno
-        self.total_coins = total_coins
+        self.fiat = fiat
+        self.fiat_amount = fiat_amount
         self.created_at = created_at
+        self.posdata = posdata
         self.received_at = received_at
         self.confirmed_at = confirmed_at
-        self.bip70_id = bip70_id
+        self.btcpayserver_id = btcpayserver_id
         self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<blockchain: {}, address: {}, txno: {}, \
-total_coins: {}, created_at: {}, user_id: {}, \
-received_at: {}, confirmed_at: {}, bip70_id: {}>'.format(
-            self.blockchain,
-            self.address,
-            self.txno,
-            self.total_coins,
+        return '<fiat: {}, fiat_amount: {}, \
+created_at: {}, user_id: {}, posdata: {} \
+received_at: {}, confirmed_at: {}, btcpayserver_id: {}>'.format(
+            self.fiat,
+            self.fiat_amount,
             self.created_at,
             self.user_id,
+            self.posdata,
             self.received_at,
             self.confirmed_at,
-            self.bip70_id
+            self.btcpayserver_id
         )
 
 
@@ -228,8 +225,8 @@ class Basket(SurrogatePK, Model):
     """User basket."""
 
     __tablename__ = 'basket'
-    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
-    campaigno = Column(db.Integer(), db.ForeignKey('orders.campaigno'), nullable=False)
+    user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    campaigno = Column(db.Integer(), db.ForeignKey('orders.campaigno', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, user_id, campaigno):
         """Create instance."""
@@ -248,7 +245,7 @@ class Log(SurrogatePK, Model):
     """Operational logging."""
 
     __tablename__ = 'log'
-    user_id = Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
+    user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     datelog = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     logdata = Column(db.Text(), unique=False, nullable=False)
 
@@ -271,7 +268,7 @@ class Impressions(SurrogatePK, Model):
     """Impressions cache"""
 
     __tablename__ = 'impressions'
-    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid'), nullable=False)
+    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid', ondelete='CASCADE'), nullable=False)
     impressions = Column(db.Integer(), unique=False, nullable=True)
     clicks = Column(db.Integer(), unique=False, nullable=True)
 

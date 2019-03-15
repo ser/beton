@@ -2,15 +2,13 @@
 
 import os
 
-from flask import Flask, render_template
-from flask_kvsession import KVSessionExtension
+from flask import Flask, current_app, render_template
 from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
-from simplekv.fs import FilesystemStore
 from werkzeug.contrib.fixers import ProxyFix
 
 from beton import commands
 from beton.assets import assets
-from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar
+from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, kvstore
 from beton.extensions import mail, migrate, moment, scheduler, security, user_datastore
 from beton.settings import ProdConfig
 from beton.user.forms import ExtendedConfirmRegisterForm
@@ -46,7 +44,9 @@ def register_extensions(app):
     mail.init_app(app)
     migrate.init_app(app, db)
     moment.init_app(app)
+    scheduler.api_enabled = True
     scheduler.init_app(app)
+    kvstore.init_app(app)
     security.init_app(app,
                       user_datastore,
                       confirm_register_form=ExtendedConfirmRegisterForm)
@@ -54,18 +54,23 @@ def register_extensions(app):
 
 
 def register_configuration(app):
-    sesstore = FilesystemStore('./data')
-    KVSessionExtension(sesstore, app)
-
     images = UploadSet('images', IMAGES)
     configure_uploads(app, images)
     patch_request_class(app, size=577216)
 
     # Setting up crontabs
-    # To avoid running twice in debug mode we need to make "if":
+    # To avoid running twice in WERKZEUG debug mode we need to make "if":
     # https://stackoverflow.com/questions/14874782/apscheduler-in-flask-executes-twice
-    if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-        scheduler.start()
+    # If you are using uwsgi, leave it like it is.
+    #
+    # @app.before_first_request
+    # def load_tasks():
+    #    from beton import tasks
+    # if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+    #   scheduler.start()
+
+    scheduler.start()
+    from beton import tasks
 
     return None
 
@@ -101,6 +106,7 @@ def register_shellcontext(app):
             'User': user.models.User}
 
     app.shell_context_processor(shell_context)
+    return None
 
 
 def register_commands(app):
@@ -109,3 +115,4 @@ def register_commands(app):
     app.cli.add_command(commands.lint)
     app.cli.add_command(commands.clean)
     app.cli.add_command(commands.urls)
+    return None

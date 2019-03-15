@@ -10,12 +10,14 @@
                     Your image banner must have exactly the same size as the
                     zone you want to put it in - or smaller.</span>
             </div>
+            {% if config.BANNERS_TEXT %}
             <div class="col-sm-6 col-xs-12">
                 <p><a class="btn btn-primary btn-lg" role="button" href="{{ url_for('user.add_text') }}">Add a new text banner</a></p>
                 <span class="label label-info">
                     Text only banner must have no more than 255
                     characters.</span>
             </div>
+            {% endif %}
         </div>
     </div>
     <div class="card-columns">

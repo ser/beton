@@ -8,61 +8,20 @@
     </div>
 {% else %}
         <h1>Your basket, {{ current_user.username }}</h1>
-        <div class="row">
-            <div class="col-sm-6 col-xs-12">
-                <p class="lead">Here you can see your shopping basket.</p>
-                <h5>In total whole basket is:</h5>
-                <ul class="list-group">
-                    {% set z = [] %}
-                    {% for y in price %}
-                        {% if y[1] == "EUR" %}
-                            {% set z = z.append(y[2]|float) %}
-                        {% endif %}
-                    {% endfor %}
-                    <li class="list-group-item d-flex align-items-center">
-                        <b>EUR &nbsp;</b>
-                        <span class="badge badge-pill">
-                            {{ '%0.2f'| format(z|sum) }}
-                        </span>
-                    </li>
-
-                    {% for x in config.EXCHANGE_COINS %}
-                        {% set z = [] %}
-                        {% for y in price %}
-                            {% if y[1] == x %}
-                                {% set z = z.append(y[2]|float) %}
-                            {% endif %}
-                        {% endfor %}
-                        <li class="list-group-item d-flex align-items-center">
-                            <b>{{ x }} &nbsp;</b>
-                            <span class="badge badge-pill">
-                                {{ z|sum|round(9) }} ***
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <br/>
-                <div>
-                    <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger">Empty whole basket</a>
-                </div>
+        <p class="lead">Here you can see your shopping basket.</p>
+        <div class="card border-light">
+            <div class="card-header">
+                All campaigns which you want to order will cost you:
             </div>
-            <div class="col-sm-6 col-xs-12">
-                <h5>Pay for all items in the basket using:</h5>
-                    {% for x in config.PAYMENT_SYSTEMS %}
-                        {% if config.PAYMENT_SYSTEMS[x][5] %}
-                            <div>
-                                <a href="{{ url_for('user.pay', payment=x) }}"
-                                    class="btn btn-success btn-xs">{{ config.PAYMENT_SYSTEMS[x][1] }}</a>
-                                <p class="text-info"><em>{{ config.PAYMENT_SYSTEMS[x][2] }}</em></p>
-                            </div>
-                            {% if loop.last == False %}
-                                or
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
+            <div class="card-body">
+                <h1>EUR &nbsp;<span class="badge badge-pill badge-primary">{{ '%0.2f'|format(totalprice|float) }}</span></h1>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('user.pay') }}" class="btn btn-success btn-lg">
+                    Pay for all items</a> or 
+                    <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger btn-xs">Empty whole basket</a>
             </div>
         </div>
-    </div>
     </div>
     <div class="card-columns">
         {% for order in basket %}
@@ -98,7 +57,7 @@
                                 {% for x in price %}
                                     {% if x[0] == order[0].campaigno %}
                                     <br/>
-                                    <b>{{ x[1] }}:</b> {{ x[2] }} ***
+                                    <b>{{ config.FIAT }}:</b> {{ x[1] }}
                                     {% endif %}
                                 {% endfor %}
                             </div>
@@ -112,12 +71,5 @@
             </div>
         {% endfor %}
     </div>
-    <hr>
-    <div class="alert alert-info" role="alert">
-        <hr>
-        <h4 class="alert-heading">***</h4>
-        <p>Please notice that estimated price may change when
-        you decide to pay for your basket, according to current zone prices and cryptocurrency market exchange
-        value. You'll get the final price when the payment invoice is generated.</p>
 {% endif %}
 {% endblock %}

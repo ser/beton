@@ -1,54 +1,75 @@
 # -*- coding: utf-8 -*-
 """Various cron jobs."""
 
-import requests
-import uuid
 import xmlrpc.client
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import *
 
 from flask import current_app
+from flask.helpers import get_debug_flag
 
-from beton.extensions import cache, db
+from beton.extensions import cache, kvstore, scheduler
 from beton.logger import log
 from beton.utils import dblogger, reviveme
 
 
-# we cache login session to speed things up
+# Helper functions 
+#
+# we cache login session to speed tasks access up
 @cache.memoize(timeout=120)
 def sessionid(r):
     return reviveme(r)
 
-
-# we cache it as we don't want to send emails more often than once an hour
-@cache.memoize(timeout=60)
-def sendwarning(blockchain):
-    '''Notifying admins that Electrum is fcuked'''
-    with db.app.app_context():
-        from beton.user.models import Log, Role, User
-        dbquery = Role.query.join(User).add_columns(
-            User.id,
-            User.username,
-            User.email
-        ).all()
-        # log.debug(dbquery)
-        for admin in dbquery:
-            dblogger(admin.id, "Electrum {} is failing.".format(blockchain))
+# ##########
+# Main tasks
+# 
 
 
+# TODO
+# We want to keep a persistant connection to Revive
+# and we are constantly keeping it up. it should minimally speed up connection
+# of clients when the session to Revive is disconnected.
+#
+# @scheduler.task('interval', id='revive_persist', seconds=111)
+# def revive_persist():
+#    with scheduler.app.app_context():
+#        # we cache login session to speed customer access up
+#        r = xmlrpc.client.ServerProxy(
+#            current_app.config.get('REVIVE_XML_URI'),
+#            verbose=False
+#        )
+#        reviveme(r)
+#        log.info("Running crontab: revive keepup")
+
+
+# Cleaning expired sessions in ./data
+# In production we do it every 6 hours, but in debug mode every minute.
+frequency = 1 if get_debug_flag() else 360
+@scheduler.task('interval', id='cleanup_sessions', minutes=frequency)
+def cleanup_sessions():
+    with scheduler.app.app_context():
+        try:
+            kvstore.cleanup_sessions()
+            log.info("Running crontab: cleaned up sessions.")
+        except Exception as e:
+            log.debug("Exception")
+            log.exception(e)
+
+# Updating detailed impressions for user's campaigns
+# We do not need to do that more often than each hour
+# as Revive itself does it hourly
+@scheduler.task('interval', id='update_impressions', hours=1)
 def update_impressions():
     '''This cron job gets stats from Revive and puts them into SQL database
     which is much faster to reach from Beton.'''
-    with db.app.app_context():
+    with scheduler.app.app_context():
 
         log.info("Running crontab: updating impressions.")
         r = xmlrpc.client.ServerProxy(
             current_app.config.get('REVIVE_XML_URI'),
             verbose=False
         )
-
-        # Updating detailed impressions for user's campaigns
         try:
             from beton.user.models import Orders
             now = datetime.utcnow()
@@ -94,7 +115,8 @@ def update_impressions():
                 datetime.now()
             )
             # try to update the table if not available, create it
-            log.debug(ztatz)
+            if ztatz:
+                log.debug(ztatz)
             for zone in ztatz:
                 howmany = Impressions.query.filter_by(
                     zoneid = zone['zoneId']
@@ -121,8 +143,10 @@ def update_impressions():
             log.exception(e)
 
 
+# Removal of unpaid campaigns after a week - we really do not need them
+@scheduler.task('interval', id='remove_unpaid_campaigns', hours=24)
 def remove_unpaid_campaigns(timeperiod=7):
-    with db.app.app_context():
+    with scheduler.app.app_context():
         try: 
             log.info("Running crontab: removing unpaid campaigns.")
             from beton.user.models import Orders, Payments
@@ -132,15 +156,13 @@ def remove_unpaid_campaigns(timeperiod=7):
             )
             all_payments = Payments.query.all()
             for payment in all_payments:
-                if payment.txno == str(0):
+                if payment.received_at == datetime.min:
                     if payment.created_at < datetime.now()-timedelta(days=timeperiod):
                         log.debug("Removing payment %d" % payment.id )
                         dblogger(
                             payment.user_id,
-                            'Removed unpaid {chain} payment to address {adr} for {coin}.'.format(
-                                chain=payment.blockchain,
-                                adr=payment.address,
-                                coin=payment.total_coins
+                            'CRON: Removed unpaid payment ID {btcpayid}.'.format(
+                                btcpayid=payment.btcpayserver_id
                             )
                         )
                         all_campaigns = Orders.query.filter_by(paymentno=payment.id)
@@ -178,36 +200,6 @@ def remove_unpaid_campaigns(timeperiod=7):
                         Payments.query.filter_by(id=payment.id).delete()
             Payments.commit()
             Orders.commit()
-
-        except Exception as e:
-            log.debug("Exception")
-            log.exception(e)
-
-
-def ping_electrum():
-    '''Checking Electrum servers health'''
-    with db.app.app_context():
-        try:
-            log.info("Electrum health check.")
-            payment_systems = current_app.config.get('PAYMENT_SYSTEMS')
-            for payment_system in payment_systems:
-                log.debug(payment_system)
-                # We check only enabled payments
-                if payment_systems[payment_system][5]:
-                    payload = {
-                        "id": str(uuid.uuid4()),
-                        "method": "is_synchronized"
-                    }
-                    electrum_url = payment_systems[payment_system][3]
-                    log.debug("We have sent to electrum this payload:")
-                    log.debug(payload)
-                    get_health = requests.post(electrum_url, json=payload).json()
-                    log.debug("We got back from electrum:")
-                    log.debug(get_health)
-                    if not get_health['result']:
-                        sendwarning(payment_system)
-                else:
-                    log.debug("Payment system disabled.")
 
         except Exception as e:
             log.debug("Exception")

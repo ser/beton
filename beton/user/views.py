@@ -1,9 +1,9 @@
-import ccxt
-import json
+# -*- coding: utf-8 -*-
+import btcpay
 import names
+import pickle
 import pprint
 import random
-import requests
 import uuid
 # All revive XML RPC commands:
 # https://github.com/revive-adserver/revive-adserver/blob/master/www/api/v2/xmlrpc/index.php
@@ -20,7 +20,7 @@ from flask_uploads import UploadSet, IMAGES
 
 from beton.extensions import cache
 from beton.logger import log
-from beton.user.forms import AddBannerForm, AddBannerTextForm, ChangeOffer
+from beton.user.forms import AddBannerForm, AddBannerTextForm, AddPairingTextForm, ChangeOffer
 from beton.user.models import Banner, Basket, Impressions, Log, Orders, Payments, Prices, User
 from beton.utils import dblogger, flash_errors, reviveme
 
@@ -40,11 +40,12 @@ def random_color():
     color = "%03x" % random.randint(0, 0xFFF)
     return "#"+str(color)
 
+
 # it is safe to cache it for 10 minutes or even more
 @cache.memoize(600)
 def create_banner_overview(zone):
     destpath = (current_app.config.get('UPLOADED_IMAGES_DEST') +
-        "/overview/zone-%s.png" % str(zone))
+                "/overview/zone-%s.png" % str(zone))
     dwg = Image.new(
         'RGB',
         (
@@ -81,41 +82,6 @@ def create_banner_overview(zone):
 
     )
     dwg.save(destpath, 'PNG')
-
-
-@cache.memoize(50)
-def getexrate(coin):
-    '''Returns exchange rate from first positively responding exchange.
-       It is rather safe to cache that rate for 50 seconds.'''
-    exchanges = current_app.config.get('EXCHANGES')
-    # TODO: add other fiat currencies than EUR
-    exfiat = current_app.config.get('FIAT')
-    extrade = current_app.config.get('EXCHANGES_TRADE')
-    for id in exchanges:
-        exchange = getattr(ccxt, id)()
-        pair = coin+"/"+exfiat
-        exrate = exchange.fetch_ticker(pair)[extrade]
-        if exrate is not None:
-            return exrate
-    # if all attempts fail, we return zero rate to signal an error
-    return 0
-
-
-@cache.memoize(50)
-def minerfee(amount, electrum_url):
-    '''Ask electrum for an average miner fee.
-       We assume that an average transaction is about 258 bytes long.
-       We cache this for 50 seconds to avoid unnecessary traffic.'''
-    log.debug("Asking Electrum for a miner fee")
-    payload = {
-        "id": str(uuid.uuid4()),
-        "method": "getfeerate"
-    }
-    get_fee = requests.post(electrum_url, json=payload).json()
-    log.debug("Miner fee rate per kb is in satoshi:")
-    log.debug(get_fee)
-    fee_kb = get_fee['result']
-    return format(int(fee_kb)*0.258/100000000, '.9f')
 
 
 @cache.memoize(timeout=666)
@@ -173,10 +139,11 @@ def get_basket(endpoint, values):
                 g.basket = len(basket_sql)
             else:
                 g.basket = 0
-        except:
-            ## TODO: it might be required for minor used servers,
-            ## as after 8 hours we are getting disconnected from mysqld
+        except Exception as e:
+            # # TODO: it might be required for minor used servers,
+            # # as after 8 hours we are getting disconnected from mysqld
             # db.session.rollback()
+            log.exception(e)
             pass
 
     # keeping constant connection to Revive instance
@@ -197,6 +164,7 @@ def get_basket(endpoint, values):
     else:
         sessionid = reviveme(r)
         session['revive'] = sessionid
+    # vers we need globally
 
 
 @blueprint.route('/me')
@@ -314,16 +282,16 @@ def offer():
         )
         for zone in allzones:
             # First check if the zone from Revive is available in our Price
-            # database, of not, we are creating it with zero values 
+            # database, of not, we are creating it with zero values
             howmany = Prices.query.filter_by(zoneid=zone['zoneId']).count()
             if howmany is not 1:
                 Prices.create(
-                    zoneid = zone['zoneId'],
-                    dayprice = 0,
-                    x0 = 0,
-                    x1 = 0,
-                    y0 = 0,
-                    y1 = 0
+                    zoneid=zone['zoneId'],
+                    dayprice=0,
+                    x0=0,
+                    x1=0,
+                    y0=0,
+                    y1=0
                 )
                 Prices.commit()
 
@@ -387,24 +355,25 @@ def offer():
     # Render the page and quit
     return render_template(
         'users/offer.html',
-        allzones = all_zones,
-        publishers = publishers,
-        isadmin = amiadmin(),
-        form = form
+        allzones=all_zones,
+        publishers=publishers,
+        isadmin=amiadmin(),
+        form=form
     )
 
 
 @blueprint.route('/campaign')
 @blueprint.route('/campaign/duration/<int:no_weeks>')
 @blueprint.route('/campaign/details/<int:campaign_no>')
+@blueprint.route('/campaign/uuid/<string:invoice_uuid>')
 @login_required
-def campaign(no_weeks=None, campaign_no=None):
+def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
     """
     Details related to one campaign only.
     or
     Get and display all campaigns belonging to user.
     """
-
+    # And now we are checking campaigns
     if not no_weeks:  # we show 1 month of recent campaigns by default
         no_weeks = 4
     r = xmlrpc.client.ServerProxy(
@@ -417,8 +386,8 @@ def campaign(no_weeks=None, campaign_no=None):
 
     # A universal JOIN across tables to get info about an order
     dbqueryall = Orders.query.join(
-        Payments, Orders.paymentno==Payments.id).join(
-            Banner, Orders.bannerid==Banner.id).add_columns(
+        Payments, Orders.paymentno == Payments.id).join(
+            Banner, Orders.bannerid == Banner.id).add_columns(
                 Orders.user_id,
                 Orders.begins_at,
                 Orders.stops_at,
@@ -429,35 +398,67 @@ def campaign(no_weeks=None, campaign_no=None):
                 Orders.name,
                 Orders.comments,
                 Orders.impressions,
-                Payments.address,
-                Payments.bip70_id,
-                Payments.confirmed_at,
+                Payments.posdata,
+                Payments.btcpayserver_id,
                 Payments.received_at,
-                Payments.blockchain,
-                Payments.total_coins,
-                Payments.txno,
+                Payments.confirmed_at,
+                Payments.fiat_amount,
+                Payments.fiat,
                 Banner.filename,
                 Banner.url,
                 Banner.width,
                 Banner.height,
-		Banner.content,
-		Banner.icon,
-		Banner.type
-            )
+                Banner.content,
+                Banner.icon,
+                Banner.type
+            ).filter(Orders.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
+
+    # We are converting invoice UUID we generated for campaing_no
+    # to quickly find an invoice from payment processor user interface
+    # Please not there may be more campaigns related to one invoice,
+    # we are just showing one of them!
+    if invoice_uuid is not None:
+        dbquery = dbqueryall.filter(Payments.posdata == invoice_uuid).first()
+        if dbquery.campaigno:
+            campaign_no = dbquery.campaigno
 
     # We want details related to one campaign, not a list of all so we will
     # display that data and quit this function
     if campaign_no is not None:
-        dbquery = dbqueryall.filter(Orders.campaigno==campaign_no).first()
+        # let's try to connect to the payment system to get campaign details
+        btcpayclient_location = current_app.config.get('APP_DIR') + '/data/btcpayserver.client'
+        try:
+            with open(btcpayclient_location, 'rb') as file:
+                btcpayclient = pickle.load(file)
+        except Exception as e:
+            log.debug("Exception")
+            log.exception(e)
+            log.info("Problems with accessing payment processor.")
+            return render_template('users/paymentsystem-problems.html')
+
+        # we are getting overview of particular campaign from local database
+        dbquery = dbqueryall.filter(Orders.campaigno == campaign_no).first()
+        # and now we check details of that payment from downstream payment processor
+        if dbquery.btcpayserver_id:  # we are checking it only for historical
+                                     # purposes to achieve compatibility with previous releases
+            btcpayinv = btcpayclient.get_invoice(dbquery.btcpayserver_id)
+            log.debug(pprint.pformat(btcpayinv, depth=5))
+            cryptoInfo = btcpayinv['cryptoInfo']
+            status = btcpayinv['status']
+        else:
+            cryptoInfo = []
+            status = "unknown"
 
         # we show details only to campaign owners or admins
         if dbquery.user_id == current_user.id or amiadmin():
             # Render the page and quit
             return render_template(
                 'users/campaign-single.html',
-                now = datetime.utcnow(),
-                datemin = datetime.min,
-                dbquery = dbquery
+                now=datetime.utcnow(),
+                datemin=datetime.min,
+                dbquery=dbquery,
+                cryptoInfo=cryptoInfo,
+                status=status
             )
         else:
             # We politely redirecting 'hackers' to all campaigns
@@ -467,16 +468,16 @@ def campaign(no_weeks=None, campaign_no=None):
     if amiadmin():
         all_campaigns = dbqueryall.all()
     else:
-        all_campaigns = dbqueryall.filter(Orders.user_id==current_user.id).all()
+        all_campaigns = dbqueryall.filter(Orders.user_id == current_user.id).all()
 
     # Render the page and quit
     return render_template(
         'users/campaign.html',
-        all_campaigns = all_campaigns,
-        roles = current_user.roles,
-        now = datetime.utcnow(),
-        datemin = datetime.min,
-        no_weeks = no_weeks
+        all_campaigns=all_campaigns,
+        roles=current_user.roles,
+        now=datetime.utcnow(),
+        datemin=datetime.min,
+        no_weeks=no_weeks
     )
 
 
@@ -577,7 +578,7 @@ def order():
         return render_template('users/order.html', banner_id=banner_id,
                                zone_id=zone_id, image_url=image_url,
                                zone_name=zone_name, banner=banner,
-			       step='chose-date')
+                               step='chose-date')
 
     elif request.form['step'] == 'order':
         randomname = names.get_full_name()
@@ -624,17 +625,17 @@ def order():
         r.ox.addBanner(sessionid, diki)
 
         Orders.create(
-            campaigno = campaign,
-            zoneid = zone_id,
-            created_at = datetime.utcnow(),
-            begins_at = begin,
-            stops_at = enddate,
-            paymentno = 0,
-            bannerid = banner_id,
-            name = randomname,
-            comments = zone_name,
-            impressions = 0,
-            user_id = current_user.id
+            campaigno=campaign,
+            zoneid=zone_id,
+            created_at=datetime.utcnow(),
+            begins_at=begin,
+            stops_at=enddate,
+            paymentno=0,
+            bannerid=banner_id,
+            name=randomname,
+            comments=zone_name,
+            impressions=0,
+            user_id=current_user.id
         )
 
         dblogger(
@@ -651,21 +652,21 @@ def order():
         )
 
         Basket.create(
-            campaigno = campaign,
-            user_id = current_user.id
+            campaigno=campaign,
+            user_id=current_user.id
         )
 
         return render_template(
             'users/order.html',
-            banner_id = banner_id,
-            banner = banner,
-            datestart = datestart,
-            datend = datend,
-            image_url = image_url,
-            zone_id = zone_id,
-            days = totaltime.days,
-            dayprice = price.dayprice,
-            step = 'order'
+            banner_id=banner_id,
+            banner=banner,
+            datestart=datestart,
+            datend=datend,
+            image_url=image_url,
+            zone_id=zone_id,
+            days=totaltime.days,
+            dayprice=price.dayprice,
+            step='order'
         )
 
 
@@ -676,37 +677,34 @@ def basket():
 
     basket = []
     price = []
+    totalprice = 0
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
     # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
             order_sql = Orders.query.filter_by(
                 campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
-                Banner.filename, Banner.url, Banner.width, Banner.height, Banner.content, Banner.icon, Banner.type, Prices.dayprice).first()
+                Banner.filename, Banner.url, Banner.width, Banner.height,
+                    Banner.content, Banner.icon, Banner.type, Prices.dayprice).first()
             basket.append(order_sql)
             begin = order_sql[0].begins_at
             enddate = order_sql[0].stops_at
-            totaltime = enddate - begin
-            totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
-            price.append([item.campaigno, "EUR", totalcurrencyprice])
-
-            excoins = current_app.config.get('EXCHANGE_COINS')
-            for coin in excoins:
-                # try to get exchange values from two sources, and give up
-                exrate = getexrate(coin)
-                if exrate == 0:
-                    return render_template('users/electrum-problems.html')
-                totalcoinprice = format(totalcurrencyprice / float(exrate), '.9f')
-                price.append([item.campaigno, coin, totalcoinprice])
+            campaign_time = enddate - begin
+            currencyprice = order_sql.dayprice/100*(campaign_time.days+1)
+            price.append([item.campaigno, currencyprice])
+            totalprice += currencyprice
     else:
         basket = 0
+        price = 0
 
     return render_template(
         'users/basket.html',
-        basket = basket,
-        price = price,
-        present = datetime.now()-timedelta(days=1)
+        basket=basket,
+        price=price,
+        totalprice=totalprice,
+        present=datetime.now()-timedelta(days=1)
     )
+
 
 @blueprint.route('/clear/banner/<int:banner_id>')
 @login_required
@@ -717,7 +715,7 @@ def clear_banner(banner_id):
             Banner.query.filter_by(id=banner_id).delete()
             flash(
                 ('Your banner was removed sucessfully. All running campaigns' +
-                  'are not affected.'), 'success'
+                 'are not affected.'), 'success'
             )
             dblogger(
                 current_user.id,
@@ -830,26 +828,20 @@ def clear_campaign(campaign_no):
     return redirect(url_for("user.campaign"), code=302)
 
 
-@blueprint.route('/pay/<string:payment>')
+@blueprint.route('/pay')
 @login_required
-def pay(payment):
-    """Pay a campaign. We serve a few payment systems, so it depends on 'payment' value."""
-
+def pay():
+    """Pay a campaign."""
+    # let's try to connect to the payment system
+    btcpayclient_location = current_app.config.get('APP_DIR')+'/data/btcpayserver.client'
     try:
-        payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
+        with open(btcpayclient_location, 'rb') as file:
+            btcpayclient = pickle.load(file)
     except Exception as e:
         log.debug("Exception")
         log.exception(e)
-        return render_template('users/electrum-problems.html')
-
-    # First check if the payment system is enabled in settings
-    if payment_system[5] is not True:
-        log.info("User tried to pay with disabled {} currency".format(payment))
-        return render_template('users/electrum-problems.html')
-
-    exrate = getexrate(payment_system[0])
-    if exrate == 0:
-        return render_template('users/electrum-problems.html')
+        log.info("Problems with accessing payment processor.")
+        return render_template('users/paymentsystem-problems.html')
 
     # first we need to get basket data
     basket = []
@@ -870,9 +862,7 @@ def pay(payment):
             enddate = order_sql[0].stops_at
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
-            totalcoinprice = totalcurrencyprice / float(exrate)
             total += totalcurrencyprice
-            cointotal += totalcoinprice
             label = label + "[C#{} Z#{} B#{} {} ↦ {} {:.2f}{}] ※ ".format(
                 item.campaigno,
                 order_sql[0].zoneid,
@@ -887,100 +877,106 @@ def pay(payment):
         log.error("Trying to pay for empty basket.")
         return redirect(url_for("user.basket"), code=302)
 
-
-    # kindly ask miss electrum for an invoice which expires in ~20 minutes
-    params = {
-        "amount": cointotal,
-        "expiration": 1212,
-        "memo": label
+    randomid = str(uuid.uuid4())
+    buyer = {
+        "email": current_user.email,
+        "name": current_user.username,
+        "notify": "true",
     }
-    payload = {
-        "id": str(uuid.uuid4()),
-        "method": "addrequest",
-        "params": params
+
+    # prepare invoice request
+    btcpayinvreq = {
+        "price": total,
+        "currency": current_app.config.get('FIAT'),
+        # "transactionSpeed": "high",
+        "itemDesc": label,
+        "posData": randomid,
+        "orderId": randomid,
+        "buyer": buyer,
+        "extendedNotifications": "true",
+        "notificationURL": current_app.config.get('OUR_URL') + 'ipn',
+        "redirectURL": current_app.config.get('OUR_URL') + 'campaign/uuid/' + randomid,
     }
-    log.debug("Payload to send to Electrum:")
-    log.debug(payload)
-
-    # contact electrum server - if it is not possible, signal problems to
-    # customer
-    electrum_url = payment_system[3]
-    log.debug("Electrum RPC URI:")
-    log.debug(electrum_url)
-    try:
-        electrum = requests.post(electrum_url, json=payload).json()
-        log.debug("Data received back from Electrum:")
-        log.debug(electrum)
-    except Exception as e:
-        log.debug("Exception")
-        log.exception(e)
-        return render_template('users/electrum-problems.html')
-    result = electrum['result']
-    if result is False:
-        return render_template('users/electrum-problems.html')
-    try:
-        addr = result['address']
-        pramount = result['amount']  # amount in satoshi
-        bip70_id = result['id']
-    except Exception as e:
-        log.debug("Exception")
-        log.exception(e)
-        return render_template('users/electrum-problems.html')
-
-    # We use amount taken from BIP70 Payment Request to avoid any distortions
-    # from rounding - plus satoshi to crypturrency convertion.
-    total_coins = (pramount/100000000.000000000)
-    fee = minerfee(total_coins, electrum_url)
+    # contact payment processor and ask for invoice
+    btcpayinv = btcpayclient.create_invoice(btcpayinvreq)
+    log.debug(pprint.pformat(btcpayinv, depth=5))
 
     # Creating database record for payment and linking it into orders.
     payment_sql = Payments.create(
-        blockchain = payment,
-        address = addr,
-        total_coins = total_coins,
-        txno = 0,
-        created_at = datetime.utcnow(),
-        user_id = current_user.id,
-        bip70_id = bip70_id,
-        confirmed_at = datetime.min,
-        received_at = datetime.min
+        created_at=datetime.utcnow(),
+        user_id=current_user.id,
+        btcpayserver_id=btcpayinv['id'],
+        confirmed_at=datetime.min,
+        received_at=datetime.min,
+        fiat=btcpayinv['currency'],
+        fiat_amount=btcpayinv['price'],
+        posdata=randomid,
     )
+    # we need payment numer id to properly relate tables
     paymentno = payment_sql.id
+
     for item in basket:
         Orders.query.filter_by(campaigno=item[0].campaigno).update({"paymentno": paymentno})
         Orders.commit()
-
-    #  kindly ask miss electrum for a ping when our address changes
-    params = {
-        "address": addr,
-        "URL": current_app.config.get('OUR_URL')+'ipn/'+payment
-    }
-    payload = {
-        "id": str(uuid.uuid4()),
-        "method": "notify",
-        "params": params
-    }
-    log.debug("Payload sent to Electrum:")
-    log.debug(payload)
-    ipn_please = requests.post(electrum_url, json=payload).json()
-    log.debug("Response received from Electrum:")
-    log.debug(ipn_please)
-    # If electrum refuses notify request, signal an error and give up payment
-    if ipn_please['result'] is not True:
-        return render_template('users/electrum-problems.html')
 
     # It looks that payment page is ready to be shown, so we remove the content of basket
     Basket.query.filter_by(user_id=current_user.id).delete()
     Basket.commit()
 
-    # and display payment page
+    # redirect to payment page
+    return redirect(btcpayinv['url'], code=302)
+
+
+@blueprint.route('/admin/pair', methods=['GET', 'POST'])
+@roles_accepted('admin')
+def btcpaypair():
+    """Payment processor pairing."""
+    btcpayclient_location = current_app.config.get('APP_DIR')+'/data/btcpayserver.client'
+    print(btcpayclient_location)
+    fiat = current_app.config.get('FIAT')
+    # Recognise if pairing is done and valid
+    try:
+
+        with open(btcpayclient_location, 'rb') as file:
+            btcpayclient = pickle.load(file)
+
+        # try if it works
+        rates = btcpayclient.get_rates()
+        log.debug(pprint.pformat(rates, depth=5))
+        state = True
+        log.debug("We found a working processor.")
+    except Exception as e:
+        log.debug(e)
+        log.debug("We are unable to bind to the processor.")
+        state = False
+
+    # Form to update/pair
+    form = AddPairingTextForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            try:
+                btcpayuri = current_app.config.get('BTCPAY_URI')
+                btcpayclient = btcpay.BTCPayClient.create_client(
+                    host=btcpayuri,
+                    code=form.pairing_code.data
+                )
+                fo = open(btcpayclient_location, "wb")
+                pickle.dump(btcpayclient, fo)
+                fo.close()
+                flash('Your payment processor was paired successfully.', 'success')
+                state = True
+            except Exception as e:
+                log.debug("Exception")
+                log.exception(e)
+                flash('The pairing process failed. Check logs or repeat.', 'error')
+                state = False
+        else:
+            flash_errors(form)
+
     return render_template(
-        'users/pay.html',
-        total = total,
-        orders = len(basket),
-        exrate = exrate,
-        fee = fee,
-        currency = payment_system[0],
-        electrum = result
+        'users/pair.html',
+        state=state,
+        form=form
     )
 
 
@@ -1001,5 +997,5 @@ def logaboutuser(user_id):
     userlog = Log.query.filter_by(user_id=user_id).all()
     return render_template(
         'users/logaboutuser.html',
-        userlog = userlog
+        userlog=userlog
     )

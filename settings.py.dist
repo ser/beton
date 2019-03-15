@@ -6,6 +6,11 @@ import os
 class Config(object):
     """Base configuration."""
 
+    # Payment system - NO TRAILING SLASH!
+    # (MANDATORY!)
+    BTCPAY_URI = ""
+
+    # Main server settings
     SECRET_KEY = os.environ.get('BETON_SECRET', '')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
@@ -62,85 +67,16 @@ class Config(object):
     ##device=Xiaomi13
     PUSHOVER = False
 
-    ##### Electrum - you must modify it
-
-    ## You are able to deploy many Electrum-based blockchains
-    ## Every blockchain needs separate electrum wallet server
-    ## Suggested nicknames:
-    # BTC = Bitcoin standard wallet
-    # BTCS = Bitcoin segwit Bech32 wallet
-    # BTCT = Bitcoin testnet standard wallet
-    # BTCST = Bitcoin testnet segwit Bech32 wallet
-    # LTC = Litecoin standard wallet
-    # LTCS = Litecoin Bech32 wallet
-    # LTCT = Litecoin testnet standard wallet
-    # LTCST = Litecoin testnet Bech32 wallet
-    # BCHT = Bitcoin Cash testnet standard wallet
-    # BCH = Bitcoin Cash standard wallet
-    # DASH = Dash
-    # DASHT = Dash Testnet
-
-    # Definition of every payment blockchain is a list and consists of:
-    # 0) Short Description
-    # 1) Long Description
-    # 2) Your Electrum RPC address
-    # 3) Blockchain external URI to show transaction details
-
-    # for example:
-#    PAYMENT_SYSTEMS = {
-#        'BTCT': 
-#            ["BTC", "Bitcoin Testnet / standard wallet",
-#                "* standard Bitcoin address",
-#                "",
-#                "https://www.blocktrail.com/tBTC/address/"
-#            ],
-#        'BTCST':
-#            ["BTC", "Bitcoin Testnet / segwit wallet",
-#                "* Bech32 Bitcoin address only (cheaper fees) - use electrum wallet",
-#                "",
-#                "https://chain.so/address/BTCTEST/"
-#            ],
-#        'LTCT':
-#            ["LTC", "Litecoin Testnet / standard wallet",
-#                "* standard Litecoin address",
-#                "",
-#                "https://testnet.litecore.io/address/"
-#            ],
-#        'DASHT':
-#            ["DASH", "DASH Testnet",
-#                "* standard DASH address",
-#                "",
-#                "https://test.explorer.dashninja.pl/address/"
-#           ]
-#   }
-
     # What is your fiat currency
     # TODO: Only EUR is now supported!
     FIAT = "EUR"
 
-    ## In which coins prices should be shown in the basket
-    # Possible values:
-    # BTC = Bitcoin
-    # BCH = Bitcoin Cash
-    # DASH = DASH
-    # LTC = Litecoin
-    EXCHANGE_COINS = ['BTC', 'LTC', 'BCH', 'DASH']
-
-    ## List of yoour favourite exchanges to serve prices
-    # Beton will always try to access first exchange on the list
-    # and if unsucccessful, move to next one.
-    # Use ids of exchanges from this list:
-    # https://github.com/ccxt/ccxt/wiki/Manual#exchanges
-    # Be sure that your selection of exchanges matches your coins!
-    EXCHANGES = ['kraken', 'bitbay', 'cex', 'wex' ]
-
-    ### Which price use - 'last' trade or 'vwap' (volume weighed average price)
-    # Note: not all exchanges support vwap
-    EXCHANGES_TRADE = 'last'
-
     # banner overview graphics size for /offer
     BANNER_OVERVIEW_WIDTH = 800
     BANNER_OVERVIEW_HEIGHT = 600
+
+    # Do we want to support text banners?
+    BANNER_TEXT = False
 
     # User permissions
     USER_ENABLE_CHANGE_PASSWORD = True  # Allow users to change their password
@@ -176,32 +112,6 @@ class Config(object):
     SECURITY_REGISTERABLE         = True
     SECURITY_RECOVERABLE          = True
     SECURITY_CHANGEABLE           = True
-
-    # Crontab is removing unpaid stuff after 7 days, running every one hour
-    # Impressions are updated also every hour +-
-    SCHEDULER_API_ENABLED = True
-    JOBS = [
-        {
-            'id': 'unpaid_cleanup',
-            'func': 'beton.crontab:remove_unpaid_campaigns',
-            'args': {7},
-            'trigger': 'interval',
-            'seconds': 3555
-        },
-        {
-            'id': 'impressions',
-            'func': 'beton.crontab:update_impressions',
-            'trigger': 'interval',
-            'seconds': 3333
-        },
-        {
-            'id': 'health',
-            'func': 'beton.crontab:ping_electrum',
-            'trigger': 'interval',
-            'seconds': 333
-        }
-    ]
-
 
 class ProdConfig(Config):
     """Production configuration."""

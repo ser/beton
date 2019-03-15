@@ -29,7 +29,7 @@
                 <div class="card-body">
                     {% if banner.type == "text" %}
                         <div class="card-header">
-                            <i class="{{ banner.icon }}" aria-hidden="true"></i>&nbsp; {{ banner.content }}
+                            <span class="{{ banner.icon }}" aria-hidden="true"></span>&nbsp; {{ banner.content }}
                         </div>
                     {% else %}
                         <div class="thumbnail">
@@ -37,23 +37,25 @@
                                 {% if url[0] == banner.id %}
                                     <img src="{{ url[1] }}" class="img-thumbnail">
                                 {% endif %}
-                                {% endfor %}
+                            {% endfor %}
                         </div>
                     {% endif %}
                         <div class="caption">
                             <div id="created_at">{{ banner.created_at }}</div>
                             <div id="url">{{ banner.url }}</div>
-                            <div id="size"><p>size: {{ banner.width }}x{{ banner.height }}</p></div>
+                            {% if banner.type != "text" %}
+                                <div id="size"><p>size: {{ banner.width }}x{{ banner.height }}</p></div>
+                            {% endif %}
                             <div id="comment">{{ banner.comment }}</div>
                         </div>
+                        <br/>
                         <form action="{{ url_for('user.order') }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="banner_id" value="{{ banner.id }}">
                             <input type="hidden" name="step" value="chose-zone">
                             <button type="submit" value="chose-zone" class="btn
-                                btn-primary">Choose this banner</button>
+                                btn-primary btn-block">Choose this banner</button>
                         </form>
-                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -91,7 +93,7 @@
                     </div>
                     <div class="card-body">
                         <div id="zonename">{{ zone.zoneName }}</div>
-                        <div id="zoneprice"><p>price: {{ zone.price.dayprice / 100 }} <i class="fas fa-euro-sign" aria-hidden="true"></i>/day</p></div>
+                        <div id="zoneprice"><p>price: {{ zone.price.dayprice / 100 }} {{ config.FIAT }}/day</p></div>
                         {% if banner.type == "file" %}
                             <div id="zonesizetxt"><p>size: {{ zone.width }}x{{ zone.height }}</p>
                             <div id="zonesize"><img src="holder.js/{{ zone.width}}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
@@ -209,8 +211,8 @@
         </div>
         <div class="col">
             <h3>Calculations</h3>
-            <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} <i class="fas fa-euro-sign" aria-hidden="true"></i></p>
-            <h4><span class="badge badge-info">Total is: {{ dayprice/100*(days+1) }} <i class="fas fa-euro-sign" aria-hidden="true"></i></span></h4>
+            <p>It's {{ days+1 }} day(s) alltogether, each day for: {{ dayprice/100 }} {{ config.FIAT }}</p>
+            <h4><span class="badge badge-info">Total is: {{ dayprice/100*(days+1) }} {{ config.FIAT }}</span></h4>
         </div>
     </div>
 

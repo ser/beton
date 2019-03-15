@@ -4,7 +4,7 @@
     <div class="jumbotron">
     <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
             aria-hidden="true"></i></h1>
-    <p class="lead">Here are your past, current and future campaigns, limited to those ending {{ no_weeks }} weeks ago or sooner.</p>
+    <p class="lead">Here are your past, current and future campaigns, limited to those ending {{  "%.0f" | format(no_weeks/4) }} month(s) ago or sooner.</p>
     <p>You can also see your older campaigns: 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign', no_weeks=8) }}">2 months</a> or 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.campaign', no_weeks=26) }}">6 months</a> or 
@@ -16,7 +16,8 @@
         <div class="col-sm-6">
 
             <div class="card border-primary mb-3">
-                <h4 class="card-header">Your paid current and future campaigns</h4>
+                <h4 class="card-header"><span class="icon dripicons-to-do"></span>
+                    Your paid current and future campaigns</h4>
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
@@ -29,7 +30,11 @@
             </div>
 
             <div class="card border-success mb-3">
-                <h4 class="card-header">Your previous successfuly paid campaigns</h4>
+                <h4 class="card-header"><span class="icon dripicons-to-do"></span>
+                    Your finished campaigns
+                    <span class="badge badge-secondary">limited to those ending
+                        {{ "%.0f" | format(no_weeks/4) }} months ago or sooner</span>
+                </h4>
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
@@ -42,10 +47,14 @@
             </div>
 
             <div class="card border-warning mb-3">
-                <h4 class="card-header">Unpaid campaigns</h4>
+                <h4 class="card-header"><span class="icon
+                        dripicons-wrong"></span> Unpaid campaigns</h4>
+                    <p class="card-header">Unpaid campaigns
+                    are removed from the list after seven days. If you paid a
+                    campaign, the blockchainn transaction has more than one
+                    confirmation, and it is still listed here, contact us as
+                    soon as possible to check what's wrong.</p>
                 <div class="card-body">
-                    <p class="card-title">Unpaid campaigns
-                    are removed from the list after seven days.</p>
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
                         {% if campaign.confirmed_at == datemin %}
@@ -58,7 +67,7 @@
 
         </div>
         <div class="col-sm-6">
-            <h3>This is an overview of all recent and ongoing campaigns on our websites</h3>
+            <h6 class="card-header">This is an overview of all recent and ongoing campaigns on our websites</h6>
             <div id="calendar"></div>
         </div>
     </div>

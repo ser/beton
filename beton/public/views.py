@@ -1,5 +1,6 @@
 """Public section, including homepage and signup."""
 
+import pprint
 import pushover
 import requests
 import uuid
@@ -8,7 +9,8 @@ import xmlrpc
 from datetime import datetime
 from oslo_concurrency import lockutils
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory, current_app
+from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
+from flask_api import status
 from flask_mail import Message
 from flask_security import current_user, login_required, logout_user
 
@@ -51,273 +53,116 @@ def download_file(filename):
 
 
 @csrf_protect.exempt
-@blueprint.route('/ipn/<string:payment>', methods=['POST'])
-def ipn(payment):
-    """IPN service. Electrum sends us pings when something related to
+@blueprint.route('/ipn', methods=['POST'])
+def ipn():
+    """IPN service. BTCpayserver sends us pings when situation related to
     our payments changes. Here we are linking a campaign to a zone.
-    
-    We do not need to protest this route as each received IPN we confirm
-    directly in our electrum wallet, so it cannot get spoofed.
+    We do not need to protect this route as each received IPN we confirm
+    directly at payment processor, so it cannot get spoofed.
     """
-
-    def process_payment(payment, electrum_url, cryptoaddress, pay_db):
-        '''
-        '''
-        # Get balance on payment address from Electrum
-        params = {
-            "address": cryptoaddress
-        }
-        payload = {
-            "id": str(uuid.uuid4()),
-            "method": "getaddressbalance",
-            "params": params
-        }
-        log.debug("We have sent to electrum this payload:")
-        log.debug(payload)
-        get_balance = requests.post(electrum_url, json=payload).json()
-        log.debug("We got back from electrum:")
-        log.debug(get_balance)
-
-        # Electrum reports current state of transaction on this address
-        confirmed = float(get_balance['result']['confirmed'])
-        unconfirmed = float(get_balance['result']['unconfirmed'])
-
-        if unconfirmed > 0:
-            # Transcation is not confirmed yet so we simply register that
-            # and wait for another ping from Electrum
-            
-            # First check if it is not recorded yet
-            if pay_db.received_at == datetime.min:
-
-                log.debug("Balance of {} is not confirmed yet.".format(
-                    unconfirmed
-                ))
-                dblogger(
-                    pay_db.user_id,
-                    "RECEIVED {} {} to address {}! We are waiting now for one confirmation.".format(
-                        unconfirmed,
-                        payment,
-                        cryptoaddress
-                    )
-                )
-                # We record receiving payment in the Payment database
-                Payments.query.filter_by(
-                    address=cryptoaddress).update(
-                        {"received_at": datetime.utcnow()})
-                Payments.commit()
-            else:
-                log.debug("This IPN about unconfirmed balance was already processed.")
-            # and showing a standard page
-            return redirect(url_for('public.home'))
-
-        # Get also all related BIP70 Payment Request data
-        params = {
-            "key": cryptoaddress
-        }
-        payload = {
-            "id": str(uuid.uuid4()),
-            "method": "getrequest",
-            "params": params
-        }
-        log.debug("We have sent to electrum this payload:")
-        log.debug(payload)
-        get_bip70 = requests.post(electrum_url, json=payload).json()
-        log.debug("We got back from electrum:")
-        log.debug(get_bip70)
-        status = get_bip70['result']['status']
-        memo = get_bip70['result']['memo']
-
-        if status != "Paid":
-            # This transaction was not paid on time, thus we cannot confirm it
-            logstr = (
-                ('BIP70 PR {} was not paid on time or partially on time' +
-                'with expected amount.').format(
-                    pay_db.bip70_id
-                )
-            )
-            log.debug(logstr)
-            dblogger(pay_db.user_id, logstr)
-            return redirect(url_for('public.home'))
-
-        # No we check if received amount is equal or larger than expected 
-        weexpect = float(pay_db.total_coins)
-        if confirmed >= weexpect:
-            # It is paid :-) so we activate banner(s)
-            logstr = ('PAID! Confirmed balance of {} on address {} is ' +
-                '{}').format(
-                    payment,
-                    cryptoaddress,
-                    confirmed
-                )
-            log.debug(logstr)
-            dblogger(pay_db.user_id, logstr)
-
-            # Get TX hash from Electrum
-            params = {
-                "address": cryptoaddress
-            }
-            payload = {
-                "id": str(uuid.uuid4()),
-                "method": "getaddresshistory",
-                "params": params
-            }
-            log.debug("We have sent to electrum this payload:")
-            log.debug(payload)
-            get_tx = requests.post(electrum_url, json=payload).json()
-            log.debug("We got back from electrum:")
-            log.debug(get_tx)
-            txno = get_tx['result'][0]['tx_hash']  # we analyze only first transaction
-            # TODO: maybe in future it's worth to record fee as well?
-
-            # loading all orders related to payment
-            all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
-            log.debug("We are having these orders in the basket:")
-            log.debug(all_orders)
-
-            # Log in into Revive
-            r = xmlrpc.client.ServerProxy(
-                current_app.config.get('REVIVE_XML_URI'),
-                verbose=False
-            )
-            sessionid = reviveme(r)
-            for order in all_orders:
-                # Linking the campaign because it's paid!
-                linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
-                log.debug("Have we linked in Revive? %s" % str(linkme))
-
-            # and finally mark payment as paid
-            Payments.query.filter_by(
-                address=cryptoaddress).update(
-                    {
-                        "txno": txno,
-                        "confirmed_at": datetime.utcnow()
-                    }
-                )
-
-            # It might happen by a chance that we missed one IPN from electrum
-            # related to initial payment confirmation. In that case we should
-            # update it now.
-            if pay_db.received_at == datetime.min:
-                Payments.query.filter_by(
-                    address=cryptoaddress).update(
-                        {"received_at": datetime.utcnow()}
-                    )
-
-            # Commiting to SQL server
-            Payments.commit()
-
-            # Logout from Revive
-            r.ox.logoff(sessionid)
-
-            # Getting detailed data of the customer
-            userdb = User.query.filter_by(id=pay_db.user_id).first()
-
-            # Mailing customer that order is paid
-            msg = Message(
-                "Payment %s for your campaign(s) is confirmed" % pay_db.bip70_id
-            )
-            msg.recipients = [(userdb.email)]
-            msgbody = ("Funds in {} sent to address {} are confirmed. \n\n" +
-                       "{} \n\n" +
-                       "Your campaign(s) are ready to be run. \n\n" +
-                       "You can see all your campaigns on: \n    {}\n\n" +
-                       "Thank you :-)").format(
-                            payment_system[0],
-                            ipn['address'],
-                            memo,
-                            current_app.config.get('OUR_URL')+"campaign"
-            )
-            msg.body = msgbody
-            mail.send(msg)
-
-            # If configuration sets pushover.net, we send it in there
-            if current_app.config.get('PUSHOVER') is True:
-                pushlog = (
-                    "{} paid {} {} for {}".format(
-                        userdb.username,
-                        confirmed,
-                        payment,
-                        memo
-                    )
-                )
-                pushover.Client().send_message(pushlog, title="$$$")
-
+    # FUNCTIONS
+    def checkpaydb(posdata):
+        pay_db = Payments.query.filter_by(posdata=posdata).first()
+        if pay_db is None:
+            log.info("There is no payment related to IPN. Aborting")
+            return "NAY", status.HTTP_412_PRECONDITION_FAILED
         else:
-            logstr = ("PROBLEM. Confirmed balance on address {} is " +
-                        "{} but we expected {}.").format(
-                        cryptoaddress,
-                        confirmed,
-                        weexpect
-                    )
-            log.debug(logstr)
-            dblogger(
-                pay_db.user_id,
-                logstr
+            return pay_db
+
+    def invoice_paidInFull(pay_db, ipn):
+        # Logging to admin log
+        dblogger(
+            pay_db.user_id,
+            "RECEIVED {} for invoice {}! We are waiting now for one confirmation.".format(
+                ipn['data']['btcPaid'],
+                ipn['data']['id']
             )
+        )
+        # We record receiving payment in the Payment database
+        Payments.query.filter_by(
+            posdata=ipn['data']['posData']).update(
+                {"received_at": datetime.utcnow()})
+        Payments.commit()
 
-    ### MAIN PART
-    # Reacting to an IPN sent from Electrum
-    ###
+    def invoice_confirmed(pay_db, ipn):
+        # Logging to admin log
+        dblogger(
+            pay_db.user_id,
+            "CONFIRMED {} for invoice {}. We are boooking advert(s).".format(
+                ipn['data']['btcPaid'],
+                ipn['data']['id']
+            )
+        )
+        # We record receiving payment in the Payment database
+        Payments.query.filter_by(
+            posdata=ipn['data']['posData']).update(
+                {"confirmed_at": datetime.utcnow()})
+        Payments.commit()
 
-    # Get the content of the IPN from Electrum
-    ipn = request.get_json()
-    log.debug("IPN JSON from Electrum received:")
-    log.debug(ipn)
+        # Log in into Revive
+        r = xmlrpc.client.ServerProxy(
+            current_app.config.get('REVIVE_XML_URI'),
+            verbose=False
+        )
+        sessionid = reviveme(r)
+        # Loading all orders related to payment
+        all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
+        log.debug("We are having these orders in the basket:")
+        log.debug(all_orders)
+        # We are now linking Revive
+        for order in all_orders:
+            linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
+            log.debug("Have we linked camapign {} into zone {} in Revive? {}".format(
+                order.campaigno,
+                order.zoneid,
+                linkme
+            ))
+
+    # TODO
+    def invoice_expiredPaidPartial(pay_db, ip):
+        pass
+
+    # MAIN PART
+    # We expect JSON, if it is not JSON, return http error 405
+    try:
+        ipn = request.get_json()
+        log.debug("IPN JSON from payment processor received:")
+        log.debug(pprint.pformat(ipn, depth=5))
+    except Exception as e:
+        log.debug("Exception as we did not get JSON request:")
+        log.exception(e)
+        return "NAY", status.HTTP_405_METHOD_NOT_ALLOWED
+
+    # There are two sorts of IPNs, full and extended ones.
+    # Extended has one level of JSON, full two of them.
+    # If we can't do that, something is screwed so we send http error 501
+    if 'posData' in ipn:
+        ipnsort = 'extended'
+        posdata = ipn['posData']
+    elif 'data' in ipn:
+        ipnsort = 'full'
+        if 'posData' in ipn['data']:
+            posdata = ipn['data']['posData']
+    else:
+        return "NAY", status.HTTP_501_NOT_IMPLEMENTED
+
+    # Wedo not want to process the same transaction concurrently, so we lock it
     lockutils.set_defaults(current_app.config.get('CACHE_DIR'))
-    payment_system = current_app.config.get('PAYMENT_SYSTEMS')[payment]
-
-    # We need to be sure that we accept only enable means of payments
-    if payment_system[5] is not True:
-        log.debug("This payment system is disabled. Enable it in settings.")
-        return redirect(url_for('public.home'))
-
-    # We need to establish a lock preventing from processing payment
-    # for the same address several times concurrently which is possible in real
-    # situation. If it happens, for example mail is being sent twice. We don't
-    # like it, then
-    with lockutils.lock(ipn['address']):
-        try:
-            # This is not a valid payment yet
-            if not ipn['status']:
-                log.debug("Electrum acknowledgement only. PR is not paid yet or is expired.")
-                return redirect(url_for('public.home'))
-
+    with lockutils.lock(posdata):
+        log.debug("We received "+ipnsort+" IPN.")
+        if ipnsort == 'full':
+            # We are interested in full IPNs, with codes 1003 and 1005 specifically:
+            # 1003 invoice_paidInFull
+            # 1005 invoice_confirmed
+            # 2000 invoice_expiredPaidPartial
+            #
             # loading order datails from the database
-            pay_db = Payments.query.filter_by(address=ipn['address']).first()
-            log.debug("Payments related to address:")
-            log.debug(pay_db)
-
-            if pay_db == None:
-                log.info("There is no payment related to address %s - aborting." %
-                        ipn['address'])
-                return redirect(url_for('public.home'))
-
-            # Verify if payment is in expected coins
-            if str(pay_db.blockchain) != str(payment):
-                log.info("We expected payment in %s, it came in %s" %
-                        (pay_db.blockchain, payment))
-                return redirect(url_for('public.home'))
-
-            try:
-                if pay_db.txno == "0":  # If our invoice is already paid, do not bother
-                    process_payment(
-                        payment,
-                        payment_system[3],
-                        ipn['address'],
-                        pay_db
-                    )
-                else:
-                    log.debug("Transaction {} is already paid.".format(pay_db.txno))
-
-            except Exception as e:
-                log.debug("Exception")
-                log.exception(e)
-                return redirect(url_for('public.home'))
-
-        except Exception as e:
-            log.debug("Exception")
-            log.exception(e)
-            return redirect(url_for('public.home'))
-
-    # Return a redirect to main page
-    return redirect(url_for('public.home'))
+            pay_db = checkpaydb(posdata)
+            if ipn['event']['code'] == 1003:
+                # We received invoice_paidInFull
+                invoice_paidInFull(pay_db, ipn)
+            elif ipn['event']['code'] == 1005:
+                # We received invoice_confirmed
+                invoice_confirmed(pay_db, ipn)
+            else: pass
+        return "YAY", status.HTTP_200_OK

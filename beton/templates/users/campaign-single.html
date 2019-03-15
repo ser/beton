@@ -6,12 +6,12 @@
             aria-hidden="true"></i></h1>
     <p class="lead">Here are all details we know about your particular campaign.</p>
     <a href="{{ url_for('user.campaign') }}"
-        class="btn btn-info btn-sm"><i class="far fa-arrow-alt-circle-left"></i>&nbsp;See all your campaigns</a>
+        class="btn btn-info btn-lg"><span class="icon dripicons-arrow-left"></span>&nbsp;See all your campaigns</a>
     </div>
     <div class="row">
         <div class="col-sm-12">
             <div class="card border-primary mb-3">
-                <h4 class="card-header">
+                <h4 class="card-header"><span class="icon dripicons-to-do"></span>
                     Campaign details: #{{ dbquery.campaigno }} {{ dbquery.name }}
 
                     {% if dbquery.received_at != datemin %}
@@ -23,7 +23,11 @@
                     {% if dbquery.confirmed_at != datemin %}
                     <span class="badge badge-pill badge-info">CONFIRMED</span>
                     {% else %}
-                    <span class="badge badge-pill badge-danger">NOT CONFIRMED</span>
+                    <span class="badge badge-pill badge-danger">NOT CONFIRMED
+                        {% if dbquery.received_at != datemin %}
+                            &nbsp;<span class="spinner-grow spinner-grow-sm" role="status"></span>
+                        {% endif %}
+                    </span>
                     {% endif %}
 
                 </h4>
@@ -32,8 +36,16 @@
                         <ul class="list-group">
                             <h5 class="card-title">Banner</h5>
                             <li class="list-group-item d-flex align-items-left"><b>Zone #{{ dbquery.zoneid }}</b>&nbsp; - {{ dbquery.comments }}</li>
-                            <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ dbquery.filename }}">
-                            <li class="list-group-item d-flex align-items-left"><b>Size:</b>&nbsp; {{ dbquery.width }}x{{ dbquery.height }}
+                            {% if dbquery.type == "text" %}
+                                <li class="list-group-item d-flex align-items-left">
+                                    <blockquote class="blockquote">
+                                        <i class="{{ dbquery.icon }}" aria-hidden="true"></i>&nbsp;{{ dbquery.content }}
+                                    </blockquote>
+                                </li>
+                            {% else %}
+                                <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ dbquery.filename }}">
+                                <li class="list-group-item d-flex align-items-left"><b>Size:</b>&nbsp; {{ dbquery.width }}x{{ dbquery.height }}
+                            {% endif %}
                             <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ dbquery.begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ dbquery.stops_at.strftime('%Y-%m-%d') }}</li>
                             <li class="list-group-item d-flex align-items-left">
                                 {% if dbquery.begins_at <= now %}
@@ -44,28 +56,42 @@
                                     day(s)
                                 {% endif %}
                             </li>
-                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
                         </ul>
                         <ul class="list-group">
-                            <h5 class="card-title">Payment</h5>
-                            <li class="list-group-item d-flex align-items-left"><b>{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][0] }}</b>&nbsp; {{ dbquery.total_coins }}</li>
-                            <li class="list-group-item d-flex align-items-left"><b>ID:</b>&nbsp; {{ dbquery.bip70_id }}</li>
-                            <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd><a href="{{ config.PAYMENT_SYSTEMS[dbquery.blockchain][4] }}{{ dbquery.address }}">{{ dbquery.address }}</a></kbd></li>
+                            <h5 class="card-title">Invoice</h5>
+                            <li class="list-group-item d-flex align-items-left"><b>Status:</b>&nbsp; {{ status }}</li>
+                            {% if dbquery.fiat_amount > 0 %}
+                                <li class="list-group-item d-flex align-items-left"><b>Amount:</b>&nbsp; {{ dbquery.fiat }}&nbsp;{{ dbquery.fiat_amount }}</li>
+                            {% endif %}
+                            {% if dbquery.btcpayserver_id %}
+                                <li class="list-group-item d-flex align-items-left"><b>Invoice ID:</b>&nbsp; {{ dbquery.btcpayserver_id }}</li>
+                            {% endif %}
+                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
                             <li class="list-group-item d-flex align-items-left">
                                 {% if dbquery.received_at != datemin %}
-                                    <b>Received:</b>&nbsp; {{ dbquery.received_at }}
+                                    <b>Full payment received at:</b>&nbsp; {{ dbquery.received_at }}
                                 {% else %}
                                         <span class="badge badge-danger">NOT PAID!</span>
                                 {% endif %}
                             </li>
                             <li class="list-group-item d-flex align-items-left">
                                 {% if dbquery.confirmed_at != datemin %}
-                                    <b>Confirmed:</b>&nbsp; {{ dbquery.confirmed_at }}
+                                    <b>Blockchain confirmed at:</b>&nbsp; {{ dbquery.confirmed_at }}
                                 {% else %}
                                     <span class="badge badge-danger">NOT CONFIRMED</span>
                                 {% endif %}
                             </li>
-                            <li class="list-group-item d-flex align-items-left"><b>Transaction:</b>&nbsp; {{ dbquery.txno }}</li>
+                        </ul>
+                        <ul class="list-group">
+                            <h5 class="card-title">Payment(s)</h5>
+                                <ul class="list-group-item">
+                                {% for tx in cryptoInfo %}
+                                    <li class="list-group-item d-flex align-items-left"><b>{{ tx['cryptoCode'] }}</b>&nbsp; {{ tx['cryptoPaid'] }}</li>
+                                    <li class="list-group-item d-flex align-items-left"><b>Rate {{ tx['cryptoCode'] }} / {{ dbquery.fiat }}</b>&nbsp; {{ tx['rate'] }}</li>
+                                    <!-- <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd><a href="{{ tx['address'] }}">{{ tx['address'] }}</a></kbd></li>-->
+                                    <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd>{{ tx['address'] }}</kbd></li>
+                                {% endfor %}
+                                </div>
                         </ul>
                     </div>
                 </div>

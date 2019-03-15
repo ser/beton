@@ -24,8 +24,7 @@
                             <div id="size"><p>Size: {{ zone.width }}x{{ zone.height }}</p></div>
                             {% endif %}
                             <div id="impressions"><p>Last 30 days impressions of all banners in this zone: {{ zone.impressions }}</p></div>
-                            <div id="price"><p>{{ zone.price / 100 }}<i class="fas
-                                        fa-euro-sign fa-fw" aria-hidden="true"></i>/day</p></div>
+                            <div id="price"><p>{{ zone.price / 100 }} {{ config.FIAT }}/day</p></div>
                             {% if isadmin == True %}
                             {% if zone.type == 0 %}
                             <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>

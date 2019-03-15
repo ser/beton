@@ -14,11 +14,11 @@ It links to Revive via its XML-RPC API, fully taking over management of banner a
 Beton advantages over standard Revive web app:
 * Fully automatic sell system for banners
 * Independent user base system with auto-registration and email confirmation
-* Bitcoin payments via [Electrum](https://electrum.org), your own wallet merchant service (no third parties required!)
+* Bitcoin payments via [btcpayserver](https://btcpayserver.org), your own fully open-source cryptocurrency payment processor (no third parties required!)
 * A very clean and responsive interface, based on Bootstrap
  
 ## Installation
-Installation process consists of three main stages. First is installation and configuration of the Revive Ad Server, second is preparation of Electrum payment interface and the third one is installation of Beton itself.
+Installation process consists of three main stages. First is installation and configuration of the Revive Ad Server, second is installation and configuration of btcpayserver, and the third one is installation of Beton itself.
 
 ### Install and prepare Revive Ad Server
 
@@ -26,52 +26,12 @@ Installation process consists of three main stages. First is installation and co
 * Create a new advertiser. Note its Revive's internal ID number.
 * Add your websites. 
 * Add zone(s) you want to have within your websites. It must be of ```Banner, Button or Rectangle``` type.
-* Be sure that SMTP server is working, as Revive will send campaign summaries
-directly to customers.
+* Be sure that SMTP server is working, as Revive will send campaign summaries directly to customers.
 * Enable ```Allow External Banners``` in ```Banner Storage Settings``` in global settings.
 
-### Install and configure Electrum merchant system
+### Install and configure BTCpayserver
 
-Follow Electrum's documentation: http://docs.electrum.org/en/latest/merchant.html - if not sure, consult #electrum IRC channel @ Freenode. Please install websockets service as well, as it is being used by beton.
-
-After finishing configuration, your ```~/.electrum/config``` should look similar to this, for reference:
-
-```
-{
-    "requests_dir": "/srv/www/electest", 
-    "rpchost": "127.0.0.1", 
-    "rpcport": 7707, 
-    "ssl_chain": "/etc/pki/realms/random-re/default.crt", 
-    "ssl_privkey": "/etc/pki/realms/random-re/default.key", 
-    "url_rewrite": [
-        "file:///srv/www/", 
-        "https://random.re/"
-    ], 
-    "websocket_port": 9997, 
-    "websocket_server": "0.0.0.0"
-}
-```
-
-You can have a systemd config file similar to this one:
-
-```
-[Unit]
-Description=Electrum Server
-After=multi-user.target
-
-[Service]
-Environment="RUNAS=electrum"
-ExecStart=/home/${RUNAS}/electrum/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon start
-ExecStop=/home/${RUNAS}/electrum/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon stop
-ExecStartPost=/home/${RUNAS}/electrum/electrum -w /home/${RUNAS}/.electrum/wallets/default_wallet daemon load_wallet
-Type=forking
-User=${RUNAS}
-RestartSec=10s
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
+Follow btcpayserver's documentation: https://btcpayserver.org/
 
 ### Install and prepare Beton
 
@@ -99,33 +59,7 @@ You should create the main configuration file inside the ```beton``` subdirector
 
 Note that you are able to keep developement and production settings separately. Normally beton uses ```ProdConfig``` class settings, if you set ``` FLASK_DEBUG=1``` in the environment, it will use ```DevConfig``` class instead of. Please remeber it is critically unsafe to run debug mode in production. 
 
-After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use Systemd, this is an example service unit file ```/etc/systemd/system/beton.service```:
-
-```
-[Unit]
-Description=Beton Ad Server
-After=multi-user.target
-
-[Service]
-Type=idle
-Environment="RUNAS=beton"
-Environment=BETON_SECRET=a_truly_random_characters_about_60_of_them
-Environment=REVIVE_MASTER_PASSWORD=password_to_access_main_admin_account_on_revive
-Environment=SQLALCHEMY_SQL_PASSWORD=password_to_access_beton_sql_database
-Environment=REVIVE_SQL_PASSWORD=password_to_access_revive_sql_database
-Environment=MAIL_PASSWORD=password_to_access_smtp_relay_server
-Environment=FLASK_APP=/home/beton/beton/autoapp.py
-ExecStart=/home/${RUNAS}/.local/bin/flask run --host=127.0.0.1 --port=9234
-Type=forking
-RestartSec=10s
-Restart=always
-User=${RUNAS}
-
-
-[Install]
-WantedBy=multi-user.target
-```
-This file can be found also in the project tree: [beton.service](beton.service)
+After setting up ```settings.py``` file, you should add environment to the shell running beton. If you use UWSGI (you should!), an example ```beton.ini``` is included in this repository main directory.
 
 When you are ready with settings and setting environment in systemd, you should export the environment locally once to inititate the database, being logged as the user which runs Beton:
 
@@ -143,13 +77,7 @@ beton$ flask db migrate
 beton$ flask db upgrade
 ```
 
-When you are ready with all configuration steps, add and enable beton service (as root):
-
-```
-# chmod og-wrx /etc/systemd/system/beton.service
-# systemctl enable beton.service
-# systemctl start beton.service
-```
+When you are ready with all configuration steps, add and enable UWSGI service (as root).
 
 ### Configuration of nginx
 
@@ -157,14 +85,10 @@ Instead of serving banners through python or php, it's advised to serve them dir
 
 ```
 location /beton/ {
-         proxy_pass http://127.0.0.1:9234/beton/;
+         uwsgi_pass 127.0.0.1:9234;
          }
 location /beton/banners/ {
          alias /home/beton/beton/beton/banners/;
-         }
-location /electest/ {
-         default_type "application/bitcoin-paymentrequest";
-         alias /srv/www/electest/;
          }
 ```
 
@@ -181,3 +105,6 @@ location /electest/ {
 +----+-------+---------+
 1 row in set (0.00 sec)
  ```
+### Screen shots
+
+<img src="https://random.re/_media/faq/screen_shot_2019-03-13_at_20.36.14-fullpage.png" width=800>

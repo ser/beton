@@ -23,7 +23,7 @@
         <div class="card mb-4 box-shadow">
             <div class="card-header">
     {% if not current_user or not current_user.is_authenticated %}
-                <h4 class="my-0 font-weight-normal"><i class="far fa-user"></i> Create an account</h4>
+                <h4 class="my-0 font-weight-normal"><span class="icon dripicons-user"></span> Create an account</h4>
             </div>
             <div class="card-body">
                 <p>Sleek, intuitive - just three steps. First, create an account.</p>
@@ -32,7 +32,7 @@
                 <p>If you already have an account, log in.</p>
                 <a class="btn btn-block btn-primary" role="button" href="{{ url_for('security.login') }}">Log in &raquo;</a>
     {% else %}
-                <h4 class="my-0 font-weight-normal"><i class="fab fa-elementor"></i> Check zones and prices</h4>
+                <h4 class="my-0 font-weight-normal"><span class="icon dripicons-checklist"></span> Check zones and prices</h4>
             </div>
             <div class="card-body">
                 <p>Here your find all possible banner zones and their current prices.</p>
@@ -42,7 +42,7 @@
         </div>
         <div class="card mb-4 box-shadow">
             <div class="card-header">
-                <h4 class="my-0 font-weight-normal"><i class="fas fa-equals"></i> Upload your banner</h4>
+                <h4 class="my-0 font-weight-normal"><span class="icon dripicons-cloud-upload"></span> Upload your banner</h4>
             </div>
             <div class="card-body">
                 <p>Upload your banner. There is only one rule: your banner must
@@ -52,8 +52,7 @@
         </div>
         <div class="card mb-4 box-shadow">
             <div class="card-header">
-                <h4 class="my-0 font-weight-normal"> <i class="far
-                        fa-list-alt"></i> Chose zone and order</h4>
+                <h4 class="my-0 font-weight-normal"> <span class="icon dripicons-basket"></span> Chose zone and order</h4>
             </div>
             <div class="card-body">
                 <p>Next step is to select zone you want to have your banner in and add campaign to basket.</p>
