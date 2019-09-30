@@ -6,7 +6,8 @@
         <p class="lead">These are all zones in our offer. When you are decided, please <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.order') }}">order a new campaign</a></p>
     </div>
     {% for website in publishers %}
-        <h2>{{ website.publisherName }}</h2>
+    	<div class="border-top my-3"></div>
+        <h1 class="display-2">{{ website.publisherName }}</h1>
             <div class="card-columns">
             {% for zone in allzones %}
                 {% if zone.publisherId == website.publisherId %}

@@ -273,8 +273,15 @@ def offer():
         current_app.config.get('REVIVE_AGENCY_ID')
     )
 
+    # ignore the websites on our blacklist 
+    for blackwebsite in current_app.config.get('REVIVE_IGNORED_WEBSITES'):
+        for website in publishers:
+            if website['publisherName'] == blackwebsite:
+                publishers.remove(website)
+
     all_zones = []
     for website in publishers:
+
         # get zones from Revive
         allzones = r.ox.getZoneListByPublisherId(
             sessionid,
@@ -549,6 +556,12 @@ def order():
             sessionid,
             current_app.config.get('REVIVE_AGENCY_ID')
         )
+
+        # ignore the websites on our blacklist 
+        for blackwebsite in current_app.config.get('REVIVE_IGNORED_WEBSITES'):
+            for website in publishers:
+                if website['publisherName'] == blackwebsite:
+                    publishers.remove(website)
 
         # Get zones from Revive
         all_zones = []
