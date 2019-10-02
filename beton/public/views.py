@@ -93,6 +93,7 @@ def ipn():
                 ipn['data']['id']
             )
         )
+
         # We record receiving payment in the Payment database
         Payments.query.filter_by(
             posdata=ipn['data']['posData']).update(
@@ -117,6 +118,18 @@ def ipn():
                 order.zoneid,
                 linkme
             ))
+
+        # If configuration sets pushover.net, we send it in there
+        if current_app.config.get('PUSHOVER') is True:
+            pushlog = (
+                    "{} paid {} {} for {}".format(
+                        pay_db.user_id,
+                        pay_db.fiat_amount,
+                        pay_db.fiat,
+                        pay_db.btcpayserver_id
+                    )
+            )
+            pushover.Client().send_message(pushlog, title="$$$")
 
     # TODO
     def invoice_expiredPaidPartial(pay_db, ip):
