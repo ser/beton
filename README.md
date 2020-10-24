@@ -7,27 +7,17 @@ PHP/Python to start playing with Beton. Strictly no warranty.
 [Sponsor this project](https://liberapay.com/ser/donate)
 
 ## What really is Beton?
-Beton is a cover plate (front end) over [Revive Ad Server](https://www.revive-adserver.com/).
+Beton was before cover plate (front end) over [Revive Ad Server](https://www.revive-adserver.com/). You still can find this work in `revive` branch. Now it is an independent adserver tightly connected to nginx as it uses nginx logging to get stats.
 
-It links to Revive via its XML-RPC API, fully taking over management of banner ads for your customers. They don't need to see or access original Revive web interface anymore.
-
-Beton advantages over standard Revive web app:
+Beton advantages over known oopen source banner systems:
 * Fully automatic sell system for banners
 * Independent user base system with auto-registration and email confirmation
 * Bitcoin payments via [btcpayserver](https://btcpayserver.org), your own fully open-source cryptocurrency payment processor (no third parties required!)
 * A very clean and responsive interface, based on Bootstrap
+* Adblock masking
  
 ## Installation
-Installation process consists of three main stages. First is installation and configuration of the Revive Ad Server, second is installation and configuration of btcpayserver, and the third one is installation of Beton itself.
-
-### Install and prepare Revive Ad Server
-
-* Get the newest version of the Revive Ad Server from https://www.revive-adserver.com/download/ - I'm using version 4.1. Install and configure it according to it's documentation. It must be fully working before you move over to next steps.
-* Create a new advertiser. Note its Revive's internal ID number.
-* Add your websites. 
-* Add zone(s) you want to have within your websites. It must be of ```Banner, Button or Rectangle``` type.
-* Be sure that SMTP server is working, as Revive will send campaign summaries directly to customers.
-* Enable ```Allow External Banners``` in ```Banner Storage Settings``` in global settings.
+Installation process consists of three main stages. First is installation and configuration of the beton Ad Server, second is installation and configuration of btcpayserver, and the third one is installation of nginx rules.
 
 ### Install and configure BTCpayserver
 
@@ -65,7 +55,6 @@ When you are ready with settings and setting environment in systemd, you should 
 
 ```
 beton$ export BETON_SECRET=a_truly_random_characters_about_60_of_them
-beton$ export REVIVE_MASTER_PASSWORD=password_to_access_main_admin_account_on_revive
 beton$ export SQLALCHEMY_SQL_PASSWORD=password_to_access_beton_sql_database¬
 beton$ export MAIL_PASSWORD=password_to_access_smtp_relay_server
 beton$ export FLASK_APP=/home/beton/beton/autoapp.py
