@@ -2,7 +2,7 @@
   "name": "beton",
   "dependencies": {
     "jQuery": ">=1.6",
-    "bootstrap": "",
+    "bootstrap": ">=5.0.0-alpha3",
     "bootstrap-datepicker": "",
     "progresspiesvg": "",
     "bootswatch": "",

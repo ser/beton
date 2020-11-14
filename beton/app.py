@@ -4,7 +4,7 @@ import os
 
 from flask import Flask, current_app, render_template
 from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from beton import commands
 from beton.assets import assets

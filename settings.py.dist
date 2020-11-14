@@ -42,14 +42,6 @@ class Config(object):
     UPLOADED_DEFAULT_DEST = UPLOADED_IMAGES_DEST
     UPLOADED_DEFAULT_URL = UPLOADED_IMAGES_URL
 
-    # Revive-adserver XML access data
-    REVIVE_MASTER_USER = ''
-    REVIVE_MASTER_PASSWORD = os.environ.get('REVIVE_MASTER_PASSWORD')
-    # for example 'https://revive.example.com/www/api/v2/xmlrpc/index.php'
-    REVIVE_XML_URI = ''
-    # Nearly in all cases it must be == 1
-    REVIVE_AGENCY_ID = 1
-
     ## Mail settings
     # remove unused settings and fill the used ones.
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')

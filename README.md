@@ -30,7 +30,7 @@ Follow btcpayserver's documentation: https://btcpayserver.org/
 * Create a separate unix user in your system:
   * ```useradd -m beton```
 * Install system packages for python and web developement:
-  * ```apt install python3-pip python3-wheel python3-setuptools python3-dev nodejs-legacy npm```
+  * ```apt install python3-pip python3-wheel python3-setuptools python3-dev nodejs npm```
   * ```npm install -g bower```
 * Clone the beton git repository:
   * ```git clone https://github.com/ser/beton```

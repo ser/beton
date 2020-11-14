@@ -12,7 +12,7 @@ Flask-API
 
 # Database
 Flask-SQLAlchemy
-psycopg2
+#psycopg2
 SQLAlchemy
 
 # Migrations
@@ -21,6 +21,7 @@ Flask-Migrate
 # Forms
 Flask-WTF
 WTForms
+email_validator
 
 # Deployment
 gunicorn>=19.1.1
@@ -31,7 +32,8 @@ cssmin>=0.2.0
 jsmin>=2.0.11
 
 # File upload and images
-flask-uploads>=0.2.1
+#flask-uploads>=0.2.1
+Flask-Reuploaded
 Pillow>=4.1.0
 
 # Auth
