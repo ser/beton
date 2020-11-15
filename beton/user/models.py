@@ -93,6 +93,64 @@ width: {}, comment: {}, type: {}, content: {}, icon: {}>'.format(
         )
 
 
+class Zones(SurrogatePK, Model):
+    """Zones.
+    """
+
+    __tablename__ = 'zones'
+    zname = Column(db.String(100), unique=True, nullable=False)
+
+    def __init__(self, zname):
+        """Create instance."""
+        self.zname = zname
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return '<zname: {}'.format(
+            self.zname
+        )
+
+
+class Campaignes(SurrogatePK, Model):
+    """Campaignes.
+    """
+
+    __tablename__ = 'campaignes'
+    cname = Column(db.String(100), unique=True, nullable=False)
+    zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
+    bannerid = Column(db.Integer(), db.ForeignKey('banners.id', ondelete='CASCADE'), nullable=False)
+    created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    begins_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    impressions = Column(db.Integer(), unique=False, nullable=True)
+    comments = Column(db.Text, unique=False, nullable=False)
+
+    def __init__(self, cname):
+        """Create instance."""
+        self.cname = cname
+        self.zoneid = zoneid
+        self.bannerid = bannerid
+        self.created_at = created_at
+        self.begins_at = begins_at
+        self.stops_at = stops_at
+        self.impressions = impressions
+        self.comments = comments
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return '<cname: {}, zoneid: {}, bannerid: {}, created_at: {}, \
+begins_at: {}, stops_at: {}, impressions: {}, comments: {}'.format(
+            self.cname,
+            self.zoneid,
+            self.bannerid,
+            self.created_at,
+            self.begins_at,
+            self.stops_at,
+            self.impressions,
+            seld.comments
+        )
+
+
 class Prices(SurrogatePK, Model):
     """Zone prices.
     Rectangle is constructed according to:
@@ -100,7 +158,7 @@ class Prices(SurrogatePK, Model):
     """
 
     __tablename__ = 'zoneprice'
-    zoneid = Column(db.Integer(), unique=True, nullable=False)
+    zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
     dayprice = Column(db.Integer(), unique=False, nullable=False, default=0)
     x0 = Column(db.Integer(), unique=False, nullable=False, default=0)
     y0 = Column(db.Integer(), unique=False, nullable=False, default=0)
@@ -133,49 +191,28 @@ class Orders(SurrogatePK, Model):
     """All orders"""
 
     __tablename__ = 'orders'
-    campaigno = Column(db.Integer(), unique=True, nullable=False)
-    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid', ondelete='CASCADE'), nullable=False)
-    created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    begins_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    paymentno = Column(db.Integer(), unique=False, nullable=True)
-    bannerid = Column(db.Integer(), db.ForeignKey('banners.id', ondelete='CASCADE'), nullable=False)
-    name = Column(db.Text, unique=False, nullable=False)
-    comments = Column(db.Text, unique=False, nullable=False)
-    impressions = Column(db.Integer(), unique=False, nullable=True)
+    campaigno = Column(db.Integer(), db.ForeignKey('campaignes.id', ondelete='CASCADE'), nullable=False)
     user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    paymentno = Column(db.Integer(), unique=False, nullable=True)
+    comments = Column(db.Text, unique=False, nullable=False)
 
-    def __init__(self, campaigno, zoneid, created_at, begins_at,
-                 stops_at, paymentno, bannerid, name, comments,
-                 impressions, user_id):
+    def __init__(self, campaigno, created_at, paymentno, comments, user_id):
         """Create instance."""
         self.campaigno = campaigno
-        self.zoneid = zoneid
         self.created_at = created_at
-        self.begins_at = begins_at
-        self.stops_at = stops_at
         self.paymentno = paymentno
-        self.bannerid = bannerid
-        self.name = name
         self.comments = comments
-        self.impressions = impressions
         self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<campaigno: {}, zoneid: {}, created_at: {}, \
-begins_at: {}, stops_at: {}, name: {}, comments: {}, \
-paymentno: {}, bannerid: {}, impressions: {}, user_id: {}>'.format(
+        return '<campaigno: {}, created_at: {}, \
+comments: {}, paymentno: {}, user_id: {}>'.format(
             self.campaigno,
-            self.zoneid,
             self.created_at,
-            self.begins_at,
-            self.stops_at,
-            self.name,
             self.comments,
             self.paymentno,
-            self.bannerid,
-            self.impressions,
             self.user_id
         )
 
