@@ -264,7 +264,7 @@ class Basket(SurrogatePK, Model):
 
     __tablename__ = 'basket'
     user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    campaigno = Column(db.Integer(), db.ForeignKey('orders.campaigno', ondelete='CASCADE'), nullable=False)
+    campaigno = Column(db.Integer(), db.ForeignKey('campaignes.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, user_id, campaigno):
         """Create instance."""
@@ -306,7 +306,7 @@ class Impressions(SurrogatePK, Model):
     """Impressions cache"""
 
     __tablename__ = 'impressions'
-    zoneid = Column(db.Integer(), db.ForeignKey('zoneprice.zoneid', ondelete='CASCADE'), nullable=False)
+    zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
     impressions = Column(db.Integer(), unique=False, nullable=True)
     clicks = Column(db.Integer(), unique=False, nullable=True)
 
