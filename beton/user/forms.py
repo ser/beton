@@ -5,7 +5,7 @@ from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
 from flask_security import ConfirmRegisterForm
 from wtforms import IntegerField, StringField
-from wtforms.validators import DataRequired, Length, Required, URL
+from wtforms.validators import DataRequired, Length, NumberRange, Required, URL
 
 images = UploadSet('images', IMAGES)
 
@@ -43,6 +43,21 @@ class AddBannerTextForm(Form):
         """Create instance."""
         super(AddBannerTextForm, self).__init__(*args, **kwargs)
 
+class AddZoneForm(Form):
+    """Add zone."""
+
+    zone_name = StringField('Zone name (10 to 100 characters)',
+                            validators=[DataRequired(), Length(min=10, max=100)])
+    zone_comments = StringField('Description (optional)',
+                                validators=[Length(max=500)])
+    zone_width = IntegerField('Zone Width in pixels (10-1500)',
+                               validators=[DataRequired(), NumberRange(min=10, max=1500)])
+    zone_height = IntegerField('Zone Height in pixels (10-1500)',
+                               validators=[DataRequired(), NumberRange(min=10, max=1500)])
+
+    def __init__(self, *args, **kwargs):
+        """Create instance."""
+        super(AddZoneForm, self).__init__(*args, **kwargs)
 
 class AddPairingTextForm(Form):
     """Payment processor pairing form."""

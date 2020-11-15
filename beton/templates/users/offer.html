@@ -3,6 +3,7 @@
 {% block content %}
     <div class="jumbotron">
         <h1>This is it, {{ current_user.username  }}</h1>
+        <p>{{ allzones }}
         <p class="lead">These are all zones in our offer. When you are decided, please <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.order') }}">order a new campaign</a></p>
     </div>
     {% for website in publishers %}

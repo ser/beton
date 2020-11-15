@@ -5,9 +5,6 @@ import pickle
 import pprint
 import random
 import uuid
-# All revive XML RPC commands:
-# https://github.com/revive-adserver/revive-adserver/blob/master/www/api/v2/xmlrpc/index.php
-import xmlrpc.client
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import *
@@ -20,8 +17,8 @@ from flask_uploads import UploadSet, IMAGES
 
 from beton.extensions import cache
 from beton.logger import log
-from beton.user.forms import AddBannerForm, AddBannerTextForm, AddPairingTextForm, ChangeOffer
-from beton.user.models import Banner, Basket, Impressions, Log, Orders, Payments, Prices, User
+from beton.user.forms import AddBannerForm, AddBannerTextForm, AddPairingTextForm, AddZoneForm, ChangeOffer
+from beton.user.models import Banner, Basket, Campaignes, Impressions, Log, Orders, Payments, Prices, User, Zones
 from beton.utils import dblogger, flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -55,7 +52,7 @@ def create_banner_overview(zone):
         color='red'
     )
 
-    zonedata = Prices.query.filter_by(zoneid=zone).first()
+    zonedata = Zones.query.filter_by(id=zone).first()
     # font = ImageFont.load_default()
 
     b = ImageDraw.Draw(dwg)
@@ -84,51 +81,6 @@ def create_banner_overview(zone):
     dwg.save(destpath, 'PNG')
 
 
-@cache.memoize(timeout=666)
-def all_advertisers_cached(r):
-    '''We want to cache data which does not change frequently
-       as asking revive is time costly.'''
-    sessionid = session['revive']
-    all_advertisers = r.ox.getAdvertiserListByAgencyId(
-        sessionid,
-        current_app.config.get('REVIVE_AGENCY_ID')
-    )
-    return all_advertisers
-
-
-def get_advertiser_id():
-    '''Try to find out if the customer is already registered
-       in Revive, if not, register him.'''
-    r = xmlrpc.client.ServerProxy(
-        current_app.config.get('REVIVE_XML_URI'),
-        verbose=False
-    )
-    sessionid = session['revive']
-    all_advertisers = all_advertisers_cached(r)
-
-    try:
-        next(x for x in all_advertisers if x['advertiserName'] ==
-             current_user.username)
-    except StopIteration:
-        r.ox.addAdvertiser(
-            sessionid,
-            {
-                'agencyId': current_app.config.get('REVIVE_AGENCY_ID'),
-                'advertiserName': current_user.username,
-                'emailAddress': current_user.email,
-                'contactName': current_user.username,
-                'comments': current_app.config.get('USER_APP_NAME')
-            }
-        )
-        log.info("Added {} as new advertiser.".format(current_user.username))
-        cache.delete_memoized(all_advertisers_cached)
-        all_advertisers = all_advertisers_cached(r)
-
-    advertiser_id = int(next(x for x in all_advertisers if x['advertiserName'] ==
-                             current_user.username)['advertiserId'])
-    return advertiser_id
-
-
 @blueprint.url_value_preprocessor
 def get_basket(endpoint, values):
     """We need basket on every view if authenticated"""
@@ -145,26 +97,6 @@ def get_basket(endpoint, values):
             # db.session.rollback()
             log.exception(e)
             pass
-
-    # keeping constant connection to Revive instance
-    r = xmlrpc.client.ServerProxy(
-        current_app.config.get('REVIVE_XML_URI'),
-        verbose=False
-    )
-    if 'revive' in session:
-        sessionid = session['revive']
-        try:
-            r.ox.getUserList(sessionid)
-        except xmlrpc.client.Fault:
-            log.debug("XML-RPC session to Revive probably expired, getting new one.")
-            sessionid = reviveme(r)
-            session['revive'] = sessionid
-        except Exception as e:
-            log.exception(e)
-    else:
-        sessionid = reviveme(r)
-        session['revive'] = sessionid
-    # vers we need globally
 
 
 @blueprint.route('/me')
@@ -238,6 +170,52 @@ def add_text():
     return render_template('users/upload_text.html', form=form)
 
 
+@blueprint.route('/add/zone', methods=['GET', 'POST'])
+@roles_accepted('admin')
+def add_zone():
+    """Add a zone."""
+    form = AddZoneForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            Zones.create(
+                name=form.zone_name.data,
+                comments=form.zone_comments.data,
+                width=form.zone_width.data,
+                height=form.zone_height.data,
+                x0=0,
+                y0=0,
+                x1=0,
+                y1=0
+            )
+            dblogger(
+                current_user.id,
+                "Zone {} added".format(form.zone_name.data)
+            )
+            flash('Zone added sucessfully.', 'success')
+            return redirect(url_for('user.offer'))
+    return render_template('users/add_zone.html', form=form)
+
+
+@blueprint.route('/add/website', methods=['GET', 'POST'])
+@roles_accepted('admin')
+def add_website():
+    """Add a website."""
+    form = AddWebsiteForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            Websites.create(
+                name=form.website_name.data,
+                comments=form.website_comments.data,
+            )
+            dblogger(
+                current_user.id,
+                "Zone {} added".format(form.website_name.data)
+            )
+            flash('Website added sucessfully.', 'success')
+            return redirect(url_for('user.offer'))
+    return render_template('users/add_website.html', form=form)
+
+
 @blueprint.route('/bannerz')
 @login_required
 def bannerz():
@@ -260,72 +238,36 @@ def offer():
     """Get and display all possible websites and zones in them."""
     form = ChangeOffer()
 
-    r = xmlrpc.client.ServerProxy(
-        current_app.config.get('REVIVE_XML_URI'),
-        verbose=False
-    )
-    sessionid = session['revive']
-    advertiser_id = get_advertiser_id()
-
-    # Get all publishers (websites)
-    publishers = r.ox.getPublisherListByAgencyId(
-        sessionid,
-        current_app.config.get('REVIVE_AGENCY_ID')
-    )
-
-    # ignore the websites on our blacklist 
-    for blackwebsite in current_app.config.get('REVIVE_IGNORED_WEBSITES'):
-        for website in publishers:
-            if website['publisherName'] == blackwebsite:
-                publishers.remove(website)
-
     all_zones = []
-    for website in publishers:
-
-        # get zones from Revive
-        allzones = r.ox.getZoneListByPublisherId(
-            sessionid,
-            website['publisherId']
-        )
-        for zone in allzones:
-            # First check if the zone from Revive is available in our Price
-            # database, of not, we are creating it with zero values
-            howmany = Prices.query.filter_by(zoneid=zone['zoneId']).count()
+    zones = Zones.query.all()
+    for zone in zones:
+            tmpdict = {}
+            # First check if the zone has prices, if not, we are creating it with zero values
+            howmany = Prices.query.filter_by(zoneid=zone.id).count()
             if howmany is not 1:
                 Prices.create(
-                    zoneid=zone['zoneId'],
+                    zoneid=zone.id,
                     dayprice=0,
-                    x0=0,
-                    x1=0,
-                    y0=0,
-                    y1=0
+                    fiat="EUR"
                 )
                 Prices.commit()
 
             price = Prices.query.filter_by(
-                        zoneid=zone['zoneId']
+                        zoneid=zone.id
                     ).first()
 
-            tmpdict = {}
 
-            tmpdict['publisherId'] = zone['publisherId']
-            tmpdict['zoneName'] = zone['zoneName']
-            tmpdict['width'] = zone['width']
-            tmpdict['height'] = zone['height']
-            tmpdict['zoneId'] = zone['zoneId']
-            tmpdict['comments'] = zone['comments']
-            tmpdict['type'] = zone['type']
-
+            tmpdict['                   ']
             tmpdict['price'] = price.dayprice
-            tmpdict['x0'] = price.x0
-            tmpdict['x1'] = price.x1
-            tmpdict['y0'] = price.y0
-            tmpdict['y1'] = price.y1
+            tmpdict['x0'] = zone.x0
+            tmpdict['x1'] = zone.x1
+            tmpdict['y0'] = zone.y0
+            tmpdict['y1'] = zone.y1
 
             # get stats and ignore if none
             try:
                 ztatz = Impressions.query.filter_by(
-                            zoneid=zone['zoneId']
+                            zoneid=zone.id
                         ).first()
                 tmpdict['impressions'] = ztatz.impressions
             except Exception as e:
@@ -337,7 +279,7 @@ def offer():
 
             # Prepare overview image
             create_banner_overview(
-                zone['zoneId']
+                zone.id
             )
 
     if request.method == 'POST':
@@ -349,10 +291,6 @@ def offer():
                         zoneid=form.zoneid.data).update(
                             {
                                 "dayprice": form.zoneprice.data,
-                                "x0": form.x0.data,
-                                "x1": form.x1.data,
-                                "y0": form.y0.data,
-                                "y1": form.y1.data
                             }
                         )
                     Prices.commit()
@@ -363,7 +301,6 @@ def offer():
     return render_template(
         'users/offer.html',
         allzones=all_zones,
-        publishers=publishers,
         isadmin=amiadmin(),
         form=form
     )
@@ -747,47 +684,14 @@ def clear_banner(banner_id):
 @login_required
 def clear_basket(campaign_id):
     try:
-        r = xmlrpc.client.ServerProxy(
-            current_app.config.get('REVIVE_XML_URI'),
-            verbose=False
-        )
-        sessionid = session['revive']
         if campaign_id == 0:
             all_basket = Basket.query.filter_by(user_id=current_user.id).all()
             # Removing these campaigns from Revive as not useful in future
             Basket.query.filter_by(user_id=current_user.id).delete()
             for order in all_basket:
-                try:
-                    removed = r.ox.deleteCampaign(sessionid, order.campaigno)
-                    log.debug(
-                        "Campaign #%s removed from Revive?: %s" % (
-                            str(order.campaigno),
-                            str(removed)
-                            )
-                    )
-                except:
-                    log.info(
-                        "Campaign %s was not removed from Revive because it was not found in there. It can be an error or you removed it manually before in Revive interface." % (
-                            str(order.campaigno)
-                            )
-                    )
                 Orders.query.filter_by(campaigno=order.campaigno).delete()
                 flash('Your basket was removed sucessfully.', 'success')
         else:
-            try:
-                removed = r.ox.deleteCampaign(sessionid, campaign_id)
-                log.debug(
-                    "Campaign #%s removed from Revive?: %s" % (
-                            str(campaign_id),
-                            str(removed)
-                        )
-                )
-            except:
-                log.info(
-                    "Campaign %s was not removed from Revive because it was not found in there. It can be an error or you removed it manually before in Revive interface." % (
-                        str(campaign_id)
-                        )
-                )
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
             Orders.query.filter_by(campaigno=campaign_id).delete()
             flash('Your planned campaign was removed sucessfully.', 'success')
@@ -805,12 +709,6 @@ def clear_basket(campaign_id):
 @login_required
 def clear_campaign(campaign_no):
     try:
-        r = xmlrpc.client.ServerProxy(
-            current_app.config.get('REVIVE_XML_URI'),
-            verbose=False
-        )
-        sessionid = session['revive']
-
         # getting data about this campaign 
         # and confirming it belongs to the user
         campaigndata = Orders.query.filter_by(campaigno=campaign_no).first()
@@ -820,14 +718,6 @@ def clear_campaign(campaign_no):
         # removing campaign from all sources
         Orders.query.filter_by(campaigno=campaign_no).delete()
         Orders.commit()
-        removed = r.ox.deleteCampaign(sessionid, campaign_no)
-        logdata = (
-            "Campaign #{} removed from Revive?: {}".format(
-                campaign_no,
-                removed
-            )
-        )
-        log.debug(logdata)
         dblogger(
             current_user.id,
             "Campaign #{} was deleted by user.".format(

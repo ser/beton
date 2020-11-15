@@ -61,7 +61,7 @@ class Banner(SurrogatePK, Model):
     type = Column(db.String(21), unique=False, nullable=False)
     content = Column(db.String(256), unique=False, nullable=True)
     icon = Column(db.String(128), unique=False, nullable=True)
-    bannerid = db.relationship("Orders")
+    bannerid = db.relationship("Campaignes")
 
     def __init__(self, filename, owner, created_at, url, height, width, comments, type, content, icon):
         """Create instance."""
@@ -95,18 +95,28 @@ width: {}, comment: {}, type: {}, content: {}, icon: {}>'.format(
 
 class Zones(SurrogatePK, Model):
     """Zones.
+    xy rectangle is constructed according to:
+        https://svgwrite.readthedocs.io/en/master/classes/shapes.html#rect
     """
 
     __tablename__ = 'zones'
-    zname = Column(db.String(100), unique=True, nullable=False)
+    websiteid = Column(db.Integer(), db.ForeignKey('websites.id', ondelete='CASCADE'), nullable=False)
+    name = Column(db.String(100), unique=True, nullable=False)
+    comments = Column(db.String(512), nullable=True)
+    width = Column(db.Integer(), unique=False, nullable=False, default=0)
+    height = Column(db.Integer(), unique=False, nullable=False, default=0)
     x0 = Column(db.Integer(), unique=False, nullable=False, default=0)
     y0 = Column(db.Integer(), unique=False, nullable=False, default=0)
     x1 = Column(db.Integer(), unique=False, nullable=False, default=0)
     y1 = Column(db.Integer(), unique=False, nullable=False, default=0)
+    zoneid = db.relationship("Campaignes")
 
-    def __init__(self, zname):
+    def __init__(self, name, comments, width, height, x0, y0, x1, y1):
         """Create instance."""
-        self.zname = zname
+        self.name = name
+        self.comments = comments
+        self.width = width
+        self.height = height
         self.x0 = x0
         self.y0 = y0
         self.x1 = x1
@@ -114,8 +124,11 @@ class Zones(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<zname: {}, square: {}x{} {}x{}>'.format(
-            self.zname,
+        return '<name: {}, comments: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
+            self.name,
+            self.comments,
+            self.width,
+            self.height,
             self.x0,
             self.y0,
             self.x1,
@@ -125,12 +138,13 @@ class Zones(SurrogatePK, Model):
 
 class Campaignes(SurrogatePK, Model):
     """Campaignes.
-    Campaign will be uniquely identified by blake2b digest of cname: blake2b(digest_size=6).hexdigest()
+    Campaign will be uniquely identified by blake2b digest of name: blake2b(digest_size=6).hexdigest()
     """
 
     __tablename__ = 'campaignes'
-    cname = Column(db.String(100), unique=True, nullable=False)
+    name = Column(db.String(100), unique=True, nullable=False)
     zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
+    ctype = Column(db.Integer(), unique=False, nullable=False)
     bannerid = Column(db.Integer(), db.ForeignKey('banners.id', ondelete='CASCADE'), nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     begins_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
@@ -138,11 +152,12 @@ class Campaignes(SurrogatePK, Model):
     impressions = Column(db.Integer(), unique=False, nullable=True)
     comments = Column(db.Text, unique=False, nullable=False)
 
-    def __init__(self, cname):
+    def __init__(self, name, zoneid, bannerid, ctype):
         """Create instance."""
-        self.cname = cname
+        self.cname = name
         self.zoneid = zoneid
         self.bannerid = bannerid
+        self.ctype = ctype
         self.created_at = created_at
         self.begins_at = begins_at
         self.stops_at = stops_at
@@ -151,11 +166,12 @@ class Campaignes(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<cname: {}, zoneid: {}, bannerid: {}, created_at: {}, \
+        return '<cname: {}, zoneid: {}, bannerid: {}, ctype: {}, created_at: {}, \
 begins_at: {}, stops_at: {}, impressions: {}, comments: {}'.format(
             self.cname,
             self.zoneid,
             self.bannerid,
+            self.ctype,
             self.created_at,
             self.begins_at,
             self.stops_at,
@@ -166,25 +182,25 @@ begins_at: {}, stops_at: {}, impressions: {}, comments: {}'.format(
 
 class Prices(SurrogatePK, Model):
     """Zone prices.
-    Rectangle is constructed according to:
-        https://svgwrite.readthedocs.io/en/master/classes/shapes.html#rect
     """
 
     __tablename__ = 'zoneprice'
     zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
     dayprice = Column(db.Integer(), unique=False, nullable=False, default=0)
+    fiat = Column(db.String(3), unique=False, nullable=False)
 
-    def __init__(self, zoneid, dayprice, x0, y0, x1, y1):
+    def __init__(self, zoneid, dayprice, fiat):
         """Create instance."""
         self.zoneid = zoneid
         self.dayprice = dayprice
+        self.fiat = fiat
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<zoneid: {}, dayprice: {}, \
-square: {}x{} {}x{}>'.format(
+        return '<zoneid: {}, dayprice: {}, fiat: {}>'.format(
             self.zoneid,
             self.dayprice,
+            self.fiat
         )
 
 
@@ -259,6 +275,26 @@ received_at: {}, confirmed_at: {}, btcpayserver_id: {}>'.format(
         )
 
 
+class Websites(SurrogatePK, Model):
+    """Websites"""
+
+    __tablename__ = 'websites'
+    name = Column(db.String(100), unique=True, nullable=False)
+    comments = Column(db.Text, unique=False, nullable=False)
+
+    def __init__(self, name, comments):
+        """Create instance."""
+        self.name = name
+        self.comments = comments
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return '<name: {}, comments: {}>'.format(
+            self.name,
+            self.comments
+        )
+
+
 class Basket(SurrogatePK, Model):
     """User basket."""
 
@@ -273,7 +309,7 @@ class Basket(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return 'user_id: {}, campaigno: {}>'.format(
+        return '<user_id: {}, campaigno: {}>'.format(
             self.user_id,
             self.campaigno
         )
@@ -295,7 +331,7 @@ class Log(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return 'user_id: {}, logdata: {}, datelog: {}>'.format(
+        return '<user_id: {}, logdata: {}, datelog: {}>'.format(
             self.user_id,
             self.logdata,
             self.datelog
@@ -308,18 +344,15 @@ class Impressions(SurrogatePK, Model):
     __tablename__ = 'impressions'
     zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
     impressions = Column(db.Integer(), unique=False, nullable=True)
-    clicks = Column(db.Integer(), unique=False, nullable=True)
 
-    def __init__(self, zoneid, impressions, clicks):
+    def __init__(self, zoneid, impressions):
         """Create instance."""
         self.zoneid = zoneid
         self.impressions = impressions
-        self.clicks = clicks
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return 'zoneid: {}, impressions: {}, clicks: {}>'.format(
+        return '<zoneid: {}, impressions: {}>'.format(
             self.zoneid,
             self.impressions,
-            self.clicks
         )
