@@ -14,7 +14,7 @@
     "dripicons2": "",
     "moment-timezone": "",
     "underscore": "",
-    "fullcalendar": "",
+    "fullcalendar": "=3.10.2",
     "holderjs": ""
   }
 }
