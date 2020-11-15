@@ -99,20 +99,33 @@ class Zones(SurrogatePK, Model):
 
     __tablename__ = 'zones'
     zname = Column(db.String(100), unique=True, nullable=False)
+    x0 = Column(db.Integer(), unique=False, nullable=False, default=0)
+    y0 = Column(db.Integer(), unique=False, nullable=False, default=0)
+    x1 = Column(db.Integer(), unique=False, nullable=False, default=0)
+    y1 = Column(db.Integer(), unique=False, nullable=False, default=0)
 
     def __init__(self, zname):
         """Create instance."""
         self.zname = zname
+        self.x0 = x0
+        self.y0 = y0
+        self.x1 = x1
+        self.y1 = y1
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<zname: {}'.format(
-            self.zname
+        return '<zname: {}, square: {}x{} {}x{}>'.format(
+            self.zname,
+            self.x0,
+            self.y0,
+            self.x1,
+            self.y1
         )
 
 
 class Campaignes(SurrogatePK, Model):
     """Campaignes.
+    Campaign will be uniquely identified by blake2b digest of cname: blake2b(digest_size=6).hexdigest()
     """
 
     __tablename__ = 'campaignes'
@@ -160,19 +173,11 @@ class Prices(SurrogatePK, Model):
     __tablename__ = 'zoneprice'
     zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
     dayprice = Column(db.Integer(), unique=False, nullable=False, default=0)
-    x0 = Column(db.Integer(), unique=False, nullable=False, default=0)
-    y0 = Column(db.Integer(), unique=False, nullable=False, default=0)
-    x1 = Column(db.Integer(), unique=False, nullable=False, default=0)
-    y1 = Column(db.Integer(), unique=False, nullable=False, default=0)
 
     def __init__(self, zoneid, dayprice, x0, y0, x1, y1):
         """Create instance."""
         self.zoneid = zoneid
         self.dayprice = dayprice
-        self.x0 = x0
-        self.y0 = y0
-        self.x1 = x1
-        self.y1 = y1
 
     def __repr__(self):
         """Represent instance as a unique string."""
@@ -180,10 +185,6 @@ class Prices(SurrogatePK, Model):
 square: {}x{} {}x{}>'.format(
             self.zoneid,
             self.dayprice,
-            self.x0,
-            self.y0,
-            self.x1,
-            self.y1
         )
 
 
