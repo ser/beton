@@ -4,7 +4,7 @@
 <div class="container-narrow">
     <div class="jumbotron">
         <h1>Add a new website</h1>
-        <p class="lead">Love Websites</p>
+        <p class="lead">{{ all_websites }}</p>
     </div>
     <form id="uploadForm" action="" role="form" method="post" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

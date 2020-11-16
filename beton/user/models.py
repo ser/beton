@@ -111,8 +111,9 @@ class Zones(SurrogatePK, Model):
     y1 = Column(db.Integer(), unique=False, nullable=False, default=0)
     zoneid = db.relationship("Campaignes")
 
-    def __init__(self, name, comments, width, height, x0, y0, x1, y1):
+    def __init__(self, websiteid, name, comments, width, height, x0, y0, x1, y1):
         """Create instance."""
+        self.websiteid = websiteid
         self.name = name
         self.comments = comments
         self.width = width
@@ -124,7 +125,8 @@ class Zones(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<name: {}, comments: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
+        return '<websiteid: {}, name: {}, comments: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
+            self.websiteid,
             self.name,
             self.comments,
             self.width,

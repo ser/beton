@@ -4,7 +4,7 @@ from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
 from flask_security import ConfirmRegisterForm
-from wtforms import IntegerField, StringField
+from wtforms import IntegerField, SelectField, StringField
 from wtforms.validators import DataRequired, Length, NumberRange, Required, URL
 
 images = UploadSet('images', IMAGES)
@@ -46,6 +46,8 @@ class AddBannerTextForm(Form):
 class AddZoneForm(Form):
     """Add zone."""
 
+    zone_website = SelectField('Choose website:', coerce=int)
+
     zone_name = StringField('Zone name (10 to 100 characters)',
                             validators=[DataRequired(), Length(min=10, max=100)])
     zone_comments = StringField('Description (optional)',
@@ -58,6 +60,20 @@ class AddZoneForm(Form):
     def __init__(self, *args, **kwargs):
         """Create instance."""
         super(AddZoneForm, self).__init__(*args, **kwargs)
+
+
+class AddWebsiteForm(Form):
+    """Add website."""
+
+    website_name = StringField('Website name (10 to 100 characters)',
+                            validators=[DataRequired(), Length(min=10, max=100)])
+    website_comments = StringField('Description (optional)',
+                                validators=[Length(max=500)])
+
+    def __init__(self, *args, **kwargs):
+        """Create instance."""
+        super(AddWebsiteForm, self).__init__(*args, **kwargs)
+
 
 class AddPairingTextForm(Form):
     """Payment processor pairing form."""

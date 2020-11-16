@@ -17,8 +17,8 @@ from flask_uploads import UploadSet, IMAGES
 
 from beton.extensions import cache
 from beton.logger import log
-from beton.user.forms import AddBannerForm, AddBannerTextForm, AddPairingTextForm, AddZoneForm, ChangeOffer
-from beton.user.models import Banner, Basket, Campaignes, Impressions, Log, Orders, Payments, Prices, User, Zones
+from beton.user.forms import AddBannerForm, AddBannerTextForm, AddPairingTextForm, AddWebsiteForm, AddZoneForm, ChangeOffer
+from beton.user.models import Banner, Basket, Campaignes, Impressions, Log, Orders, Payments, Prices, User, Websites, Zones
 from beton.utils import dblogger, flash_errors, reviveme
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
@@ -174,10 +174,14 @@ def add_text():
 @roles_accepted('admin')
 def add_zone():
     """Add a zone."""
+    all_zones = Zones.query.all()
     form = AddZoneForm()
+    form.zone_website.choices = [(w.id, w.name) for w in
+                                 Websites.query.order_by('name')]
     if request.method == 'POST':
         if form.validate_on_submit():
             Zones.create(
+                websiteid=form.zone_website.data,
                 name=form.zone_name.data,
                 comments=form.zone_comments.data,
                 width=form.zone_width.data,
@@ -193,13 +197,16 @@ def add_zone():
             )
             flash('Zone added sucessfully.', 'success')
             return redirect(url_for('user.offer'))
-    return render_template('users/add_zone.html', form=form)
+    return render_template('users/add_zone.html',
+                           form=form,
+                           all_zones=all_zones)
 
 
 @blueprint.route('/add/website', methods=['GET', 'POST'])
 @roles_accepted('admin')
 def add_website():
     """Add a website."""
+    all_websites = Websites.query.all()
     form = AddWebsiteForm()
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -213,7 +220,9 @@ def add_website():
             )
             flash('Website added sucessfully.', 'success')
             return redirect(url_for('user.offer'))
-    return render_template('users/add_website.html', form=form)
+    return render_template('users/add_website.html',
+                           form=form,
+                           all_websites=all_websites)
 
 
 @blueprint.route('/bannerz')
@@ -232,19 +241,19 @@ def bannerz():
     )
 
 
-@blueprint.route('/offer', methods=['GET', 'POST'])
+@blueprint.route('/offer', methods=['GET'])
 @login_required
 def offer():
     """Get and display all possible websites and zones in them."""
-    form = ChangeOffer()
-
     all_zones = []
-    zones = Zones.query.all()
-    for zone in zones:
+    websites = Websites.query.all()
+    for website in websites:
+        zones = Zones.query.filter_by(websiteid=website.id).all()
+        for zone in zones:
             tmpdict = {}
             # First check if the zone has prices, if not, we are creating it with zero values
             howmany = Prices.query.filter_by(zoneid=zone.id).count()
-            if howmany is not 1:
+            if howmany != 1:
                 Prices.create(
                     zoneid=zone.id,
                     dayprice=0,
@@ -256,8 +265,8 @@ def offer():
                         zoneid=zone.id
                     ).first()
 
-
-            tmpdict['                   ']
+            tmpdict['website'] =  website
+            tmpdict['name'] = zone.name
             tmpdict['price'] = price.dayprice
             tmpdict['x0'] = zone.x0
             tmpdict['x1'] = zone.x1
@@ -282,27 +291,12 @@ def offer():
                 zone.id
             )
 
-    if request.method == 'POST':
-        log.debug(pprint.pformat(request.form, depth=5))
-        if form.validate_on_submit():
-            for zone in all_zones:
-                if form.zoneid.data == zone['zoneId']:
-                    Prices.query.filter_by(
-                        zoneid=form.zoneid.data).update(
-                            {
-                                "dayprice": form.zoneprice.data,
-                            }
-                        )
-                    Prices.commit()
-
-        return redirect(url_for('user.offer'))
-
     # Render the page and quit
     return render_template(
         'users/offer.html',
         allzones=all_zones,
-        isadmin=amiadmin(),
-        form=form
+        websites=websites,
+        isadmin=amiadmin()
     )
 
 

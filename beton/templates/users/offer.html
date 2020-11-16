@@ -3,15 +3,19 @@
 {% block content %}
     <div class="jumbotron">
         <h1>This is it, {{ current_user.username  }}</h1>
-        <p>{{ allzones }}
+        {% if isadmin == True %}
+        <p class="lead">You are an admin. You can add <a class="btn btn-secondary btn-sm" role="button" href="{{ url_for('user.add_website') }}">
+        websites</a> and <a class="btn btn-secondary btn-sm" role="button" href="{{ url_for('user.add_zone') }}">zones</a></p>
+        <p>{{ allzones }}</p>
+        {% endif %}
         <p class="lead">These are all zones in our offer. When you are decided, please <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.order') }}">order a new campaign</a></p>
     </div>
-    {% for website in publishers %}
+    {% for website in websites %}
     	<div class="border-top my-3"></div>
         <h1 class="display-2">{{ website.publisherName }}</h1>
             <div class="card-columns">
             {% for zone in allzones %}
-                {% if zone.publisherId == website.publisherId %}
+                {% if zone.website == website %}
                     <div class="card border-light">
                         <div class="card-header">
                             Zone #{{ zone.zoneId }} ※ {{ zone.zoneName }}
@@ -31,56 +35,6 @@
                             {% if zone.type == 0 %}
                             <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>
                             {% endif %}
-                            <form action="{{ url_for('user.offer') }}" method="post">
-                                <div class="form-group">
-                                    <label class="control-label">Zone administration</label>
-                                    <input class="form-control" type="hidden" name="zoneid" value="{{ zone.zoneId }}">
-                                </div>
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">price in cents</span>
-                                        </div>
-                                        {{ form.zoneprice(size=5, value=zone.price) }}
-                                    </div>
-                                </div>
-                                {% if zone.type == 0 %}
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">x0</span>
-                                        </div>
-                                        {{ form.x0(size=5, value=zone.x0) }}
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">x1</span>
-                                        </div>
-                                        {{ form.x1(size=5, value=zone.x1) }}
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">y0</span>
-                                        </div>
-                                        {{ form.y0(size=5, value=zone.y0) }}
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">y1</span>
-                                        </div>
-                                        {{ form.y1(size=5, value=zone.y1) }}
-                                    </div>
-                                </div>
-                                {% endif %}
-                                {{ form.csrf_token }}
-                                <input type="submit" value="Change">
-                            </form>
                             {% endif %}
                         </div>
                     </div>
