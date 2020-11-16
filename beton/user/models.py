@@ -125,7 +125,8 @@ class Zones(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<websiteid: {}, name: {}, comments: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
+        return '<id: {}, websiteid: {}, name: {}, comments: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
+            self.id,
             self.websiteid,
             self.name,
             self.comments,

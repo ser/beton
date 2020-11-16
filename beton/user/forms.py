@@ -4,7 +4,7 @@ from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
 from flask_security import ConfirmRegisterForm
-from wtforms import IntegerField, SelectField, StringField
+from wtforms import HiddenField, IntegerField, SelectField, StringField
 from wtforms.validators import DataRequired, Length, NumberRange, Required, URL
 
 images = UploadSet('images', IMAGES)
@@ -56,14 +56,16 @@ class AddZoneForm(Form):
                                validators=[DataRequired(), NumberRange(min=10, max=1500)])
     zone_height = IntegerField('Height (10-1500)',
                                validators=[DataRequired(), NumberRange(min=10, max=1500)])
-    zone_x0 = IntegerField('x0', validators=[NumberRange(min=10, max=1500)],
+    zone_x0 = IntegerField('x0', validators=[NumberRange(min=0, max=1500)],
                                              default=0)
-    zone_x1 = IntegerField('x1', validators=[NumberRange(min=10, max=1500)],
+    zone_x1 = IntegerField('x1', validators=[NumberRange(min=0, max=1500)],
                                              default=0)
-    zone_y0 = IntegerField('y0', validators=[NumberRange(min=10, max=1500)],
+    zone_y0 = IntegerField('y0', validators=[NumberRange(min=0, max=1500)],
                                              default=0)
-    zone_y1 = IntegerField('y1', validators=[NumberRange(min=10, max=1500)],
+    zone_y1 = IntegerField('y1', validators=[NumberRange(min=0, max=1500)],
                                              default=0)
+
+    edited = HiddenField()
 
     def __init__(self, *args, **kwargs):
         """Create instance."""

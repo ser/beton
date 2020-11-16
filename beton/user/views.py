@@ -181,7 +181,26 @@ def add_zone(zoneid=None):
                                  Websites.query.order_by('name')]
     if request.method == 'POST':
         if form.validate_on_submit():
-            if zoneid is None:
+            if form.edited.data == "yes":
+                zone = Zones.query.filter_by(id=zoneid).one()
+                zone.websiteid=form.zone_website.data,
+                zone.name=form.zone_name.data,
+                zone.comments=form.zone_comments.data,
+                zone.width=form.zone_width.data,
+                zone.height=form.zone_height.data,
+                zone.x0=form.zone_x0.data,
+                zone.y0=form.zone_y0.data,
+                zone.x1=form.zone_x1.data,
+                zone.y1=form.zone_y1.data
+                Zones.commit()
+                msg = "Zone {} updated".format(form.zone_name.data)
+                dblogger(
+                    current_user.id,
+                    msg
+                )
+                log.debug(msg)
+                flash('Zone updated sucessfully.', 'success')
+            else:
                 Zones.create(
                     websiteid=form.zone_website.data,
                     name=form.zone_name.data,
@@ -193,33 +212,31 @@ def add_zone(zoneid=None):
                     x1=form.zone_x1.data,
                     y1=form.zone_y1.data
                 )
+                msg = "Zone {} added".format(form.zone_name.data)
                 dblogger(
                     current_user.id,
-                    "Zone {} added".format(form.zone_name.data)
+                    msg
                 )
+                log.debug(msg)
                 flash('Zone added sucessfully.', 'success')
-            else:
-                Zones.query.filter_by(id=zoneid).update(
-                    websiteid=form.zone_website.data,
-                    name=form.zone_name.data,
-                    comments=form.zone_comments.data,
-                    width=form.zone_width.data,
-                    height=form.zone_height.data,
-                    x0=form.zone_x0.data,
-                    y0=form.zone_y0.data,
-                    x1=form.zone_x1.data,
-                    y1=form.zone_y1.data
-                )
-                dblogger(
-                    current_user.id,
-                    "Zone {} updated".format(form.zone_name.data)
-                )
-                flash('Zone updated sucessfully.', 'success')
             redirect(url_for('user.offer'))
+        else:
+            log.debug(form.errors)
     else:
-        pass 
+        if zoneid is not None:
+            zone = Zones.query.filter_by(id=zoneid).first()
+            form.zone_website.data = zone.id
+            form.zone_name.data = zone.name
+            form.zone_comments.data = zone.comments
+            form.zone_width.data = zone.width
+            form.zone_height.data = zone.height
+            form.zone_x0.data = zone.x0
+            form.zone_y0.data = zone.y0
+            form.zone_x1.data = zone.x1
+            form.zone_y1.data = zone.y1
     return render_template('users/add_zone.html',
                            form=form,
+                           zoneid=zoneid,
                            all_zones=all_zones)
 
 
@@ -292,7 +309,8 @@ def offer():
                         zoneid=zone.id
                     ).first()
 
-            tmpdict['website'] =  website
+            tmpdict['website'] = website.name
+            tmpdict['id'] = zone.id
             tmpdict['name'] = zone.name
             tmpdict['price'] = price.dayprice
             tmpdict['x0'] = zone.x0

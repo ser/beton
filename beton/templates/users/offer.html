@@ -11,35 +11,41 @@
         <p class="lead">These are all zones in our offer. When you are decided, please <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.order') }}">order a new campaign</a></p>
     </div>
     {% for website in websites %}
-    	<div class="border-top my-3"></div>
-        <h1 class="display-2">{{ website.publisherName }}</h1>
-            <div class="card-columns">
-            {% for zone in allzones %}
-                {% if zone.website == website %}
-                    <div class="card border-light">
-                        <div class="card-header">
-                            Zone #{{ zone.zoneId }} ※ {{ zone.zoneName }}
-                        </div>
-                        {% if zone.type == 0 %}
-                        <img class="img-fluid" alt="zone {{ zone.zoneId }}"src="{{ config.UPLOADED_IMAGES_URL }}overview/zone-{{ zone.zoneId }}.png">
-                        {% endif %}
-                        <div class="card-body">
-                            <div id="comments"><p class="card-subtitle text-muted">{{ zone.comments }}</p><br/></div>
+        <div class="card">
+            <div class="card-header">{{ website.name }}</div>
+            <div class="card-body">
+                <div class="card-columns">
+                {% for zone in allzones %}
+                    {% if zone.website == website.name %}
+                        <div class="card border-light">
+                            <div class="card-header">
+                                Zone #{{ zone.id }} ※ {{ zone.name }}
+                                {% if isadmin == True %}
+                                    <a class="float-right" href="{{ url_for('user.add_zone', zoneid=zone.id) }}">[edit]</a>
+                                {% endif %}
+                            </div>
                             {% if zone.type == 0 %}
-                            <div id="widthheight"><img src="holder.js/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
-                            <div id="size"><p>Size: {{ zone.width }}x{{ zone.height }}</p></div>
+                            <img class="img-fluid" alt="zone {{ zone.zoneId }}"src="{{ config.UPLOADED_IMAGES_URL }}overview/zone-{{ zone.zoneId }}.png">
                             {% endif %}
-                            <div id="impressions"><p>Last 30 days impressions of all banners in this zone: {{ zone.impressions }}</p></div>
-                            <div id="price"><p>{{ zone.price / 100 }} {{ config.FIAT }}/day</p></div>
-                            {% if isadmin == True %}
-                            {% if zone.type == 0 %}
-                            <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>
-                            {% endif %}
-                            {% endif %}
+                            <div class="card-body">
+                                <div id="comments"><p class="card-subtitle text-muted">{{ zone.comments }}</p><br/></div>
+                                {% if zone.type == 0 %}
+                                <div id="widthheight"><img src="holder.js/{{ zone.width }}x{{ zone.height }}" class="img-thumbnail thumbmax"></div>
+                                <div id="size"><p>Size: {{ zone.width }}x{{ zone.height }}</p></div>
+                                {% endif %}
+                                <div id="impressions"><p>Last 30 days impressions of all banners in this zone: {{ zone.impressions }}</p></div>
+                                <div id="price"><p>{{ zone.price / 100 }} {{ config.FIAT }}/day</p></div>
+                                {% if isadmin == True %}
+                                {% if zone.type == 0 %}
+                                <div id="overview"><p>Overview params: (x0={{ zone.x0 }}, y0={{ zone.y0 }}) (x1={{ zone.x1 }}, y1={{ zone.y1 }})</p></div>
+                                {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                </div>
             </div>
-    {% endfor %}
+        </div>
+        {% endfor %}
 {% endblock %}
