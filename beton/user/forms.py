@@ -52,10 +52,18 @@ class AddZoneForm(Form):
                             validators=[DataRequired(), Length(min=10, max=100)])
     zone_comments = StringField('Description (optional)',
                                 validators=[Length(max=500)])
-    zone_width = IntegerField('Zone Width in pixels (10-1500)',
+    zone_width = IntegerField('Width (10-1500)',
                                validators=[DataRequired(), NumberRange(min=10, max=1500)])
-    zone_height = IntegerField('Zone Height in pixels (10-1500)',
+    zone_height = IntegerField('Height (10-1500)',
                                validators=[DataRequired(), NumberRange(min=10, max=1500)])
+    zone_x0 = IntegerField('x0', validators=[NumberRange(min=10, max=1500)],
+                                             default=0)
+    zone_x1 = IntegerField('x1', validators=[NumberRange(min=10, max=1500)],
+                                             default=0)
+    zone_y0 = IntegerField('y0', validators=[NumberRange(min=10, max=1500)],
+                                             default=0)
+    zone_y1 = IntegerField('y1', validators=[NumberRange(min=10, max=1500)],
+                                             default=0)
 
     def __init__(self, *args, **kwargs):
         """Create instance."""

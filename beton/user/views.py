@@ -171,8 +171,9 @@ def add_text():
 
 
 @blueprint.route('/add/zone', methods=['GET', 'POST'])
+@blueprint.route('/edit/zone/<int:zoneid>', methods=['GET', 'POST'])
 @roles_accepted('admin')
-def add_zone():
+def add_zone(zoneid=None):
     """Add a zone."""
     all_zones = Zones.query.all()
     form = AddZoneForm()
@@ -180,26 +181,52 @@ def add_zone():
                                  Websites.query.order_by('name')]
     if request.method == 'POST':
         if form.validate_on_submit():
-            Zones.create(
-                websiteid=form.zone_website.data,
-                name=form.zone_name.data,
-                comments=form.zone_comments.data,
-                width=form.zone_width.data,
-                height=form.zone_height.data,
-                x0=0,
-                y0=0,
-                x1=0,
-                y1=0
-            )
-            dblogger(
-                current_user.id,
-                "Zone {} added".format(form.zone_name.data)
-            )
-            flash('Zone added sucessfully.', 'success')
-            return redirect(url_for('user.offer'))
+            if zoneid is None:
+                Zones.create(
+                    websiteid=form.zone_website.data,
+                    name=form.zone_name.data,
+                    comments=form.zone_comments.data,
+                    width=form.zone_width.data,
+                    height=form.zone_height.data,
+                    x0=form.zone_x0.data,
+                    y0=form.zone_y0.data,
+                    x1=form.zone_x1.data,
+                    y1=form.zone_y1.data
+                )
+                dblogger(
+                    current_user.id,
+                    "Zone {} added".format(form.zone_name.data)
+                )
+                flash('Zone added sucessfully.', 'success')
+            else:
+                Zones.query.filter_by(id=zoneid).update(
+                    websiteid=form.zone_website.data,
+                    name=form.zone_name.data,
+                    comments=form.zone_comments.data,
+                    width=form.zone_width.data,
+                    height=form.zone_height.data,
+                    x0=form.zone_x0.data,
+                    y0=form.zone_y0.data,
+                    x1=form.zone_x1.data,
+                    y1=form.zone_y1.data
+                )
+                dblogger(
+                    current_user.id,
+                    "Zone {} updated".format(form.zone_name.data)
+                )
+                flash('Zone updated sucessfully.', 'success')
+            redirect(url_for('user.offer'))
+    else:
+        pass 
     return render_template('users/add_zone.html',
                            form=form,
                            all_zones=all_zones)
+
+
+@roles_accepted('admin')
+def edit_zone():
+    """edit a zone."""
+    form = AddZoneForm()
 
 
 @blueprint.route('/add/website', methods=['GET', 'POST'])

@@ -20,14 +20,33 @@
             {{ form.zone_comments.label }}
             {{ form.zone_comments( placeholder="Comments", class_="form-control" ) }}
         </div>
-        <div class="form-group">
-            {{ form.zone_width.label }}
-            {{ form.zone_width( placeholder="Comments", class_="form-control" ) }}
+        <div class="row g-2">
+            <div class="col-md">
+                {{ form.zone_width.label }}, {{ form.zone_height.label }}
+                <div class="input-group mb3">
+                    {{ form.zone_width( placeholder="pixels", class_="form-control" ) }}
+                    <span class="input-group-text">x</span>
+                    {{ form.zone_height( placeholder="pixels", class_="form-control" ) }}
+                </div>
+            </div>
+            <div class="col-md">
+                {{ form.zone_x0.label }},  {{ form.zone_y0.label }}
+                <div class="input-group mb3">
+                {{ form.zone_x0( class_="form-control", size=5, maxlength=5 ) }}
+                <span class="input-group-text">x</span>
+                {{ form.zone_y0( class_="form-control", size=5, maxlength=5 ) }}
+                </div>
+            </div>
+            <div class="col-md">
+                {{ form.zone_x1.label }}, {{ form.zone_y1.label }}
+                <div class="input-group mb3">
+                {{ form.zone_x1( class_="form-control" ) }}
+                <span class="input-group-text">x</span>
+                {{ form.zone_y1( class_="form-control" ) }}
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            {{ form.zone_height.label }}
-            {{ form.zone_height( placeholder="Comments", class_="form-control" ) }}
-        </div>
+
         <p><button class="btn btn-info btn-submit" type="submit">Add this zone</button></p>
     </form>
 </div>
