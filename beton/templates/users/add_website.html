@@ -7,7 +7,7 @@
         <p class="lead">{{ all_websites }}</p>
     </div>
     <form id="uploadForm" action="" role="form" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        {{ form.csrf_token }}
         <div class="form-group">
             {{ form.website_name.label }}
             {{ form.website_name( placeholder="Unique name", class_="form-control" ) }}
