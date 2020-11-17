@@ -105,19 +105,21 @@ class Zones(SurrogatePK, Model):
     comments = Column(db.String(512), nullable=True)
     width = Column(db.Integer(), unique=False, nullable=False, default=0)
     height = Column(db.Integer(), unique=False, nullable=False, default=0)
+    active = Column(db.Boolean(), default=True)
     x0 = Column(db.Integer(), unique=False, nullable=False, default=0)
     y0 = Column(db.Integer(), unique=False, nullable=False, default=0)
     x1 = Column(db.Integer(), unique=False, nullable=False, default=0)
     y1 = Column(db.Integer(), unique=False, nullable=False, default=0)
     zoneid = db.relationship("Campaignes")
 
-    def __init__(self, websiteid, name, comments, width, height, x0, y0, x1, y1):
+    def __init__(self, websiteid, name, comments, width, height, active, x0, y0, x1, y1):
         """Create instance."""
         self.websiteid = websiteid
         self.name = name
         self.comments = comments
         self.width = width
         self.height = height
+        self.active = active
         self.x0 = x0
         self.y0 = y0
         self.x1 = x1
@@ -125,11 +127,12 @@ class Zones(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<id: {}, websiteid: {}, name: {}, comments: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
+        return '<id: {}, websiteid: {}, name: {}, comments: {}, active: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
             self.id,
             self.websiteid,
             self.name,
             self.comments,
+            self.active,
             self.width,
             self.height,
             self.x0,
@@ -154,8 +157,10 @@ class Campaignes(SurrogatePK, Model):
     stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     impressions = Column(db.Integer(), unique=False, nullable=True)
     comments = Column(db.Text, unique=False, nullable=False)
+    active = Column(db.Boolean(), default=True)
 
-    def __init__(self, name, zoneid, bannerid, ctype):
+    def __init__(self, name, zoneid, bannerid, ctype, created_at, begins_at,
+                 stops_at, impressions, comments, active):
         """Create instance."""
         self.cname = name
         self.zoneid = zoneid
@@ -166,11 +171,12 @@ class Campaignes(SurrogatePK, Model):
         self.stops_at = stops_at
         self.impressions = impressions
         self.comments = comments
+        self.active = active
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<cname: {}, zoneid: {}, bannerid: {}, ctype: {}, created_at: {}, \
-begins_at: {}, stops_at: {}, impressions: {}, comments: {}'.format(
+begins_at: {}, stops_at: {}, impressions: {}, comments: {}, active: {}>'.format(
             self.cname,
             self.zoneid,
             self.bannerid,
@@ -179,7 +185,8 @@ begins_at: {}, stops_at: {}, impressions: {}, comments: {}'.format(
             self.begins_at,
             self.stops_at,
             self.impressions,
-            seld.comments
+            self.comments,
+            self.active
         )
 
 
@@ -284,17 +291,20 @@ class Websites(SurrogatePK, Model):
     __tablename__ = 'websites'
     name = Column(db.String(100), unique=True, nullable=False)
     comments = Column(db.Text, unique=False, nullable=False)
+    active = Column(db.Boolean(), default=True)
 
-    def __init__(self, name, comments):
+    def __init__(self, name, comments, active):
         """Create instance."""
         self.name = name
         self.comments = comments
+        self.active = active
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<name: {}, comments: {}>'.format(
+        return '<name: {}, comments: {}, active: {}>'.format(
             self.name,
-            self.comments
+            self.comments,
+            self.active
         )
 
 

@@ -506,9 +506,6 @@ def api_all_campaigns(zone_id):
 @login_required
 def order():
     """Order a campaign."""
-    r = xmlrpc.client.ServerProxy(current_app.config.get('REVIVE_XML_URI'),
-                                  verbose=False)
-    sessionid = session['revive']
 
     if ('step' not in request.form) or \
             ('submit' in request.form.values() and request.form['submit'] == 'cancel'):
@@ -527,38 +524,16 @@ def order():
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
 
-        # Get all publishers (websites)
-        publishers = r.ox.getPublisherListByAgencyId(
-            sessionid,
-            current_app.config.get('REVIVE_AGENCY_ID')
-        )
-
-        # ignore the websites on our blacklist 
-        for blackwebsite in current_app.config.get('REVIVE_IGNORED_WEBSITES'):
-            for website in publishers:
-                if website['publisherName'] == blackwebsite:
-                    publishers.remove(website)
-
-        # Get zones from Revive
-        all_zones = []
-
-        for website in publishers:
-            allzones = r.ox.getZoneListByPublisherId(
-                sessionid,
-                website['publisherId']
-            )
-            for zone in allzones:
-                price = Prices.query.filter_by(zoneid=zone['zoneId']).first()
-                if not price:
-                    return render_template('users/order-noprice.html')
-                zone_width = zone['width']
-                zone_height = zone['height']
-                zone['price'] = price
-                if zone_width == banner.width and zone_height == banner.height:
-                    all_zones.append(zone)
+        # active zones where banner fits
+        zones = Zones.query.join(Websites).join(Prices).add_columns(
+            Websites.name, Prices.dayprice, Prices.fiat).filter(
+            Zones.active==True).filter(
+            Zones.width >= banner.width).filter(
+            Zones.height >= banner.height).all()
+        log.debug(zones)
         return render_template('users/order.html', banner=banner,
                                image_url=image_url,
-                               all_zones=all_zones, step='chose-zone')
+                               all_zones=zones, step='chose-zone')
 
     elif request.form['step'] == 'chose-date':
         banner_id = int(request.form['banner_id'])
@@ -586,66 +561,60 @@ def order():
 
         price = Prices.query.filter_by(zoneid=zone_id).first()
 
-        # We are booking the campaign in Revive, but turning off by default
-        # until payment is confirmed
-        advertiser_id = get_advertiser_id()
-
         try:
             begin = datetime.strptime(datestart, "%d/%m/%Y")
             enddate = datetime.strptime(datend, "%d/%m/%Y")
         except BaseException:
             return render_template('users/date-problems.html')
         totaltime = enddate - begin
-        diki = {}
-        diki['advertiserId'] = advertiser_id
-        diki['campaignName'] = randomname
-        diki['startDate'] = begin
-        diki['endDate'] = enddate
-        diki['comments'] = zone_name
-        campaign = r.ox.addCampaign(sessionid, diki)
-
-        # Now we are adding our banner to campaign
-        diki = {}
-        diki['campaignId'] = campaign
-        diki['bannerName'] = str(banner_id)
-        diki['imageURL'] = image_url
-        diki['width'] = width
-        diki['height'] = height
-        diki['url'] = url
-        diki['storageType'] = 'url'
-        r.ox.addBanner(sessionid, diki)
-
-        Orders.create(
-            campaigno=campaign,
+        campaign = Campaignes.create(
+            name=randomname,
             zoneid=zone_id,
+            ctype=0,
+            bannerid=banner_id,
             created_at=datetime.utcnow(),
             begins_at=begin,
             stops_at=enddate,
-            paymentno=0,
-            bannerid=banner_id,
-            name=randomname,
-            comments=zone_name,
             impressions=0,
-            user_id=current_user.id
+            comments="",
+            active=True
         )
-
+        log.debug(campaign)
         dblogger(
             current_user.id,
-            ("NEW Campaign #%s with name %s in zone %s, starting at %s, " +
-                "ending at %s, with banner %s created.") % (
-                str(campaign),
+            ("NEW Campaign #{} with name {} in zone #{}, starting at {}, " +
+                "ending at {}, with banner {} created.").format(
+                campaign,
                 randomname,
-                str(zone_id),
-                str(begin),
-                str(enddate),
-                str(banner_id)
+                zone_id,
+                begin,
+                enddate,
+                banner_id
             )
         )
 
-        Basket.create(
+        order = Orders.create(
+            campaigno=campaign,
+            created_at=datetime.utcnow(),
+            paymentno=0,
+            comments=zone_name,
+            user_id=current_user.id
+        )
+        log.debug(order)
+        dblogger(
+            current_user.id,
+            ("NEW Order #{} for campaign #{} {} created.").format(
+                order,
+                campaign,
+                randomname
+            )
+        )
+
+        basket = Basket.create(
             campaigno=campaign,
             user_id=current_user.id
         )
+        log.debug(basket)
 
         return render_template(
             'users/order.html',
