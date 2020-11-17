@@ -162,7 +162,7 @@ class Campaignes(SurrogatePK, Model):
     def __init__(self, name, zoneid, bannerid, ctype, created_at, begins_at,
                  stops_at, impressions, comments, active):
         """Create instance."""
-        self.cname = name
+        self.name = name
         self.zoneid = zoneid
         self.bannerid = bannerid
         self.ctype = ctype
@@ -175,9 +175,9 @@ class Campaignes(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<cname: {}, zoneid: {}, bannerid: {}, ctype: {}, created_at: {}, \
+        return '<name: {}, zoneid: {}, bannerid: {}, ctype: {}, created_at: {}, \
 begins_at: {}, stops_at: {}, impressions: {}, comments: {}, active: {}>'.format(
-            self.cname,
+            self.name,
             self.zoneid,
             self.bannerid,
             self.ctype,

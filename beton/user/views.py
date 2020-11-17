@@ -547,7 +547,10 @@ def order():
                                step='chose-date')
 
     elif request.form['step'] == 'order':
+
+        # TODO just in case, we should be checking if unlikely we don't have a campaign with this name already
         randomname = names.get_full_name()
+        #log.debug(randomname)
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
@@ -584,7 +587,7 @@ def order():
             current_user.id,
             ("NEW Campaign #{} with name {} in zone #{}, starting at {}, " +
                 "ending at {}, with banner {} created.").format(
-                campaign,
+                campaign.id,
                 randomname,
                 zone_id,
                 begin,
@@ -594,7 +597,7 @@ def order():
         )
 
         order = Orders.create(
-            campaigno=campaign,
+            campaigno=campaign.id,
             created_at=datetime.utcnow(),
             paymentno=0,
             comments=zone_name,
@@ -605,13 +608,13 @@ def order():
             current_user.id,
             ("NEW Order #{} for campaign #{} {} created.").format(
                 order,
-                campaign,
+                campaign.id,
                 randomname
             )
         )
 
         basket = Basket.create(
-            campaigno=campaign,
+            campaigno=campaign.id,
             user_id=current_user.id
         )
         log.debug(basket)
