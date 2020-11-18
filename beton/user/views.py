@@ -646,12 +646,13 @@ def basket():
     if basket_sql:
         for item in basket_sql:
             order_sql = Orders.query.filter_by(
-                campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
-                Banner.filename, Banner.url, Banner.width, Banner.height,
-                    Banner.content, Banner.icon, Banner.type, Prices.dayprice).first()
+                campaigno=item.campaigno).join(Campaignes).join(Banner).join(Zones).join(Prices).add_columns(
+                    Banner.filename, Banner.url, Banner.width, Banner.height,
+                    Banner.content, Banner.icon, Banner.type, Prices.dayprice,
+                    Campaignes.begins_at, Campaignes.stops_at).first()
             basket.append(order_sql)
-            begin = order_sql[0].begins_at
-            enddate = order_sql[0].stops_at
+            begin = order_sql.begins_at
+            enddate = order_sql.stops_at
             campaign_time = enddate - begin
             currencyprice = order_sql.dayprice/100*(campaign_time.days+1)
             price.append([item.campaigno, currencyprice])

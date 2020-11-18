@@ -19,6 +19,7 @@
             <div class="card-footer">
                 <a href="{{ url_for('user.pay') }}" class="btn btn-success btn-lg">
                     Pay for all items</a> or 
+                    <a href="{{ url_for('user.order') }}" class="btn btn-secondary btn-lg">Order more before paying</a> or 
                     <a href="{{ url_for('user.clear_basket', campaign_id=0) }}" class="btn btn-danger btn-xs">Empty whole basket</a>
             </div>
         </div>
@@ -30,7 +31,7 @@
                     Campaign #{{ order[0].campaigno }}
                 </div>
                 <div class="card-body">
-                    {% if order[0].stops_at < present %}
+                    {% if order.stops_at < present %}
                         <div class="alert alert-warning">
                             <h4 class="alert-heading">Campaign already expired!</h4>
                             <p>We advise you to remove it from the basket.</p>
@@ -51,9 +52,9 @@
                                 <br/>
                                 {{ order.url }}
                                 <br/>
-                                <b>From:</b> {{ order[0].begins_at.strftime('%Y-%m-%d (%A)') }}
+                                <b>From:</b> {{ order.begins_at.strftime('%Y-%m-%d (%A)') }}
                                 <br/>
-                                <b>To:</b> {{ order[0].stops_at.strftime('%Y-%m-%d (%A)') }}
+                                <b>To:</b> {{ order.stops_at.strftime('%Y-%m-%d (%A)') }}
                                 {% for x in price %}
                                     {% if x[0] == order[0].campaigno %}
                                     <br/>

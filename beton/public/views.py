@@ -4,7 +4,6 @@ import pprint
 import pushover
 import requests
 import uuid
-import xmlrpc
 
 from datetime import datetime
 from oslo_concurrency import lockutils
