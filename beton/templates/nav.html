@@ -1,40 +1,41 @@
 <nav class="navbar navbar-expand-sm navbar-{{ config.NAVBAR }} bg-{{ config.NAVBAR }} rounded">
-    <a class="navbar-brand" href="{% if current_user.is_authenticated %}{{ url_for('user.user_me') }}{% else %}{{ url_for('public.home') }}{% endif %}"><span class="icon dripicons-pamphlet"></span> {{ config.USER_APP_NAME }}</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse"
-        data-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false"
-        aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-    {% if current_user and current_user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.offer') }}"><span class="icon dripicons-checklist"></span> Our offer</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.order') }}"><span class="icon dripicons-to-do"></span> Order campaign</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('user.basket') }}">({% if g.basket is defined %}{{ g.basket }}{% else %}0{% endif %})<span class="icon dripicons-cart"></span> Shopping basket</a></li>
-    {% endif %}
-    </ul>
-    <ul class="navbar-nav ml-auto">
-    {% if current_user and current_user.is_authenticated %}
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="x" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="icon dripicons-user"></span> {{ current_user.username }}</a>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="{{ url_for('user.campaign') }}"><span class="icon dripicons-to-do"></span> Your campaigns</a>
-                <a class="dropdown-item" href="{{ url_for('user.bannerz')  }}"><span class="icon dripicons-view-list-large"></span> Your banners</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{{ url_for('public.logout') }}"><span class="icon dripicons-exit"></span> Logout</a>
-                {% if current_user and current_user.has_role('admin') %}
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{{ url_for('user.listusers') }}"><span class="icon dripicons-user-group"></span> Show all users</a>
-                    <a class="dropdown-item" href="{{ url_for('user.btcpaypair') }}"><span class="icon dripicons-card"></span> Payment pairing</a>
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% if current_user.is_authenticated %}{{ url_for('user.user_me') }}{% else %}{{ url_for('public.home') }}{% endif %}"><span class="icon dripicons-pamphlet"></span> {{ config.USER_APP_NAME }}</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                {% if current_user and current_user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('user.offer') }}"><span class="icon dripicons-checklist"></span> Our offer</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('user.order') }}"><span class="icon dripicons-to-do"></span> Order campaign</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('user.basket') }}">({% if g.basket is defined %}{{ g.basket }}{% else %}0{% endif %})<span class="icon dripicons-cart"></span> Shopping basket</a></li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-expanded="false"><span class="icon dripicons-user"></span> {{ current_user.username }}</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="{{ url_for('user.campaign') }}"><span class="icon dripicons-to-do"></span> Your campaigns</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.bannerz')  }}"><span class="icon dripicons-view-list-large"></span> Your banners</a></li>
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><a class="dropdown-item" href="{{ url_for('public.logout') }}"><span class="icon dripicons-exit"></span> Logout</a></li>
+                            {% if current_user and current_user.has_role('admin') %}
+                                <li><div class="dropdown-divider"></div></li>
+                                <li><a class="dropdown-item" href="{{ url_for('user.listusers') }}"><span class="icon dripicons-user-group"></span> Show all users</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('user.btcpaypair') }}"><span class="icon dripicons-card"></span> Payment pairing</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('user.add_zone') }}"><span class="icon dripicons-card"></span> Zones</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('user.add_website') }}"><span class="icon dripicons-card"></span> Websites</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a href="{{ config.USER_LOGIN_URL }}"><span class="badge badge-pill badge-primary">Sign in</span></a>&nbsp;</li>
+                    <li class="nav-item"><a href="{{ config.USER_REGISTER_URL }}"><span class="badge badge-pill badge-primary">Create account</span></a></li>
                 {% endif %}
-
-            </div>
-        </li>
-    {% else %}
-        <li class="nav-item"><a href="{{ config.USER_LOGIN_URL }}"><span class="badge badge-pill badge-primary">Sign in</span></a>&nbsp;</li>
-        <li class="nav-item"><a href="{{ config.USER_REGISTER_URL }}"><span class="badge badge-pill badge-primary">Create account</span></a></li>
-    {% endif %}
-    </ul>
+            </ul>
+        </div>
     </div>
 </nav>

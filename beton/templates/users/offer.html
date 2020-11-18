@@ -21,7 +21,7 @@
                             <div class="card-header">
                                 Zone #{{ zone.id }} ※ {{ zone.name }}
                                 {% if isadmin == True %}
-                                    <a class="float-right" href="{{ url_for('user.add_zone', zoneid=zone.id) }}">[edit]</a>
+                                    <a class="float-right" href="{{ url_for('user.add_zone', zoneid=zone.id) }}"><banner class="badge bg-secondary">edit</banner></a>
                                 {% endif %}
                             </div>
                             {% if zone.type == 0 %}

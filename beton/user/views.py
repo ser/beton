@@ -175,7 +175,7 @@ def add_text():
 @roles_accepted('admin')
 def add_zone(zoneid=None):
     """Add a zone."""
-    all_zones = Zones.query.all()
+    all_zones = Zones.query.join(Websites).all()
     form = AddZoneForm()
     form.zone_website.choices = [(w.id, w.name) for w in
                                  Websites.query.order_by('name')]
@@ -191,7 +191,8 @@ def add_zone(zoneid=None):
                 zone.x0=form.zone_x0.data,
                 zone.y0=form.zone_y0.data,
                 zone.x1=form.zone_x1.data,
-                zone.y1=form.zone_y1.data
+                zone.y1=form.zone_y1.data,
+                zone.active=form.zone_active.data
                 Zones.commit()
                 msg = "Zone {} updated".format(form.zone_name.data)
                 dblogger(
@@ -210,7 +211,8 @@ def add_zone(zoneid=None):
                     x0=form.zone_x0.data,
                     y0=form.zone_y0.data,
                     x1=form.zone_x1.data,
-                    y1=form.zone_y1.data
+                    y1=form.zone_y1.data,
+                    active=form.zone_active.data
                 )
                 msg = "Zone {} added".format(form.zone_name.data)
                 dblogger(
@@ -234,6 +236,7 @@ def add_zone(zoneid=None):
             form.zone_y0.data = zone.y0
             form.zone_x1.data = zone.x1
             form.zone_y1.data = zone.y1
+            form.zone_active.data = zone.active
     return render_template('users/add_zone.html',
                            form=form,
                            zoneid=zoneid,

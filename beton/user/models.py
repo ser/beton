@@ -127,10 +127,10 @@ class Zones(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<id: {}, websiteid: {}, name: {}, comments: {}, active: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
+        return '<id: {}, name: {}, website: {}, comments: {}, active: {}, size: {}x{}, square: {}x{} {}x{}>'.format(
             self.id,
-            self.websiteid,
             self.name,
+            self.website.name,  # foreign key
             self.comments,
             self.active,
             self.width,
@@ -292,6 +292,7 @@ class Websites(SurrogatePK, Model):
     name = Column(db.String(100), unique=True, nullable=False)
     comments = Column(db.Text, unique=False, nullable=False)
     active = Column(db.Boolean(), default=True)
+    zones = db.relationship('Zones', backref='website')
 
     def __init__(self, name, comments, active):
         """Create instance."""

@@ -4,7 +4,7 @@ from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
 from flask_security import ConfirmRegisterForm
-from wtforms import HiddenField, IntegerField, SelectField, StringField
+from wtforms import BooleanField, HiddenField, IntegerField, SelectField, StringField
 from wtforms.validators import DataRequired, Length, NumberRange, Required, URL
 
 images = UploadSet('images', IMAGES)
@@ -64,6 +64,7 @@ class AddZoneForm(Form):
                                              default=0)
     zone_y1 = IntegerField('y1', validators=[NumberRange(min=0, max=1500)],
                                              default=0)
+    zone_active = BooleanField('active')
 
     edited = HiddenField()
 
@@ -79,6 +80,7 @@ class AddWebsiteForm(Form):
                             validators=[DataRequired(), Length(min=10, max=100)])
     website_comments = StringField('Description (optional)',
                                 validators=[Length(max=500)])
+    website_active = BooleanField('active', default='checked')
 
     def __init__(self, *args, **kwargs):
         """Create instance."""
