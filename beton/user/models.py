@@ -110,7 +110,8 @@ class Zones(SurrogatePK, Model):
     y0 = Column(db.Integer(), unique=False, nullable=False, default=0)
     x1 = Column(db.Integer(), unique=False, nullable=False, default=0)
     y1 = Column(db.Integer(), unique=False, nullable=False, default=0)
-    zoneid = db.relationship("Campaignes")
+    zoneid = db.relationship("Campaignes", backref="zone")
+    priceid = db.relationship("Prices", backref="zone")
 
     def __init__(self, websiteid, name, comments, width, height, active, x0, y0, x1, y1):
         """Create instance."""
@@ -158,6 +159,7 @@ class Campaignes(SurrogatePK, Model):
     impressions = Column(db.Integer(), unique=False, nullable=True)
     comments = Column(db.Text, unique=False, nullable=False)
     active = Column(db.Boolean(), default=True)
+    campaigno = db.relationship("Orders", backref="campaigne")
 
     def __init__(self, name, zoneid, bannerid, ctype, created_at, begins_at,
                  stops_at, impressions, comments, active):
@@ -234,13 +236,17 @@ class Orders(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<campaigno: {}, created_at: {}, \
-comments: {}, paymentno: {}, user_id: {}>'.format(
+        return '<campaigno: {}, created_at: {}, begins_at: {}, stops_at: {},\
+comments: {}, paymentno: {}, user_id: {}, zone_id: {}, banner_id: {}>'.format(
             self.campaigno,
             self.created_at,
+            self.campaigne.begins_at,
+            self.campaigne.stops_at,
             self.comments,
             self.paymentno,
-            self.user_id
+            self.user_id,
+            self.campaigne.zoneid,
+            self.campaigne.bannerid
         )
 
 

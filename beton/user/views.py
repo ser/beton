@@ -789,18 +789,19 @@ def pay():
     if basket_sql:
         for item in basket_sql:
             order_sql = Orders.query.filter_by(
-                campaigno=item.campaigno).join(Banner).join(Prices).add_columns(
-                Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).first()
+                campaigno=item.campaigno).join(Campaignes).join(Zones).join(Prices).join(Banner).add_columns(
+                    Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).one()
+            log.debug(order_sql)
             basket.append(order_sql)
-            begin = order_sql[0].begins_at
-            enddate = order_sql[0].stops_at
+            begin = order_sql[0].campaigne.begins_at
+            enddate = order_sql[0].campaigne.stops_at
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
             total += totalcurrencyprice
             label = label + "[C#{} Z#{} B#{} {} ↦ {} {:.2f}{}] ※ ".format(
                 item.campaigno,
-                order_sql[0].zoneid,
-                order_sql[0].bannerid,
+                order_sql[0].campaigne.zoneid,
+                order_sql[0].campaigne.bannerid,
                 begin.strftime("%d/%m/%y"),
                 enddate.strftime("%d/%m/%y"),
                 totalcurrencyprice,
