@@ -102,10 +102,6 @@ class ChangeOffer(Form):
     """Modify zone prices."""
     zoneprice = IntegerField('Price per day')
     zoneid = IntegerField('Zone ID')
-    x0 = IntegerField('x0')
-    y0 = IntegerField('y0')
-    x1 = IntegerField('x1')
-    y1 = IntegerField('y1')
 
     def __init__(self, *args, **kwargs):
         """Create instance."""

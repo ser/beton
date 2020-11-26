@@ -6,9 +6,9 @@
         <h1>Payment processor pairing</h1>
         <p class="lead">Pairing is mandatory for the AdServer to function.</p>
         {% if state == False %}
-            <p class="lead btn btn-danger">You must pair this system with an access token on <i>merchant</i> facade.</p>
+            <p class="lead alert alert-danger">You must pair this system with an access token on <i>merchant</i> facade.</p>
         {% else %}
-            <p class="lead btn btn-success">This AdServer is correctly paired with your payment processor.</p>
+            <p class="lead alert alert-success">This AdServer is correctly paired with your payment processor.</p>
         {% endif %}
     </div>
     <form id="uploadForm" action="" role="form" method="post" enctype="multipart/form-data">

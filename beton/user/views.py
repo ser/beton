@@ -288,9 +288,10 @@ def bannerz():
     )
 
 
-@blueprint.route('/offer', methods=['GET'])
+@blueprint.route('/offer', methods=['GET', 'POST'])
 @login_required
 def offer():
+    form = ChangeOffer()
     """Get and display all possible websites and zones in them."""
     all_zones = []
     websites = Websites.query.all()
@@ -339,11 +340,24 @@ def offer():
                 zone.id
             )
 
+    if request.method == 'POST':
+        log.debug(pprint.pformat(request.form, depth=5))
+        if form.validate_on_submit():
+            Prices.query.filter_by(
+                zoneid=form.zoneid.data).update(
+                    {
+                        "dayprice": form.zoneprice.data
+                    }
+                )
+            Prices.commit()
+        return redirect(url_for('user.offer'))
+
     # Render the page and quit
     return render_template(
         'users/offer.html',
         allzones=all_zones,
         websites=websites,
+        form=form,
         isadmin=amiadmin()
     )
 
@@ -852,7 +866,7 @@ def pay():
 def btcpaypair():
     """Payment processor pairing."""
     btcpayclient_location = current_app.config.get('APP_DIR')+'/data/btcpayserver.client'
-    print(btcpayclient_location)
+    log.debug(btcpayclient_location)
     fiat = current_app.config.get('FIAT')
     # Recognise if pairing is done and valid
     try:

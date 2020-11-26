@@ -25,7 +25,7 @@
                                 {% endif %}
                             </div>
                             {% if zone.type == 0 %}
-                            <img class="img-fluid" alt="zone {{ zone.zoneId }}"src="{{ config.UPLOADED_IMAGES_URL }}overview/zone-{{ zone.zoneId }}.png">
+                                <img class="img-fluid" alt="zone {{ zone.id }}" src="{{ config.UPLOADED_IMAGES_URL }}overview/zone-{{ zone.zoneId }}.png">
                             {% endif %}
                             <div class="card-body">
                                 <div id="comments"><p class="card-subtitle text-muted">{{ zone.comments }}</p><br/></div>
@@ -39,7 +39,17 @@
                                 {% endif %}
                             </div>
                             <div class="card-footer">
-                                <div class="float-right" id="price"><p>{{ zone.price / 100 }} {{ config.FIAT }}/day</p></div>
+                                {% if isadmin == True %}
+                                    <form action="{{ url_for('user.offer') }}" method="post">
+                                    <input class="form-control" type="hidden" name="zoneid" value="{{ zone.id }}">
+                                    Price: {{ config.FIAT }}/day:
+                                    {{ form.zoneprice(size=5, value=zone.price) }}
+                                    {{ form.csrf_token }}
+                                    <input type="submit" value="Change">
+                                    </form>
+                                {% else %}
+                                    <div class="float-right" id="price"><p>{{ zone.price / 100 }} {{ config.FIAT }}/day</p></div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endif %}
