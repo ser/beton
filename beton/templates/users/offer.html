@@ -42,7 +42,7 @@
                                 {% if isadmin == True %}
                                     <form action="{{ url_for('user.offer') }}" method="post">
                                     <input class="form-control" type="hidden" name="zoneid" value="{{ zone.id }}">
-                                    Price: {{ config.FIAT }}/day:
+                                    Price: {{ config.FIAT }} <b>CENTS</b>/day:
                                     {{ form.zoneprice(size=5, value=zone.price) }}
                                     {{ form.csrf_token }}
                                     <input type="submit" value="Change">
