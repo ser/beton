@@ -260,6 +260,7 @@ def add_website():
             Websites.create(
                 name=form.website_name.data,
                 comments=form.website_comments.data,
+                active=True,
             )
             dblogger(
                 current_user.id,
@@ -364,7 +365,7 @@ def offer():
 
 @blueprint.route('/campaign')
 @blueprint.route('/campaign/duration/<int:no_weeks>')
-@blueprint.route('/campaign/details/<int:campaign_no>')
+#@blueprint.route('/campaign/details/<int:campaign_no>')
 @blueprint.route('/campaign/uuid/<string:invoice_uuid>')
 @login_required
 def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
@@ -376,51 +377,46 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
     # And now we are checking campaigns
     if not no_weeks:  # we show 1 month of recent campaigns by default
         no_weeks = 4
-    r = xmlrpc.client.ServerProxy(
-        current_app.config.get('REVIVE_XML_URI'),
-        verbose=False
-    )
-    sessionid = session['revive']
-
-    advertiser_id = get_advertiser_id()
 
     # A universal JOIN across tables to get info about an order
-    dbqueryall = Orders.query.join(
-        Payments, Orders.paymentno == Payments.id).join(
-            Banner, Orders.bannerid == Banner.id).add_columns(
-                Orders.user_id,
-                Orders.begins_at,
-                Orders.stops_at,
-                Orders.created_at,
-                Orders.zoneid,
-                Orders.campaigno,
-                Orders.bannerid,
-                Orders.name,
-                Orders.comments,
-                Orders.impressions,
-                Payments.posdata,
-                Payments.btcpayserver_id,
-                Payments.received_at,
-                Payments.confirmed_at,
-                Payments.fiat_amount,
-                Payments.fiat,
-                Banner.filename,
-                Banner.url,
-                Banner.width,
-                Banner.height,
-                Banner.content,
-                Banner.icon,
-                Banner.type
-            )
+    #dbqueryall = Orders.query.join(Payments).join(Campaignes).join(Zones).join(Banner).add_columns(
+    #dbqueryall = Campaignes.query.join(Orders).join(Payments).join(Zones).join(Banner)
+    dbqueryall = Campaignes.query.join(Orders).join(Zones).join(Prices).join(Banner)
+
+    #add_columns(
+#                Orders.user_id,
+#                Orders.campaigne.begins_at,
+#                Orders.stops_at,
+#                Orders.created_at,
+#                Orders.zoneid,
+#                Orders.campaigno,
+#                Orders.bannerid,#
+#                Orders.name,
+#                Orders.comments,
+#                Orders.impressions,
+#                Payments.posdata,
+#                Payments.btcpayserver_id,
+#                Payments.received_at,
+#                Payments.confirmed_at,
+#                Payments.fiat_amount,
+#                Payments.fiat,
+#                Banner.filename,
+#                Banner.url,
+#                Banner.width,
+#                Banner.height,
+ #               Banner.content,
+  #              Banner.icon,
+   #             Banner.type
+    #        )
 
     # We are converting invoice UUID we generated for campaing_no
     # to quickly find an invoice from payment processor user interface
     # Please not there may be more campaigns related to one invoice,
     # we are just showing one of them!
-    if invoice_uuid is not None:
-        dbquery = dbqueryall.filter(Payments.posdata == invoice_uuid).first()
-        if dbquery.campaigno:
-            campaign_no = dbquery.campaigno
+#    if invoice_uuid is not None:
+#        dbquery = dbqueryall.filter(Payments.posdata == invoice_uuid).first()
+#        if dbquery.campaigno:
+#            campaign_no = dbquery.campaigno
 
     # We want details related to one campaign, not a list of all so we will
     # display that data and quit this function
@@ -466,11 +462,12 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
             return redirect(url_for("user.campaign"), code=302)
 
     # admin gets all campaigns for all users limited to requested time period
-    dbqueryall = dbqueryall.filter(Orders.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
+    dbqueryall = dbqueryall.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
     if amiadmin():
         all_campaigns = dbqueryall.all()
     else:
         all_campaigns = dbqueryall.filter(Orders.user_id == current_user.id).all()
+    log.debug(all_campaigns)
 
     # Render the page and quit
     return render_template(
@@ -613,22 +610,6 @@ def order():
             )
         )
 
-        order = Orders.create(
-            campaigno=campaign.id,
-            created_at=datetime.utcnow(),
-            paymentno=0,
-            comments=zone_name,
-            user_id=current_user.id
-        )
-        log.debug(order)
-        dblogger(
-            current_user.id,
-            ("NEW Order #{} for campaign #{} {} created.").format(
-                order,
-                campaign.id,
-                randomname
-            )
-        )
 
         basket = Basket.create(
             campaigno=campaign.id,
@@ -662,8 +643,8 @@ def basket():
     # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
-            order_sql = Orders.query.filter_by(
-                campaigno=item.campaigno).join(Campaignes).join(Banner).join(Zones).join(Prices).add_columns(
+            order_sql = Campaignes.query.filter_by(
+                id=item.campaigno).join(Banner).join(Zones).join(Prices).add_columns(
                     Banner.filename, Banner.url, Banner.width, Banner.height,
                     Banner.content, Banner.icon, Banner.type, Prices.dayprice,
                     Campaignes.begins_at, Campaignes.stops_at).first()
@@ -788,20 +769,20 @@ def pay():
     # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
-            order_sql = Orders.query.filter_by(
-                campaigno=item.campaigno).join(Campaignes).join(Zones).join(Prices).join(Banner).add_columns(
+            sql = Campaignes.query.filter_by(
+                id=item.campaigno).join(Zones).join(Prices).join(Banner).add_columns(
                     Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).one()
-            log.debug(order_sql)
-            basket.append(order_sql)
-            begin = order_sql[0].campaigne.begins_at
-            enddate = order_sql[0].campaigne.stops_at
+            log.debug(sql)
+            basket.append(sql)
+            begin = order_sql[0].begins_at
+            enddate = order_sql[0].stops_at
             totaltime = enddate - begin
             totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
             total += totalcurrencyprice
             label = label + "[C#{} Z#{} B#{} {} ↦ {} {:.2f}{}] ※ ".format(
                 item.campaigno,
-                order_sql[0].campaigne.zoneid,
-                order_sql[0].campaigne.bannerid,
+                order_sql[0].zoneid,
+                order_sql[0].bannerid,
                 begin.strftime("%d/%m/%y"),
                 enddate.strftime("%d/%m/%y"),
                 totalcurrencyprice,
@@ -836,10 +817,27 @@ def pay():
     btcpayinv = btcpayclient.create_invoice(btcpayinvreq)
     log.debug(pprint.pformat(btcpayinv, depth=5))
 
+    # Creating an order and linking it to campaignes via an association table
+    order = Orders.create(
+        comments=label,
+        user_id=current_user.id
+    )
+    log.debug(order)
+    for item in basket_sql:
+        sql = Campaignes.query.filter_by(id=item.campaigno).one()
+        order.campaigne.append(sql)
+    Orders.commit()
+    dblogger(
+        current_user.id,
+        ("NEW Order #{} for campaigns in the basket created.").format(
+            order.id,
+        )
+    )
+
     # Creating database record for payment and linking it into orders.
     payment_sql = Payments.create(
+        order_id=order.id,
         created_at=datetime.utcnow(),
-        user_id=current_user.id,
         btcpayserver_id=btcpayinv['id'],
         confirmed_at=datetime.min,
         received_at=datetime.min,
@@ -847,14 +845,8 @@ def pay():
         fiat_amount=btcpayinv['price'],
         posdata=randomid,
     )
-    # we need payment numer id to properly relate tables
-    paymentno = payment_sql.id
 
-    for item in basket:
-        Orders.query.filter_by(campaigno=item[0].campaigno).update({"paymentno": paymentno})
-        Orders.commit()
-
-    # It looks that payment page is ready to be shown, so we remove the content of basket
+    # It looks that payment page is ready to be shown, so we remove the content of users' basket
     Basket.query.filter_by(user_id=current_user.id).delete()
     Basket.commit()
 

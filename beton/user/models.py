@@ -143,6 +143,12 @@ class Zones(SurrogatePK, Model):
         )
 
 
+o2c = db.Table('o2c',
+               Column('order_id', db.Integer(), db.ForeignKey('orders.id'), primary_key=True),
+               Column('campaign_id', db.Integer(), db.ForeignKey('campaignes.id'), primary_key=True)
+               )
+
+
 class Campaignes(SurrogatePK, Model):
     """Campaignes.
     Campaign will be uniquely identified by blake2b digest of name: blake2b(digest_size=6).hexdigest()
@@ -159,7 +165,8 @@ class Campaignes(SurrogatePK, Model):
     impressions = Column(db.Integer(), unique=False, nullable=True)
     comments = Column(db.Text, unique=False, nullable=False)
     active = Column(db.Boolean(), default=True)
-    campaigno = db.relationship("Orders", backref="campaigne")
+    o2c = db.relationship('Orders', secondary=o2c, lazy='subquery',
+                          backref=db.backref('campaigne', lazy=True))
 
     def __init__(self, name, zoneid, bannerid, ctype, created_at, begins_at,
                  stops_at, impressions, comments, active):
@@ -220,33 +227,21 @@ class Orders(SurrogatePK, Model):
     """All orders"""
 
     __tablename__ = 'orders'
-    campaigno = Column(db.Integer(), db.ForeignKey('campaignes.id', ondelete='CASCADE'), nullable=False)
     user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    paymentno = Column(db.Integer(), unique=False, nullable=True)
     comments = Column(db.Text, unique=False, nullable=False)
+    payment = db.relationship("Payments", backref="orders")
 
-    def __init__(self, campaigno, created_at, paymentno, comments, user_id):
+    def __init__(self, comments, user_id):
         """Create instance."""
-        self.campaigno = campaigno
-        self.created_at = created_at
-        self.paymentno = paymentno
         self.comments = comments
         self.user_id = user_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<campaigno: {}, created_at: {}, begins_at: {}, stops_at: {},\
-comments: {}, paymentno: {}, user_id: {}, zone_id: {}, banner_id: {}>'.format(
-            self.campaigno,
-            self.created_at,
-            self.campaigne.begins_at,
-            self.campaigne.stops_at,
+        return '<id: {}, comments: {}, user_id: {}>'.format(
+            self.id,
             self.comments,
-            self.paymentno,
             self.user_id,
-            self.campaigne.zoneid,
-            self.campaigne.bannerid
         )
 
 
@@ -254,6 +249,7 @@ class Payments(SurrogatePK, Model):
     """All payments"""
 
     __tablename__ = 'payments'
+    order_id = Column(db.Integer(), db.ForeignKey('orders.id'), nullable=False)
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     received_at = Column(db.DateTime, nullable=False)
     confirmed_at = Column(db.DateTime, nullable=False)
@@ -261,10 +257,9 @@ class Payments(SurrogatePK, Model):
     posdata = Column(db.String(36), nullable=False)
     fiat = Column(db.String(3), unique=False, nullable=False)
     fiat_amount = Column(db.Numeric(16, 8), nullable=False)
-    user_id = Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, fiat, fiat_amount, created_at, posdata,
-                 received_at, confirmed_at, btcpayserver_id, user_id):
+                 received_at, confirmed_at, btcpayserver_id, order_id):
         """ Create instance."""
         self.fiat = fiat
         self.fiat_amount = fiat_amount
@@ -273,17 +268,17 @@ class Payments(SurrogatePK, Model):
         self.received_at = received_at
         self.confirmed_at = confirmed_at
         self.btcpayserver_id = btcpayserver_id
-        self.user_id = user_id
+        self.order_id = order_id
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<fiat: {}, fiat_amount: {}, \
-created_at: {}, user_id: {}, posdata: {} \
+created_at: {}, order_id: {}, posdata: {} \
 received_at: {}, confirmed_at: {}, btcpayserver_id: {}>'.format(
             self.fiat,
             self.fiat_amount,
             self.created_at,
-            self.user_id,
+            self.order_id,
             self.posdata,
             self.received_at,
             self.confirmed_at,
