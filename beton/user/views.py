@@ -517,7 +517,6 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
             log.info("Problems with accessing payment processor.")
             return render_template('users/paymentsystem-problems.html')
 
-
         # we are getting overview of particular campaign from local database
         if payment_no is not None:
             dbquery = sql.filter(Payments.id == payment_no).first_or_404()
@@ -553,7 +552,6 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
     else:
         if not no_weeks:  # we show 1 month of recent payments by default
             no_weeks = 4
-
 
         # admin gets all payments for all users limited to requested time period
         sql = sql.filter(Payments.created_at > datetime.utcnow() - timedelta(weeks=no_weeks))

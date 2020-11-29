@@ -7,7 +7,12 @@
         <div class="card-text">
             <p>
                 <b>Created:</b> {{ payment.created_at.strftime('%Y-%m-%d') }}<br/>
+                {% if payment.received_at != datemin %}
                 <b>Received:</b> {{ payment.received_at.strftime('%Y-%m-%d') }}
+                {% endif %}
+                {% if payment.confirmed_at != datemin %}
+                <b>Confirmed:</b> {{ payment.confirmed_at.strftime('%Y-%m-%d') }}
+                {% endif %}
             </p>
                 <p>
                     <b>{{ payment.fiat }}</b>
