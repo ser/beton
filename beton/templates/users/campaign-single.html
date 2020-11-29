@@ -61,7 +61,7 @@
                             <h5 class="card-title">Invoice</h5>
                             <li class="list-group-item d-flex align-items-left"><b>Status:</b>&nbsp; {{ status }}</li>
                             {% if dbquery.fiat_amount > 0 %}
-                                <li class="list-group-item d-flex align-items-left"><b>Amount:</b>&nbsp; {{ dbquery.fiat }}&nbsp;{{ dbquery.fiat_amount }}</li>
+                                <li class="list-group-item d-flex align-items-left"><b>Amount:</b>&nbsp; {{ dbquery.fiat }}&nbsp;{{% dbquery.fiat_amount %}}</li>
                             {% endif %}
                             {% if dbquery.btcpayserver_id %}
                                 <li class="list-group-item d-flex align-items-left"><b>Invoice ID:</b>&nbsp; {{ dbquery.btcpayserver_id }}</li>

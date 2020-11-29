@@ -19,12 +19,12 @@
                 <b>From:</b> {{ campaign.begins_at.strftime('%Y-%m-%d') }}<br/>
                 <b>To:</b> {{ campaign.stops_at.strftime('%Y-%m-%d') }}
             </p>
-            {% if campaign.fiat_amount > 0 %}
+            {#% if campaign.fiat_amount > 0 %#}
                 <p>
                     <b>{{ config.FIAT }}</b>
                     {{ campaign.fiat_amount }}
                 </p>
-            {% endif %}
+            {#% endif %#}
             {% if campaign.begins_at <= now %}
                 <p><b>Impressions:</b>&nbsp;
                     {{ campaign.impressions }}

@@ -365,10 +365,9 @@ def offer():
 
 @blueprint.route('/campaign')
 @blueprint.route('/campaign/duration/<int:no_weeks>')
-#@blueprint.route('/campaign/details/<int:campaign_no>')
-@blueprint.route('/campaign/uuid/<string:invoice_uuid>')
+@blueprint.route('/campaign/details/<int:campaign_id>')
 @login_required
-def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
+def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
     """
     Details related to one campaign only.
     or
@@ -380,8 +379,14 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
 
     # A universal JOIN across tables to get info about an order
     #dbqueryall = Orders.query.join(Payments).join(Campaignes).join(Zones).join(Banner).add_columns(
+    #allorders = Orders.query.join(Payments)
+    #log.debug(allorders)
+
+    sql = Campaignes.query
+
     #dbqueryall = Campaignes.query.join(Orders).join(Payments).join(Zones).join(Banner)
-    dbqueryall = Campaignes.query.join(Orders).join(Zones).join(Prices).join(Banner)
+    #dbqueryall = Campaignes.query.join(Orders).join(Payments).join(Zones).join(Prices).join(Banner)
+    #dbqueryall = es.query.join(Orders).join(Payments).join(Zones).join(Prices).join(Banner)
 
     #add_columns(
 #                Orders.user_id,
@@ -420,7 +425,7 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
 
     # We want details related to one campaign, not a list of all so we will
     # display that data and quit this function
-    if campaign_no is not None:
+    if campaign_id is not None:
         # let's try to connect to the payment system to get campaign details
         btcpayclient_location = current_app.config.get('APP_DIR') + '/data/btcpayserver.client'
         try:
@@ -462,17 +467,59 @@ def campaign(no_weeks=None, campaign_no=None, invoice_uuid=None):
             return redirect(url_for("user.campaign"), code=302)
 
     # admin gets all campaigns for all users limited to requested time period
-    dbqueryall = dbqueryall.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
+    sql = sql.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
     if amiadmin():
-        all_campaigns = dbqueryall.all()
+        all_campaigns = sql.all()
     else:
-        all_campaigns = dbqueryall.filter(Orders.user_id == current_user.id).all()
+        all_campaigns = sql.filter(Orders.user_id == current_user.id).all()
     log.debug(all_campaigns)
+
+    # getting payment details for campaignes
+    for campaign in all_campaigns:
+        sql = Orders.query.with_parent(campaign).join(Payments).add_columns(
+            Payments.confirmed_at
+            ).all()
+        log.debug(sql)
 
     # Render the page and quit
     return render_template(
         'users/campaign.html',
         all_campaigns=all_campaigns,
+        roles=current_user.roles,
+        now=datetime.utcnow(),
+        datemin=datetime.min,
+        no_weeks=no_weeks
+    )
+
+
+@blueprint.route('/payments')
+@blueprint.route('/payments/duration/<int:no_weeks>')
+@blueprint.route('/payments/details/<int:payment_no>')
+@blueprint.route('/payments/uuid/<string:invoice_uuid>')
+@login_required
+def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
+    """
+    Details related to one payment only.
+    or
+    Get and display all payments belonging to user.
+    """
+    if not no_weeks:  # we show 1 month of recent payments by default
+        no_weeks = 4
+
+    sql = Payments.query.join(Orders)
+
+    # admin gets all payments for all users limited to requested time period
+    sql = sql.filter(Payments.created_at > datetime.utcnow() - timedelta(weeks=no_weeks))
+    if amiadmin():
+        all_payments = sql.all()
+    else:
+        all_payments = sql.filter(Orders.user_id == current_user.id).all()
+    log.debug(all_payments)
+
+    # Render the page and quit
+    return render_template(
+        'users/payments.html',
+        all_payments=all_payments,
         roles=current_user.roles,
         now=datetime.utcnow(),
         datemin=datetime.min,
@@ -792,6 +839,8 @@ def pay():
         basket = 0
         log.error("Trying to pay for empty basket.")
         return redirect(url_for("user.basket"), code=302)
+
+    log.debug(basket)
 
     randomid = str(uuid.uuid4())
     buyer = {

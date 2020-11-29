@@ -1,0 +1,23 @@
+<div class="card border-light">
+    <div class="card-header">
+        <h5><a href="{{ url_for('user.payments', payment_no=payment.id) }}">#{{ payment.id }}</a></h5>
+        <p class="text-muted">{{ payment.comments }}</p>
+    </div>
+    <div class="card-body">
+        <div class="card-text">
+            <p>
+                <b>Created:</b> {{ payment.created_at.strftime('%Y-%m-%d') }}<br/>
+                <b>Received:</b> {{ payment.received_at.strftime('%Y-%m-%d') }}
+            </p>
+                <p>
+                    <b>{{ payment.fiat }}</b>
+                    {{ payment.fiat_amount }}
+                </p>
+            </p>
+        </div>
+    </div>
+    <div class="card-footer">
+        <a href="{{ url_for('user.payments', payment_no=payment.id) }}"
+            class="btn btn-info btn-sm btn-block">More details</a>
+    </div>
+</div>

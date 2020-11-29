@@ -184,8 +184,9 @@ class Campaignes(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<name: {}, zoneid: {}, bannerid: {}, ctype: {}, created_at: {}, \
+        return '<id: {}, name: {}, zoneid: {}, bannerid: {}, ctype: {}, created_at: {}, \
 begins_at: {}, stops_at: {}, impressions: {}, comments: {}, active: {}>'.format(
+            self.id,
             self.name,
             self.zoneid,
             self.bannerid,
