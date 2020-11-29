@@ -503,28 +503,75 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
     or
     Get and display all payments belonging to user.
     """
-    if not no_weeks:  # we show 1 month of recent payments by default
-        no_weeks = 4
-
     sql = Payments.query.join(Orders)
+    if payment_no is not None or invoice_uuid is not None:
 
-    # admin gets all payments for all users limited to requested time period
-    sql = sql.filter(Payments.created_at > datetime.utcnow() - timedelta(weeks=no_weeks))
-    if amiadmin():
-        all_payments = sql.all()
+        # let's try to connect to the payment system which stores payment details
+        btcpayclient_location = current_app.config.get('APP_DIR') + '/data/btcpayserver.client'
+        try:
+            with open(btcpayclient_location, 'rb') as file:
+                btcpayclient = pickle.load(file)
+        except Exception as e:
+            log.debug("Exception")
+            log.exception(e)
+            log.info("Problems with accessing payment processor.")
+            return render_template('users/paymentsystem-problems.html')
+
+
+        # we are getting overview of particular campaign from local database
+        if payment_no is not None:
+            dbquery = sql.filter(Payments.id == payment_no).first_or_404()
+        else:
+            dbquery = sql.filter(Payments.btcpayserver_id == invoice_uuid).first_or_404()
+        # and now we check details of that payment from downstream payment processor
+        log.debug(dbquery)
+        btcpayinv = btcpayclient.get_invoice(dbquery.btcpayserver_id)
+        log.debug(pprint.pformat(btcpayinv, depth=5))
+        cryptoInfo = btcpayinv['cryptoInfo']
+        status = btcpayinv['status']
+
+        # we need all campaignes which are related to that payment
+        campaignes = Campaignes.query.filter(Campaignes.o2c.any(id=dbquery.order_id)).join(Zones).join(Banner).all()
+        log.debug(f"CAMPAIGNES: {campaignes}")
+
+        # we show details only to campaign owners or admins
+        if dbquery.orders.user_id == current_user.id or amiadmin():
+            # Render the page and quit
+            return render_template(
+                'users/payments-single.html',
+                now=datetime.utcnow(),
+                datemin=datetime.min,
+                dbquery=dbquery,
+                cryptoInfo=cryptoInfo,
+                status=status,
+                campaignes=campaignes
+            )
+        else:
+            # We politely redirecting 'hackers' to all campaigns
+            return redirect(url_for("user.payments"), code=302)
+
     else:
-        all_payments = sql.filter(Orders.user_id == current_user.id).all()
-    log.debug(all_payments)
+        if not no_weeks:  # we show 1 month of recent payments by default
+            no_weeks = 4
 
-    # Render the page and quit
-    return render_template(
-        'users/payments.html',
-        all_payments=all_payments,
-        roles=current_user.roles,
-        now=datetime.utcnow(),
-        datemin=datetime.min,
-        no_weeks=no_weeks
-    )
+
+        # admin gets all payments for all users limited to requested time period
+        sql = sql.filter(Payments.created_at > datetime.utcnow() - timedelta(weeks=no_weeks))
+        if amiadmin():
+            all_payments = sql.all()
+        else:
+            all_payments = sql.filter(Orders.user_id == current_user.id).all()
+        log.debug(all_payments)
+
+        # Render the page and quit
+        return render_template(
+            'users/payments.html',
+            all_payments=all_payments,
+            roles=current_user.roles,
+            now=datetime.utcnow(),
+            datemin=datetime.min,
+            no_weeks=no_weeks
+        )
 
 
 @blueprint.route('/api/all_campaigns_in_zone/<int:zone_id>')

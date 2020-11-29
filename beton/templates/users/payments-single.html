@@ -1,0 +1,83 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="jumbotron">
+    <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
+            aria-hidden="true"></i></h1>
+    <p class="lead">Here are all details we know about your particular payment.</p>
+    <a href="{{ url_for('user.payments') }}"
+        class="btn btn-info btn-lg"><span class="icon dripicons-arrow-left"></span>&nbsp;See all your payments</a>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card border-primary mb-3">
+                <h4 class="card-header"><span class="icon dripicons-to-do"></span>
+                    Payment #{{ dbquery.id }} details: {{ dbquery.name }}
+
+                    {% if dbquery.received_at != datemin %}
+                    <span class="badge badge-pill badge-info">PAID</span>
+                    {% else %}
+                    <span class="badge badge-pill badge-danger">NOT PAID</span>
+                    {% endif %}
+
+                    {% if dbquery.confirmed_at != datemin %}
+                    <span class="badge badge-pill badge-info">CONFIRMED</span>
+                    {% else %}
+                    <span class="badge badge-pill badge-danger">NOT CONFIRMED
+                        {% if dbquery.received_at != datemin %}
+                            &nbsp;<span class="spinner-grow spinner-grow-sm" role="status"></span>
+                        {% endif %}
+                    </span>
+                    {% endif %}
+
+                </h4>
+                <div class="card-body">
+                    <div class="card-columns">
+                        <ul class="list-group">
+                            <h5 class="card-title">Invoice</h5>
+                            <li class="list-group-item d-flex align-items-left"><b>Status:</b>&nbsp; {{ status }}</li>
+                            {% if dbquery.fiat_amount > 0 %}
+                                <li class="list-group-item d-flex align-items-left"><b>Amount:</b>&nbsp; {{ dbquery.fiat }}&nbsp;{{ dbquery.fiat_amount }}</li>
+                            {% endif %}
+                            {% if dbquery.btcpayserver_id %}
+                                <li class="list-group-item d-flex align-items-left"><b>Invoice ID:</b>&nbsp; {{ dbquery.btcpayserver_id }}</li>
+                            {% endif %}
+                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
+                            <li class="list-group-item d-flex align-items-left">
+                                {% if dbquery.received_at != datemin %}
+                                    <b>Full payment received at:</b>&nbsp; {{ dbquery.received_at }}
+                                {% else %}
+                                        <span class="badge badge-danger">NOT PAID!</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex align-items-left">
+                                {% if dbquery.confirmed_at != datemin %}
+                                    <b>Blockchain confirmed at:</b>&nbsp; {{ dbquery.confirmed_at }}
+                                {% else %}
+                                    <span class="badge badge-danger">NOT CONFIRMED</span>
+                                {% endif %}
+                            </li>
+                        </ul>
+                        <ul class="list-group">
+                            <h5 class="card-title">Payment(s)</h5>
+                                <ul class="list-group-item">
+                                {% for tx in cryptoInfo %}
+                                    <li class="list-group-item d-flex align-items-left"><b>{{ tx['cryptoCode'] }}</b>&nbsp; {{ tx['cryptoPaid'] }}</li>
+                                    <li class="list-group-item d-flex align-items-left"><b>Rate {{ tx['cryptoCode'] }} / {{ dbquery.fiat }}</b>&nbsp; {{ tx['rate'] }}</li>
+                                    <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd>{{ tx['address'] }}</kbd></li>
+                                {% endfor %}
+                                </div>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="card-columns">
+                    {% for campaigne in campaignes %}
+                        <div class="card border-primary mb-3">
+                            <h5 class="card-header">Campaigne #{{ campaigne.id }} {{ campaigne.name }}</h5>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+{% endblock %}

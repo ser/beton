@@ -5,11 +5,11 @@
         <p>{{ all_payments }}
     <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
             aria-hidden="true"></i></h1>
-    <p class="lead">Here are your pyaments, limited to those created {{  "%.0f" | format(no_weeks/4) }} month(s) ago or sooner.</p>
+    <p class="lead">Here are your pyaments, limited to those created {{  "%.0f" | format(no_weeks/4) }} month(s) ago or earlier.</p>
     <p>You can also see your older payments: 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.payments', no_weeks=8) }}">2 months</a> or 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.payments', no_weeks=26) }}">6 months</a> or 
-        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.payments', no_weeks=52) }}">12 months</a> or 
+        <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.payments', no_weeks=52) }}">one year</a> or 
         <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.payments', no_weeks=999) }}">all of them</a>
     </p>
     </div>

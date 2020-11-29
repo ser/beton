@@ -273,9 +273,10 @@ class Payments(SurrogatePK, Model):
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<fiat: {}, fiat_amount: {}, \
+        return '<user_id: {}, fiat: {}, fiat_amount: {}, \
 created_at: {}, order_id: {}, posdata: {} \
 received_at: {}, confirmed_at: {}, btcpayserver_id: {}>'.format(
+            self.orders.user_id,
             self.fiat,
             self.fiat_amount,
             self.created_at,

@@ -19,7 +19,8 @@
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-expanded="false"><span class="icon dripicons-user"></span> {{ current_user.username }}</a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                             <li><a class="dropdown-item" href="{{ url_for('user.campaign') }}"><span class="icon dripicons-to-do"></span> Your campaigns</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('user.bannerz')  }}"><span class="icon dripicons-view-list-large"></span> Your banners</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.bannerz') }}"><span class="icon dripicons-view-list-large"></span> Your banners</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.payments') }}"><span class="icon dripicons-view-list-large"></span> Your payments</a></li>
                             <li><div class="dropdown-divider"></div></li>
                             <li><a class="dropdown-item" href="{{ url_for('public.logout') }}"><span class="icon dripicons-exit"></span> Logout</a></li>
                             {% if current_user and current_user.has_role('admin') %}
