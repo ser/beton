@@ -469,6 +469,7 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
         log.debug(pprint.pformat(btcpayinv, depth=5))
         cryptoInfo = btcpayinv['cryptoInfo']
         status = btcpayinv['status']
+        label = btcpayinv['itemDesc']
 
         # we need all campaignes which are related to that payment
         campaignes = Campaignes.query.filter(Campaignes.o2c.any(id=dbquery.order_id)).join(Zones).join(Banner).all()
@@ -484,6 +485,7 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
                 dbquery=dbquery,
                 cryptoInfo=cryptoInfo,
                 status=status,
+                label=label,
                 campaignes=campaignes
             )
         else:

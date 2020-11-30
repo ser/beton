@@ -32,48 +32,40 @@
 
                 </h4>
                 <div class="card-body">
-                    <div class="card-columns">
-                        <ul class="list-group">
-                            <h5 class="card-title">Invoice</h5>
-                            <li class="list-group-item d-flex align-items-left"><b>Status:</b>&nbsp; {{ status }}</li>
-                            {% if dbquery.fiat_amount > 0 %}
-                                <li class="list-group-item d-flex align-items-left"><b>Amount:</b>&nbsp; {{ dbquery.fiat }}&nbsp;{{ dbquery.fiat_amount }}</li>
-                            {% endif %}
-                            {% if dbquery.btcpayserver_id %}
-                                <li class="list-group-item d-flex align-items-left"><b>Invoice ID:</b>&nbsp; {{ dbquery.btcpayserver_id }}</li>
-                            {% endif %}
-                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
-                            <li class="list-group-item d-flex align-items-left">
-                                {% if dbquery.received_at != datemin %}
-                                    <b>Full payment received at:</b>&nbsp; {{ dbquery.received_at }}
-                                {% else %}
-                                        <span class="badge badge-danger">NOT PAID!</span>
+                    <div class="row"><div class="col-sm-6"><div class="card"> 
+                        <h5 class="card-header">Invoice data from payment
+                            processor</h5>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex align-items-left"><b>Label:</b>&nbsp; {{ label }}</li>
+                                <li class="list-group-item d-flex align-items-left list-group-item-primary"><b>Status:</b>&nbsp; {{ status }}</li>
+                                {% if dbquery.fiat_amount > 0 %}
+                                    <li class="list-group-item d-flex align-items-left"><b>Amount:</b>&nbsp; {{ dbquery.fiat }}&nbsp;{{ dbquery.fiat_amount }}</li>
                                 {% endif %}
-                            </li>
-                            <li class="list-group-item d-flex align-items-left">
-                                {% if dbquery.confirmed_at != datemin %}
-                                    <b>Blockchain confirmed at:</b>&nbsp; {{ dbquery.confirmed_at }}
-                                {% else %}
-                                    <span class="badge badge-danger">NOT CONFIRMED</span>
+                                <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
+                                {% if dbquery.btcpayserver_id %}
+                                    <li class="list-group-item d-flex align-items-left"><b>Invoice ID:</b>&nbsp; {{ dbquery.btcpayserver_id }}</li>
                                 {% endif %}
-                            </li>
-                        </ul>
-                        <ul class="list-group">
-                            <h5 class="card-title">Payment(s)</h5>
-                                <ul class="list-group-item">
-                                {% for tx in cryptoInfo %}
-                                    <li class="list-group-item d-flex align-items-left"><b>{{ tx['cryptoCode'] }}</b>&nbsp; {{ tx['cryptoPaid'] }}</li>
-                                    <li class="list-group-item d-flex align-items-left"><b>Rate {{ tx['cryptoCode'] }} / {{ dbquery.fiat }}</b>&nbsp; {{ tx['rate'] }}</li>
-                                    <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd>{{ tx['address'] }}</kbd></li>
-                                {% endfor %}
-                                </div>
-                        </ul>
+                            </ul>
+                        </div>
+                    </div></div><div class="col-sm-6"><div class="card">
+                            <h5 class="card-header">Payment(s)</h5>
+                            <div class="card-body">
+                                    {% for tx in cryptoInfo %}
+                                    <ul class="list-group">
+                                        <li class="list-group-item d-flex align-items-left"><b>{{ tx['cryptoCode'] }}</b>&nbsp; {{ tx['cryptoPaid'] }}</li>
+                                        <li class="list-group-item d-flex align-items-left"><b>Rate {{ tx['cryptoCode'] }} / {{ dbquery.fiat }}</b>&nbsp; {{ tx['rate'] }}</li>
+                                        <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd>{{ tx['address'] }}</kbd></li>
+                                    </ul><br/>
+                                    {% endfor %}
+                            </div>
+                        </div></div></div>
                     </div>
                 </div>
                 <div class="card-footer">
                     <div class="card-columns">
                     {% for campaigne in campaignes %}
-                        <div class="card border-primary mb-3">
+                        <div class="card border-secondary mb-3">
                             <h5 class="card-header">Campaign #{{ campaigne.id }} {{ campaigne.name }}</h5>
                         </div>
                     {% endfor %}
