@@ -856,7 +856,7 @@ def pay():
         "buyer": buyer,
         "extendedNotifications": "true",
         "notificationURL": current_app.config.get('OUR_URL') + 'ipn',
-        "redirectURL": current_app.config.get('OUR_URL') + 'campaign/uuid/' + randomid,
+        "redirectURL": current_app.config.get('OUR_URL') + 'payments/uuid/' + randomid,
     }
     # contact payment processor and ask for invoice
     btcpayinv = btcpayclient.create_invoice(btcpayinvreq)

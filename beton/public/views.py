@@ -61,7 +61,7 @@ def ipn():
     """
     # FUNCTIONS
     def checkpaydb(posdata):
-        pay_db = Payments.query.filter_by(posdata=posdata).first()
+        pay_db = Payments.query.filter_by(posdata=posdata).join(Orders).first()
         if pay_db is None:
             log.info("There is no payment related to IPN. Aborting")
             return "NAY", status.HTTP_412_PRECONDITION_FAILED
@@ -71,7 +71,7 @@ def ipn():
     def invoice_paidInFull(pay_db, ipn):
         # Logging to admin log
         dblogger(
-            pay_db.user_id,
+            pay_db.orders.user_id,
             "RECEIVED {} for invoice {}! We are waiting now for one confirmation.".format(
                 ipn['data']['btcPaid'],
                 ipn['data']['id']
@@ -86,7 +86,7 @@ def ipn():
     def invoice_confirmed(pay_db, ipn):
         # Logging to admin log
         dblogger(
-            pay_db.user_id,
+            pay_db.orders.user_id,
             "CONFIRMED {} for invoice {}. We are boooking advert(s).".format(
                 ipn['data']['btcPaid'],
                 ipn['data']['id']
@@ -98,25 +98,6 @@ def ipn():
             posdata=ipn['data']['posData']).update(
                 {"confirmed_at": datetime.utcnow()})
         Payments.commit()
-
-        # Log in into Revive
-        r = xmlrpc.client.ServerProxy(
-            current_app.config.get('REVIVE_XML_URI'),
-            verbose=False
-        )
-        sessionid = reviveme(r)
-        # Loading all orders related to payment
-        all_orders = Orders.query.filter_by(paymentno=pay_db.id).all()
-        log.debug("We are having these orders in the basket:")
-        log.debug(all_orders)
-        # We are now linking Revive
-        for order in all_orders:
-            linkme = r.ox.linkCampaign(sessionid, order.zoneid, order.campaigno)
-            log.debug("Have we linked camapign {} into zone {} in Revive? {}".format(
-                order.campaigno,
-                order.zoneid,
-                linkme
-            ))
 
         # If configuration sets pushover.net, we send it in there
         if current_app.config.get('PUSHOVER') is True:

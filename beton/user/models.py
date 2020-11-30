@@ -286,7 +286,7 @@ received_at: {}, confirmed_at: {}, btcpayserver_id: {}>'.format(
             self.posdata,
             self.received_at,
             self.confirmed_at,
-            self.btcpayserver_id
+            self.btcpayserver_id,
         )
 
 
