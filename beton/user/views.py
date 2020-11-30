@@ -374,122 +374,69 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
     Get and display all campaigns belonging to user.
     """
     # And now we are checking campaigns
-    if not no_weeks:  # we show 1 month of recent campaigns by default
-        no_weeks = 4
-
-    # A universal JOIN across tables to get info about an order
-    #dbqueryall = Orders.query.join(Payments).join(Campaignes).join(Zones).join(Banner).add_columns(
-    #allorders = Orders.query.join(Payments)
-    #log.debug(allorders)
-
     sql = Campaignes.query
-
-    #dbqueryall = Campaignes.query.join(Orders).join(Payments).join(Zones).join(Banner)
-    #dbqueryall = Campaignes.query.join(Orders).join(Payments).join(Zones).join(Prices).join(Banner)
-    #dbqueryall = es.query.join(Orders).join(Payments).join(Zones).join(Prices).join(Banner)
-
-    #add_columns(
-#                Orders.user_id,
-#                Orders.campaigne.begins_at,
-#                Orders.stops_at,
-#                Orders.created_at,
-#                Orders.zoneid,
-#                Orders.campaigno,
-#                Orders.bannerid,#
-#                Orders.name,
-#                Orders.comments,
-#                Orders.impressions,
-#                Payments.posdata,
-#                Payments.btcpayserver_id,
-#                Payments.received_at,
-#                Payments.confirmed_at,
-#                Payments.fiat_amount,
-#                Payments.fiat,
-#                Banner.filename,
-#                Banner.url,
-#                Banner.width,
-#                Banner.height,
- #               Banner.content,
-  #              Banner.icon,
-   #             Banner.type
-    #        )
-
-    # We are converting invoice UUID we generated for campaing_no
-    # to quickly find an invoice from payment processor user interface
-    # Please not there may be more campaigns related to one invoice,
-    # we are just showing one of them!
-#    if invoice_uuid is not None:
-#        dbquery = dbqueryall.filter(Payments.posdata == invoice_uuid).first()
-#        if dbquery.campaigno:
-#            campaign_no = dbquery.campaigno
 
     # We want details related to one campaign, not a list of all so we will
     # display that data and quit this function
     if campaign_id is not None:
-        # let's try to connect to the payment system to get campaign details
-        btcpayclient_location = current_app.config.get('APP_DIR') + '/data/btcpayserver.client'
-        try:
-            with open(btcpayclient_location, 'rb') as file:
-                btcpayclient = pickle.load(file)
-        except Exception as e:
-            log.debug("Exception")
-            log.exception(e)
-            log.info("Problems with accessing payment processor.")
-            return render_template('users/paymentsystem-problems.html')
+
+        # we check details of the order which campaing belongs to
+        campaign = sql.filter(Campaignes.id==campaign_id).join(Zones).join(Banner).add_columns(
+            Banner.filename,
+            Banner.height,
+            Banner.width
+            ).first_or_404()
+        log.debug(f"CAMPAIGN: {campaign}")
 
         # we are getting overview of particular campaign from local database
-        dbquery = dbqueryall.filter(Orders.campaigno == campaign_no).first()
-        # and now we check details of that payment from downstream payment processor
-        log.debug(dbquery)
-        if dbquery.btcpayserver_id:  # we are checking it only for historical
-                                     # purposes to achieve compatibility with previous releases
-            btcpayinv = btcpayclient.get_invoice(dbquery.btcpayserver_id)
-            log.debug(pprint.pformat(btcpayinv, depth=5))
-            cryptoInfo = btcpayinv['cryptoInfo']
-            status = btcpayinv['status']
-        else:
-            cryptoInfo = []
-            status = "unknown"
+        order = Orders.query.with_parent(campaign[0]).join(Payments).add_columns(
+            Payments.received_at,
+            Payments.confirmed_at,
+            Payments.order_id,
+            ).first_or_404()
+        log.debug(f"ORDER: {order}")
 
         # we show details only to campaign owners or admins
-        if dbquery.user_id == current_user.id or amiadmin():
+        if order[0].user_id == current_user.id or amiadmin():
             # Render the page and quit
             return render_template(
                 'users/campaign-single.html',
                 now=datetime.utcnow(),
                 datemin=datetime.min,
-                dbquery=dbquery,
-                cryptoInfo=cryptoInfo,
-                status=status
+                campaign=campaign,
+                order=order
             )
         else:
             # We politely redirecting 'hackers' to all campaigns
             return redirect(url_for("user.campaign"), code=302)
 
-    # admin gets all campaigns for all users limited to requested time period
-    sql = sql.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
-    if amiadmin():
-        all_campaigns = sql.all()
     else:
-        all_campaigns = sql.filter(Orders.user_id == current_user.id).all()
-    log.debug(all_campaigns)
+        if not no_weeks:  # we show 1 month of recent campaigns by default
+            no_weeks = 4
+        # admin gets all campaigns for all users limited to requested time period
+        sql = sql.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
+        if amiadmin():
+            all_campaigns = sql.all()
+        else:
+            all_campaigns = sql.filter(Orders.user_id == current_user.id).all()
+        log.debug(all_campaigns)
 
-    # getting payment details for campaignes
-    for campaign in all_campaigns:
-        sql = Orders.query.with_parent(campaign).join(Payments).add_columns(
-            Payments.confirmed_at
-            ).all()
-        log.debug(sql)
+        # getting payment details for campaignes
+        for campaign in all_campaigns:
+            sql = Orders.query.with_parent(campaign).join(Payments).add_columns(
+                Payments.confirmed_at
+                ).all()
+            log.debug(sql)
 
-    # Render the page and quit
-    return render_template(
-        'users/campaign.html',
-        all_campaigns=all_campaigns,
-        roles=current_user.roles,
-        now=datetime.utcnow(),
-        datemin=datetime.min,
-        no_weeks=no_weeks
-    )
+        # Render the page and quit
+        return render_template(
+            'users/campaign.html',
+            all_campaigns=all_campaigns,
+            roles=current_user.roles,
+            now=datetime.utcnow(),
+            datemin=datetime.min,
+            no_weeks=no_weeks
+        )
 
 
 @blueprint.route('/payments')
@@ -807,32 +754,40 @@ def clear_basket(campaign_id):
 
 
 # TODO: better ask user twice if campaign is running
-@blueprint.route('/clear/campaign/<int:campaign_no>')
+@blueprint.route('/activation/campaign/<int:campaign_no>')
 @login_required
-def clear_campaign(campaign_no):
+def campaign_active(campaign_no):
     try:
         # getting data about this campaign 
         # and confirming it belongs to the user
-        campaigndata = Orders.query.filter_by(campaigno=campaign_no).first()
-        if campaigndata.user_id != current_user.id or not amiadmin():
+        campaign = Campaignes.query.filter(Campaignes.id==campaign_no).first_or_404()
+        order = Orders.query.with_parent(campaign).first_or_404()
+        if order.user_id != current_user.id or not amiadmin():
             return redirect(url_for("user.campaign"), code=302)
 
-        # removing campaign from all sources
-        Orders.query.filter_by(campaigno=campaign_no).delete()
-        Orders.commit()
+        currently_active = campaign.active
+        if currently_active is True:
+            text = "disactivated"
+        else:
+            text = "activated"
+
+        # activating / disactivating
+        campaign.active = not campaign.active
+        Campaignes.commit()
         dblogger(
             current_user.id,
-            "Campaign #{} was deleted by user.".format(
-                campaign_no
+            "Campaign #{} got {} by user.".format(
+                campaign_no,
+                text
             )
         )
-        flash('Your campaign was deleted sucessfully.', 'success')
+        flash(f'Your campaign was {text} sucessfully.', 'success')
 
     except Exception as e:
         log.debug("Exception")
         log.exception(e)
 
-    return redirect(url_for("user.campaign"), code=302)
+    return redirect(url_for("user.campaign", campaign_id=campaign_no), code=302)
 
 
 @blueprint.route('/pay')

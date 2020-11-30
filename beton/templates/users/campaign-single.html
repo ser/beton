@@ -12,94 +12,84 @@
         <div class="col-sm-12">
             <div class="card border-primary mb-3">
                 <h4 class="card-header"><span class="icon dripicons-to-do"></span>
-                    Campaign details: #{{ dbquery.campaigno }} {{ dbquery.name }}
+                    Campaign details: #{{ campaign[0].id }} {{ campaign[0].name }}
 
-                    {% if dbquery.received_at != datemin %}
-                    <span class="badge badge-pill badge-info">PAID</span>
+                    {% if running != datemin %}
+                        <span class="badge badge-pill badge-info">RUNNING</span>
+                        &nbsp;<span class="spinner-grow spinner-grow-sm" role="status"></span>
                     {% else %}
-                    <span class="badge badge-pill badge-danger">NOT PAID</span>
-                    {% endif %}
-
-                    {% if dbquery.confirmed_at != datemin %}
-                    <span class="badge badge-pill badge-info">CONFIRMED</span>
-                    {% else %}
-                    <span class="badge badge-pill badge-danger">NOT CONFIRMED
-                        {% if dbquery.received_at != datemin %}
-                            &nbsp;<span class="spinner-grow spinner-grow-sm" role="status"></span>
-                        {% endif %}
-                    </span>
+                        <span class="badge badge-pill badge-danger">NOT RUNNING</span>
                     {% endif %}
 
                 </h4>
                 <div class="card-body">
-                    <div class="card-columns">
-                        <ul class="list-group">
-                            <h5 class="card-title">Banner</h5>
-                            <li class="list-group-item d-flex align-items-left"><b>Zone #{{ dbquery.zoneid }}</b>&nbsp; - {{ dbquery.comments }}</li>
-                            {% if dbquery.type == "text" %}
+                    <div class="row"><div class="col-sm-6"><div class="card">
+                        <h5 class="card-header">Details</h5>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% if campaign[0].active == True %}
+                                    <li class="list-group-item d-flex list-group-item-success">ACTIVE</li>
+                                {% else %}
+                                    <li class="list-group-item d-flex list-group-item-warning">INACTIVE</li>
+                                {% endif %}
+
+                                <li class="list-group-item d-flex align-items-left"><b>Zone #{{ campaign[0].zoneid }}</b>&nbsp; - {{ campaign[0].comments }}</li>
+
+                                {% if campaign.type == "text" %}
+                                    <li class="list-group-item d-flex align-items-left">
+                                        <blockquote class="blockquote">
+                                            <i class="{{ dbquery.icon }}" aria-hidden="true"></i>&nbsp;{{ dbquery.content }}
+                                        </blockquote>
+                                    </li>
+                                {% else %}
+                                    <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ campaign.filename }}">
+                                    <li class="list-group-item d-flex align-items-left"><b>Size:</b>&nbsp; {{ campaign.width }}x{{ campaign.height }}
+                                {% endif %}
+                                <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ campaign[0].begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ campaign[0].stops_at.strftime('%Y-%m-%d') }}</li>
                                 <li class="list-group-item d-flex align-items-left">
-                                    <blockquote class="blockquote">
-                                        <i class="{{ dbquery.icon }}" aria-hidden="true"></i>&nbsp;{{ dbquery.content }}
-                                    </blockquote>
+                                    {% if campaign[0].begins_at <= now %}
+                                        <b>Impressions:</b>&nbsp; {{ campaign[0].impressions }}
+                                    {% else %}
+                                        Campaign starts in
+                                        {{ ((campaign[0].begins_at - now).days) + 1 }}
+                                        day(s)
+                                    {% endif %}
                                 </li>
-                            {% else %}
-                                <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ dbquery.filename }}">
-                                <li class="list-group-item d-flex align-items-left"><b>Size:</b>&nbsp; {{ dbquery.width }}x{{ dbquery.height }}
-                            {% endif %}
-                            <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ dbquery.begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ dbquery.stops_at.strftime('%Y-%m-%d') }}</li>
-                            <li class="list-group-item d-flex align-items-left">
-                                {% if dbquery.begins_at <= now %}
-                                    <b>Impressions:</b>&nbsp; {{ dbquery.impressions }}
-                                {% else %}
-                                    Campaign starts in
-                                       {{ ((dbquery.begins_at - now).days) + 1 }}
-                                    day(s)
-                                {% endif %}
-                            </li>
-                        </ul>
-                        <ul class="list-group">
-                            <h5 class="card-title">Invoice</h5>
-                            <li class="list-group-item d-flex align-items-left"><b>Status:</b>&nbsp; {{ status }}</li>
-                            {% if dbquery.fiat_amount > 0 %}
-                                <li class="list-group-item d-flex align-items-left"><b>Amount:</b>&nbsp; {{ dbquery.fiat }}&nbsp;{{% dbquery.fiat_amount %}}</li>
-                            {% endif %}
-                            {% if dbquery.btcpayserver_id %}
-                                <li class="list-group-item d-flex align-items-left"><b>Invoice ID:</b>&nbsp; {{ dbquery.btcpayserver_id }}</li>
-                            {% endif %}
-                            <li class="list-group-item d-flex align-items-left"><b>Created at:</b>&nbsp; {{ dbquery.created_at }}</li>
-                            <li class="list-group-item d-flex align-items-left">
-                                {% if dbquery.received_at != datemin %}
-                                    <b>Full payment received at:</b>&nbsp; {{ dbquery.received_at }}
-                                {% else %}
-                                        <span class="badge badge-danger">NOT PAID!</span>
-                                {% endif %}
-                            </li>
-                            <li class="list-group-item d-flex align-items-left">
-                                {% if dbquery.confirmed_at != datemin %}
-                                    <b>Blockchain confirmed at:</b>&nbsp; {{ dbquery.confirmed_at }}
-                                {% else %}
-                                    <span class="badge badge-danger">NOT CONFIRMED</span>
-                                {% endif %}
-                            </li>
-                        </ul>
-                        <ul class="list-group">
-                            <h5 class="card-title">Payment(s)</h5>
-                                <ul class="list-group-item">
-                                {% for tx in cryptoInfo %}
-                                    <li class="list-group-item d-flex align-items-left"><b>{{ tx['cryptoCode'] }}</b>&nbsp; {{ tx['cryptoPaid'] }}</li>
-                                    <li class="list-group-item d-flex align-items-left"><b>Rate {{ tx['cryptoCode'] }} / {{ dbquery.fiat }}</b>&nbsp; {{ tx['rate'] }}</li>
-                                    <!-- <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd><a href="{{ tx['address'] }}">{{ tx['address'] }}</a></kbd></li>-->
-                                    <li class="list-group-item d-flex align-items-left"><b>Address:</b>&nbsp; <kbd>{{ tx['address'] }}</kbd></li>
-                                {% endfor %}
-                                </div>
-                        </ul>
-                    </div>
+                            </ul>
+                        </div>
+                    </div></div><div class="col-sm-6"><div class="card">
+                        <h5 class="card-header">Invoice</h5>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex align-items-left">
+                                    {% if order.received_at != datemin %}
+                                        <b>Payment received at:</b>&nbsp; {{ order.received_at }}
+                                    {% else %}
+                                        <span class="badge badge-danger">PAYMENT NOT
+                                        RECEIVED</span>
+                                    {% endif %}
+                                </li>
+                                <li class="list-group-item d-flex align-items-left">
+                                    {% if order.confirmed_at != datemin %}
+                                        <b>Blockchain confirmed at:</b>&nbsp; {{ order.confirmed_at }}
+                                    {% else %}
+                                        <span class="badge badge-danger">PAYMENT NOT CONFIRMED</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('user.payments',
+                            payment_no=order.order_id) }}" class="btn btn-info btn-sm
+                            btn-block">Click for full invoice data</a>
+                        </div>
+                    </div></div></div>
                 </div>
                 <div class="card-footer">
-                           <a href="{{ url_for('user.clear_campaign',
-                               campaign_no=dbquery.campaigno)  }}"
+                           <a href="{{ url_for('user.campaign_active',
+                               campaign_no=campaign[0].id)  }}"
                                            class="btn btn-danger btn-sm
-                                           btn-block">Delete this campaign</a>
+                                           btn-block">Disactivate this campaign (you can activate it back again later)</a>
 
                 </div>
             </div>
