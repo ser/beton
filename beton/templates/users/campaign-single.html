@@ -27,13 +27,6 @@
                         <h5 class="card-header">Details</h5>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
-                                {% if campaign[0].active == True %}
-                                    <li class="list-group-item d-flex list-group-item-success">ACTIVE</li>
-                                {% else %}
-                                    <li class="list-group-item d-flex list-group-item-warning">INACTIVE</li>
-                                {% endif %}
-
-                                <li class="list-group-item d-flex align-items-left"><b>Zone #{{ campaign[0].zoneid }}</b>&nbsp; - {{ campaign[0].comments }}</li>
 
                                 {% if campaign.type == "text" %}
                                     <li class="list-group-item d-flex align-items-left">
@@ -42,9 +35,19 @@
                                         </blockquote>
                                     </li>
                                 {% else %}
-                                    <img class="img-thumbnail thumbmax" src="{{ config.UPLOADED_IMAGES_URL }}/{{ campaign.filename }}">
+                                    <img class="img-thumbnail thumbmax" src="{{ url }}">
                                     <li class="list-group-item d-flex align-items-left"><b>Size:</b>&nbsp; {{ campaign.width }}x{{ campaign.height }}
                                 {% endif %}
+
+                                {% if campaign[0].active == True %}
+                                    <li class="list-group-item d-flex list-group-item-success">ACTIVE</li>
+                                {% else %}
+                                    <li class="list-group-item d-flex list-group-item-warning">INACTIVE</li>
+                                {% endif %}
+
+                                <li class="list-group-item d-flex align-items-left"><b>Zone #{{ campaign[0].zoneid }}</b>&nbsp; - {{ campaign[0].comments }}</li>
+
+
                                 <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ campaign[0].begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ campaign[0].stops_at.strftime('%Y-%m-%d') }}</li>
                                 <li class="list-group-item d-flex align-items-left">
                                     {% if campaign[0].begins_at <= now %}
@@ -61,19 +64,21 @@
                         <h5 class="card-header">Invoice</h5>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex align-items-left">
                                     {% if order.received_at != datemin %}
-                                        <b>Payment received at:</b>&nbsp; {{ order.received_at }}
+                                        <li class="list-group-item d-flex align-items-left list-group-item-success">
+                                            <b>Payment received at:</b>&nbsp; {{ order.received_at }}</li>
                                     {% else %}
-                                        <span class="badge badge-danger">PAYMENT NOT
-                                        RECEIVED</span>
+                                        <li class="list-group-item d-flex align-items-left list-group-item-danger">
+                                            PAYMENT NOT RECEIVED</li>
                                     {% endif %}
                                 </li>
                                 <li class="list-group-item d-flex align-items-left">
                                     {% if order.confirmed_at != datemin %}
-                                        <b>Blockchain confirmed at:</b>&nbsp; {{ order.confirmed_at }}
+                                        <li class="list-group-item d-flex align-items-left list-group-item-success">
+                                            <b>Blockchain confirmed at:</b>&nbsp; {{ order.confirmed_at }}</li>
                                     {% else %}
-                                        <span class="badge badge-danger">PAYMENT NOT CONFIRMED</span>
+                                        <li class="list-group-item d-flex align-items-left list-group-item-danger">
+                                        PAYMENT NOT CONFIRMED</li>
                                     {% endif %}
                                 </li>
                             </ul>

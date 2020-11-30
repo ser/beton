@@ -1,6 +1,6 @@
 <div class="card border-light">
     <div class="card-header">
-        <h5><a href="{{ url_for('user.campaign', campaign_no=campaign.campaigno) }}">#{{ campaign.campaigno }} {{ campaign.name }}</a></h5>
+        <h5><a href="{{ url_for('user.campaign', campaign_id=campaign.id) }}">#{{ campaign.id }} {{ campaign.name }}</a></h5>
         {% if campaign.type == "text" %}
             <div class="card-header">
             <i class="{{ campaign.icon }}" aria-hidden="true"></i>&nbsp;
@@ -9,7 +9,7 @@
         {% else %}
             <img class="img-thumbnail thumbmax" 
                 src="{{ config.UPLOADED_IMAGES_URL}}{{ campaign.filename }}"
-                alt="[B{{ campaign.campaigno }}]">
+                alt="[B{{ campaign.id }}]">
         {% endif %}
         <p class="text-muted">{{ campaign.comments }}</p>
     </div>
@@ -38,7 +38,7 @@
         </div>
     </div>
     <div class="card-footer">
-        <a href="{{ url_for('user.campaign', campaign_no=campaign.campaigno) }}"
+        <a href="{{ url_for('user.campaign', campaign_id=campaign.id) }}"
             class="btn btn-info btn-sm btn-block">More details</a>
     </div>
 </div>

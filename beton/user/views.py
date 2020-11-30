@@ -404,7 +404,8 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
                 now=datetime.utcnow(),
                 datemin=datetime.min,
                 campaign=campaign,
-                order=order
+                order=order,
+                url=images.url(campaign.filename)
             )
         else:
             # We politely redirecting 'hackers' to all campaigns
