@@ -417,17 +417,10 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
         # admin gets all campaigns for all users limited to requested time period
         sql = sql.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
         if amiadmin():
-            all_campaigns = sql.all()
-        else:
-            all_campaigns = sql.filter(Orders.user_id == current_user.id).all()
+            all_campaigns = sql.filter(Campaignes.o2c.any()).join(Zones).join(Banner).all()
+        else:  # we want campaignes which belong to the logged in user only
+            all_campaigns = sql.filter(Campaignes.o2c.any(user_id=current_user.id)).join(Zones).join(Banner).all()
         log.debug(all_campaigns)
-
-        # getting payment details for campaignes
-        for campaign in all_campaigns:
-            sql = Orders.query.with_parent(campaign).join(Payments).add_columns(
-                Payments.confirmed_at
-                ).all()
-            log.debug(sql)
 
         # Render the page and quit
         return render_template(
@@ -822,15 +815,15 @@ def pay():
                     Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).one()
             log.debug(sql)
             basket.append(sql)
-            begin = order_sql[0].begins_at
-            enddate = order_sql[0].stops_at
+            begin = sql[0].begins_at
+            enddate = sql[0].stops_at
             totaltime = enddate - begin
-            totalcurrencyprice = order_sql.dayprice/100*(totaltime.days+1)
+            totalcurrencyprice = sql.dayprice/100*(totaltime.days+1)
             total += totalcurrencyprice
             label = label + "[C#{} Z#{} B#{} {} ↦ {} {:.2f}{}] ※ ".format(
                 item.campaigno,
-                order_sql[0].zoneid,
-                order_sql[0].bannerid,
+                sql[0].zoneid,
+                sql[0].bannerid,
                 begin.strftime("%d/%m/%y"),
                 enddate.strftime("%d/%m/%y"),
                 totalcurrencyprice,
