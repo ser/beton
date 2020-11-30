@@ -46,6 +46,9 @@
                                 {% if dbquery.btcpayserver_id %}
                                     <li class="list-group-item d-flex align-items-left"><b>Invoice ID:</b>&nbsp; {{ dbquery.btcpayserver_id }}</li>
                                 {% endif %}
+                                {% if dbquery.posdata %}
+                                    <li class="list-group-item d-flex align-items-left"><b>POS ID:</b>&nbsp; {{ dbquery.posdata }}</li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div></div><div class="col-sm-6"><div class="card">
@@ -59,14 +62,13 @@
                                     </ul><br/>
                                     {% endfor %}
                             </div>
-                        </div></div></div>
-                    </div>
+                    </div></div></div>
                 </div>
                 <div class="card-footer">
                     <div class="card-columns">
                     {% for campaigne in campaignes %}
                         <div class="card border-secondary mb-3">
-                            <h5 class="card-header">Campaign #{{ campaigne.id }} {{ campaigne.name }}</h5>
+                            <h5 class="card-header"><a href="{{ url_for('user.campaign', campaign_id=campaigne.id) }}">Campaign #{{ campaigne.id }} {{ campaigne.name }}</a></h5>
                         </div>
                     {% endfor %}
                     </div>

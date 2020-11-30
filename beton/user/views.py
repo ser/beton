@@ -462,7 +462,7 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
         if payment_no is not None:
             dbquery = sql.filter(Payments.id == payment_no).first_or_404()
         else:
-            dbquery = sql.filter(Payments.btcpayserver_id == invoice_uuid).first_or_404()
+            dbquery = sql.filter(Payments.posdata == invoice_uuid).first_or_404()
         # and now we check details of that payment from downstream payment processor
         log.debug(dbquery)
         btcpayinv = btcpayclient.get_invoice(dbquery.btcpayserver_id)
