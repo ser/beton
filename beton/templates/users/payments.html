@@ -22,7 +22,7 @@
                 <div class="card-body">
                     <div class="card-columns">
                     {% for payment in all_payments|reverse %}
-                    {% if payment.confirmed_at != datemin and ((payment.created_at - now).days + 1) >= 0 %}
+                    {% if payment[0].confirmed_at != datemin and ((payment[0].created_at - now).days + 1) >= 0 %}
                             {% include "users/payments-elements.html" %}
                         {% endif %}
                     {% endfor %}
@@ -36,7 +36,7 @@
                 <div class="card-body">
                     <div class="card-columns">
                         {% for payment in all_payments|reverse %}
-                        {% if payment.confirmed_at == datemin %}
+                        {% if payment[0].confirmed_at == datemin %}
                             {% include "users/payments-elements.html" %}
                         {% endif %}
                     {% endfor %}

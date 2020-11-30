@@ -69,7 +69,7 @@
                                             <b>Payment received at:</b>&nbsp; {{ order.received_at }}</li>
                                     {% else %}
                                         <li class="list-group-item d-flex align-items-left list-group-item-danger">
-                                            PAYMENT NOT RECEIVED</li>
+                                                PAYMENT NOT RECEIVED</li>
                                     {% endif %}
                                 </li>
                                 <li class="list-group-item d-flex align-items-left">
@@ -78,15 +78,15 @@
                                             <b>Blockchain confirmed at:</b>&nbsp; {{ order.confirmed_at }}</li>
                                     {% else %}
                                         <li class="list-group-item d-flex align-items-left list-group-item-danger">
-                                        PAYMENT NOT CONFIRMED</li>
+                                            PAYMENT NOT CONFIRMED</li>
                                     {% endif %}
                                 </li>
                             </ul>
                         </div>
                         <div class="card-footer">
                             <a href="{{ url_for('user.payments',
-                            payment_no=order.order_id) }}" class="btn btn-info btn-sm
-                            btn-block">Click for full invoice data</a>
+                                payment_no=order.id) }}" class="btn btn-info btn-sm
+                                    btn-block">Click for full invoice data</a>
                         </div>
                     </div></div></div>
                 </div>

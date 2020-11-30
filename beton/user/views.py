@@ -390,6 +390,7 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
 
         # we are getting overview of particular campaign from local database
         order = Orders.query.with_parent(campaign[0]).join(Payments).add_columns(
+            Payments.id,
             Payments.received_at,
             Payments.confirmed_at,
             Payments.order_id,
@@ -420,7 +421,17 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
             all_campaigns = sql.filter(Campaignes.o2c.any()).join(Zones).join(Banner).all()
         else:  # we want campaignes which belong to the logged in user only
             all_campaigns = sql.filter(Campaignes.o2c.any(user_id=current_user.id)).join(Zones).join(Banner).all()
-        log.debug(all_campaigns)
+        log.debug(f"CAMPAIGNES: {all_campaigns}")
+
+        urls = {}
+        orders = {}
+        for campaign in all_campaigns:
+            urls[campaign.id] = images.url(campaign.banners.filename)
+            orders[campaign.id] = Orders.query.with_parent(campaign).join(Payments).add_columns(
+                Payments.confirmed_at
+            ).all()
+        log.debug(f"URLS: {urls}")
+        log.debug(f"ORDERS: {orders}")
 
         # Render the page and quit
         return render_template(
@@ -429,7 +440,9 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
             roles=current_user.roles,
             now=datetime.utcnow(),
             datemin=datetime.min,
-            no_weeks=no_weeks
+            no_weeks=no_weeks,
+            urls=urls,
+            orders=orders
         )
 
 
@@ -499,9 +512,13 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
         # admin gets all payments for all users limited to requested time period
         sql = sql.filter(Payments.created_at > datetime.utcnow() - timedelta(weeks=no_weeks))
         if amiadmin():
-            all_payments = sql.all()
+            all_payments = sql.add_columns(
+                    Orders.comments
+                ).all()
         else:
-            all_payments = sql.filter(Orders.user_id == current_user.id).all()
+            all_payments = sql.filter(Orders.user_id == current_user.id).add_columns(
+                    Orders.comments
+                ).all()
         log.debug(all_payments)
 
         # Render the page and quit
@@ -644,7 +661,6 @@ def order():
                 banner_id
             )
         )
-
 
         basket = Basket.create(
             campaigno=campaign.id,

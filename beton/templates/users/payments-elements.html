@@ -1,28 +1,28 @@
 <div class="card border-light">
     <div class="card-header">
-        <h5><a href="{{ url_for('user.payments', payment_no=payment.id) }}">#{{ payment.id }}</a></h5>
+        <h5><a href="{{ url_for('user.payments', payment_no=payment[0].id) }}">Payment #{{ payment[0].id }}</a></h5>
         <p class="text-muted">{{ payment.comments }}</p>
     </div>
     <div class="card-body">
         <div class="card-text">
             <p>
-                <b>Created:</b> {{ payment.created_at.strftime('%Y-%m-%d') }}<br/>
-                {% if payment.received_at != datemin %}
-                <b>Received:</b> {{ payment.received_at.strftime('%Y-%m-%d') }}
+                <b>Created:</b> {{ payment[0].created_at.strftime('%Y-%m-%d') }}<br/>
+                {% if payment[0].received_at != datemin %}
+                <b>Money received:</b> {{ payment[0].received_at.strftime('%Y-%m-%d') }}
                 {% endif %}
-                {% if payment.confirmed_at != datemin %}
-                <b>Confirmed:</b> {{ payment.confirmed_at.strftime('%Y-%m-%d') }}
+                {% if payment[0].confirmed_at != datemin %}
+                <b>Transaction confirmed:</b> {{ payment[0].confirmed_at.strftime('%Y-%m-%d') }}
                 {% endif %}
             </p>
                 <p>
-                    <b>{{ payment.fiat }}</b>
-                    {{ payment.fiat_amount }}
+                    <b>{{ payment[0].fiat }}</b>
+                    {{ payment[0].fiat_amount }}
                 </p>
             </p>
         </div>
     </div>
     <div class="card-footer">
-        <a href="{{ url_for('user.payments', payment_no=payment.id) }}"
+        <a href="{{ url_for('user.payments', payment_no=payment[0].id) }}"
             class="btn btn-info btn-sm btn-block">More details</a>
     </div>
 </div>

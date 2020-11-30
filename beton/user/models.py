@@ -61,7 +61,7 @@ class Banner(SurrogatePK, Model):
     type = Column(db.String(21), unique=False, nullable=False)
     content = Column(db.String(256), unique=False, nullable=True)
     icon = Column(db.String(128), unique=False, nullable=True)
-    bannerid = db.relationship("Campaignes")
+    bannerid = db.relationship("Campaignes", backref="banners")
 
     def __init__(self, filename, owner, created_at, url, height, width, comments, type, content, icon):
         """Create instance."""

@@ -8,7 +8,7 @@
         </div>
         {% else %}
             <img class="img-thumbnail thumbmax" 
-                src="{{ config.UPLOADED_IMAGES_URL}}{{ campaign.filename }}"
+                src="{{ urls[campaign.id] }}"
                 alt="[B{{ campaign.id }}]">
         {% endif %}
         <p class="text-muted">{{ campaign.comments }}</p>
