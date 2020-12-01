@@ -696,33 +696,41 @@ def basket():
     """Present his/her basket to customer."""
 
     basket = []
-    price = []
+    price = {}
+    urls = {}
     totalprice = 0
     basket_sql = Basket.query.filter_by(user_id=current_user.id).all()
     # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
-            order_sql = Campaignes.query.filter_by(
+            sql = Campaignes.query.filter_by(
                 id=item.campaigno).join(Banner).join(Zones).join(Prices).add_columns(
                     Banner.filename, Banner.url, Banner.width, Banner.height,
                     Banner.content, Banner.icon, Banner.type, Prices.dayprice,
                     Campaignes.begins_at, Campaignes.stops_at).first()
-            basket.append(order_sql)
-            begin = order_sql.begins_at
-            enddate = order_sql.stops_at
+            basket.append(sql)
+            begin = sql.begins_at
+            enddate = sql.stops_at
             campaign_time = enddate - begin
-            currencyprice = order_sql.dayprice/100*(campaign_time.days+1)
-            price.append([item.campaigno, currencyprice])
+            currencyprice = sql.dayprice/100*(campaign_time.days+1)
+            price[sql[0].id]=currencyprice
             totalprice += currencyprice
+            urls[sql[0].id]=images.url(sql.filename)
     else:
         basket = 0
         price = 0
+        urls = 0
+
+    log.debug(f"BASKET: {basket}")
+    log.debug(f"PRICE: {price}")
+    log.debug(f"URLS: {urls}")
 
     return render_template(
         'users/basket.html',
         basket=basket,
         price=price,
         totalprice=totalprice,
+        urls=urls,
         present=datetime.now()-timedelta(days=1)
     )
 
@@ -757,15 +765,15 @@ def clear_basket(campaign_id):
             all_basket = Basket.query.filter_by(user_id=current_user.id).all()
             # Removing these campaigns from Revive as not useful in future
             Basket.query.filter_by(user_id=current_user.id).delete()
-            for order in all_basket:
-                Orders.query.filter_by(campaigno=order.campaigno).delete()
-                flash('Your basket was removed sucessfully.', 'success')
+            for campaign in all_basket:
+                Campaignes.query.filter_by(id=campaign.campaigno).delete()
+                flash('Content of your basket was removed sucessfully.', 'success')
         else:
             Basket.query.filter_by(user_id=current_user.id, campaigno=campaign_id).delete()
-            Orders.query.filter_by(campaigno=campaign_id).delete()
-            flash('Your planned campaign was removed sucessfully.', 'success')
+            Campaignes.query.filter_by(id=campaign_id).delete()
+            flash('Your planned campaign was removed on your request sucessfully.', 'success')
         Basket.commit()
-        Orders.commit()
+        Campaignes.commit()
     except Exception as e:
         log.debug("Exception")
         log.exception(e)

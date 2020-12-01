@@ -28,7 +28,7 @@
         {% for order in basket %}
             <div class="card border-light">
                 <div class="card-header">
-                    Campaign #{{ order[0].campaigno }}
+                    <kbd>{{ loop.index }}</kbd> Campaign #{{ order[0].id }} <i>{{ order[0].name }}</i>
                 </div>
                 <div class="card-body">
                     {% if order.stops_at < present %}
@@ -47,7 +47,7 @@
                                 </div>
                                 {% else %}
                                     <img class="img-thumbnail thumbmax"
-                                        src="{{ config.UPLOADED_IMAGES_URL }}{{ order.filename }}">
+                                        src="{{ urls[order[0].id] }}">
                                 {% endif %}
                                 <br/>
                                 {{ order.url }}
@@ -55,18 +55,14 @@
                                 <b>From:</b> {{ order.begins_at.strftime('%Y-%m-%d (%A)') }}
                                 <br/>
                                 <b>To:</b> {{ order.stops_at.strftime('%Y-%m-%d (%A)') }}
-                                {% for x in price %}
-                                    {% if x[0] == order[0].campaigno %}
                                     <br/>
-                                    <b>{{ config.FIAT }}:</b> {{ x[1] }}
-                                    {% endif %}
-                                {% endfor %}
+                                    <b>{{ config.FIAT }}:</b> {{price[order[0].id] }}                   
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="card-footer">
-                    <a href="{{ config.OUR_URL }}clear/basket/{{ order[0].campaigno }}"
+                    <a href="{{ config.OUR_URL }}clear/basket/{{ order[0].id }}"
                         class="btn btn-danger btn-sm btn-block">Remove from basket</a>
                 </div>
             </div>
