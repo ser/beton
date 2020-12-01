@@ -14,11 +14,11 @@
                 <h4 class="card-header"><span class="icon dripicons-to-do"></span>
                     Campaign details: #{{ campaign[0].id }} {{ campaign[0].name }}
 
-                    {% if running != datemin %}
+                    {% if is_running == True %}
                         <span class="badge badge-pill badge-info">RUNNING</span>
                         &nbsp;<span class="spinner-grow spinner-grow-sm" role="status"></span>
                     {% else %}
-                        <span class="badge badge-pill badge-danger">NOT RUNNING</span>
+<!--                        <span class="badge badge-pill badge-danger">NOT RUNNING</span> -->
                     {% endif %}
 
                 </h4>
@@ -61,7 +61,13 @@
                             </ul>
                         </div>
                     </div></div><div class="col-sm-6"><div class="card">
-                        <h5 class="card-header">Invoice</h5>
+                        <h5 class="card-header">Invoice
+                            {% if is_paid == True %}
+                                <span class="badge badge-pill badge-info">PAID</span>
+                            {% else %}
+                                <span class="badge badge-pill badge-danger">NOT PAID</span>
+                            {% endif %}
+                        </h5>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
                                     {% if order.received_at != datemin %}

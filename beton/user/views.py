@@ -397,6 +397,12 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
             ).first_or_404()
         log.debug(f"ORDER: {order}")
 
+        # we want to clearly inform user if campaign is running atm
+        dates_running = campaign[0].begins_at < datetime.utcnow() and campaign[0].stops_at > datetime.utcnow()
+        log.debug(dates_running)
+        is_paid = order.confirmed_at != datetime.min
+        is_running = dates_running and campaign[0].active and is_paid
+
         # we show details only to campaign owners or admins
         if order[0].user_id == current_user.id or amiadmin():
             # Render the page and quit
@@ -406,6 +412,8 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
                 datemin=datetime.min,
                 campaign=campaign,
                 order=order,
+                is_running=is_running,
+                is_paid=is_paid,
                 url=images.url(campaign.filename)
             )
         else:
@@ -519,7 +527,7 @@ def payments(no_weeks=None, payment_no=None, invoice_uuid=None):
             all_payments = sql.filter(Orders.user_id == current_user.id).add_columns(
                     Orders.comments
                 ).all()
-        log.debug(all_payments)
+        log.debug(f"ALL PAYMENTS: {all_payments}")
 
         # Render the page and quit
         return render_template(
