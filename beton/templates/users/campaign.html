@@ -2,7 +2,6 @@
 {% extends "layout.html" %}
 {% block content %}
     <div class="jumbotron">
-        <p>{{ all_campaigns }}
     <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
             aria-hidden="true"></i></h1>
     <p class="lead">Here are your past, current and future campaigns, limited to those ending {{  "%.0f" | format(no_weeks/4) }} month(s) ago or sooner.</p>
