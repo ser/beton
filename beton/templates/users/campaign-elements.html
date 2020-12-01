@@ -19,22 +19,19 @@
                 <b>From:</b> {{ campaign.begins_at.strftime('%Y-%m-%d') }}<br/>
                 <b>To:</b> {{ campaign.stops_at.strftime('%Y-%m-%d') }}
             </p>
-            {#% if campaign.fiat_amount > 0 %#}
-                <p>
-                    <b>{{ config.FIAT }}</b>
-                    {{ campaign.fiat_amount }}
-                </p>
-            {#% endif %#}
-            {% if campaign.begins_at <= now %}
-                <p><b>Impressions:</b>&nbsp;
-                    {{ campaign.impressions }}
-                </p>
-            {% else %}
-            <p>Campaign starts in 
-                {{ ((campaign.begins_at - now).days + 1) }}
-                day(s)
+
+            {% if orders[campaign.id][0].confirmed_at != datemin %}
+                {% if campaign.begins_at <= now %}
+                    <p><b>Impressions:</b>&nbsp;
+                        {{ campaign.impressions }}
+                    </p>
+                {% else %}
+                    <p>Campaign starts in 
+                        {{ ((campaign.begins_at - now).days + 1) }}
+                            day(s)
+                    </p>
+                {% endif %}
             {% endif %}
-            </p>
         </div>
     </div>
     <div class="card-footer">
