@@ -1,6 +1,10 @@
 # app settings which should be secret!
 beton/settings.py
 
+# files with a dot at the end
+*.*\.
+run
+
 # local virtualenv
 bin/
 include/
