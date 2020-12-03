@@ -28,7 +28,8 @@
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
 
-                                <li class="list-group-item d-flex list-group-item-primary"><b>Zone #{{ campaign[0].zoneid }}</b>&nbsp; - {{ campaign.zname }}</li>
+                                <li class="list-group-item d-flex list-group-item-primary"><b>Zone #{{ campaign[0].zoneid }}</b>
+                                    &nbsp; - &nbsp; <i>{{ campaign.website }}</i> &nbsp; - {{ campaign.zname }}</li>
                                 {% if campaign.type == "text" %}
                                     <li class="list-group-item d-flex align-items-left">
                                         <blockquote class="blockquote">

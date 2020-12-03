@@ -381,11 +381,12 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
     if campaign_id is not None:
 
         # we check details of the order which campaing belongs to
-        campaign = sql.filter(Campaignes.id==campaign_id).join(Zones).join(Banner).add_columns(
+        campaign = sql.filter(Campaignes.id==campaign_id).join(Zones).join(Banner).join(Websites).add_columns(
             Banner.filename,
             Banner.height,
             Banner.width,
-            Zones.name.label('zname')
+            Zones.name.label('zname'),
+            Websites.name.label('website')
             ).first_or_404()
         log.debug(f"CAMPAIGN: {campaign}")
 
@@ -400,7 +401,7 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
 
         # we want to clearly inform user if campaign is running atm
         dates_running = campaign[0].begins_at < datetime.utcnow() and campaign[0].stops_at > datetime.utcnow()
-        log.debug(dates_running)
+        #log.debug(dates_running)
         is_paid = order.confirmed_at != datetime.min
         is_running = dates_running and campaign[0].active and is_paid
 
