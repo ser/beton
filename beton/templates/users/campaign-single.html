@@ -28,6 +28,7 @@
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
 
+                                <li class="list-group-item d-flex list-group-item-primary"><b>Zone #{{ campaign[0].zoneid }}</b>&nbsp; - {{ campaign.zname }}</li>
                                 {% if campaign.type == "text" %}
                                     <li class="list-group-item d-flex align-items-left">
                                         <blockquote class="blockquote">
@@ -45,9 +46,6 @@
                                     <li class="list-group-item d-flex list-group-item-warning">INACTIVE</li>
                                 {% endif %}
 
-                                <li class="list-group-item d-flex align-items-left"><b>Zone #{{ campaign[0].zoneid }}</b>&nbsp; - {{ campaign[0].comments }}</li>
-
-
                                 <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ campaign[0].begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ campaign[0].stops_at.strftime('%Y-%m-%d') }}</li>
                                 <li class="list-group-item d-flex align-items-left">
                                     {% if campaign[0].begins_at <= now %}
@@ -58,6 +56,7 @@
                                         day(s)
                                     {% endif %}
                                 </li>
+
                             </ul>
                         </div>
                     </div></div><div class="col-sm-6"><div class="card">

@@ -384,7 +384,8 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
         campaign = sql.filter(Campaignes.id==campaign_id).join(Zones).join(Banner).add_columns(
             Banner.filename,
             Banner.height,
-            Banner.width
+            Banner.width,
+            Zones.name.label('zname')
             ).first_or_404()
         log.debug(f"CAMPAIGN: {campaign}")
 

@@ -359,20 +359,23 @@ class Log(SurrogatePK, Model):
 
 
 class Impressions(SurrogatePK, Model):
-    """Impressions cache"""
+    """Impressions data stats"""
 
     __tablename__ = 'impressions'
-    zoneid = Column(db.Integer(), db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
+    cid = Column(db.Integer(), db.ForeignKey('campaignes.id', ondelete='CASCADE'), nullable=False)
     impressions = Column(db.Integer(), unique=False, nullable=True)
+    path = Column(db.String(250), unique=True, nullable=False)
 
-    def __init__(self, zoneid, impressions):
+    def __init__(self, cid, impressions, path):
         """Create instance."""
-        self.zoneid = zoneid
+        self.cid = cid
         self.impressions = impressions
+        self.path = path
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<zoneid: {}, impressions: {}>'.format(
-            self.zoneid,
+        return '<cid: {}, impressions: {}, path: {}>'.format(
+            self.cid,
             self.impressions,
+            self.path
         )
