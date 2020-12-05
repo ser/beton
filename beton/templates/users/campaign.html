@@ -21,7 +21,7 @@
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
-                        {% if orders[campaign.id][0].confirmed_at != datemin and ((campaign.stops_at - now).days + 1) >= 0 %}
+                        {% if campaign[1].confirmed_at != datemin and ((campaign[0].stops_at - now).days + 1) >= 0 %}
                             {% include "users/campaign-elements.html" %}
                         {% endif %}
                     {% endfor %}
@@ -38,7 +38,7 @@
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
-                    {% if orders[campaign.id][0].confirmed_at != datemin and ((campaign.stops_at - now).days + 1) < 0 %}
+                    {% if campaign[1].confirmed_at != datemin and ((campaign[0].stops_at - now).days + 1) < 0 %}
                             {% include "users/campaign-elements.html" %}
                         {% endif %}
                     {% endfor %}
@@ -57,7 +57,7 @@
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}
-                        {% if orders[campaign.id][0].confirmed_at == datemin %}
+                        {% if campaign[1].confirmed_at == datemin %}
                             {% include "users/campaign-elements.html" %}
                         {% endif %}
                     {% endfor %}

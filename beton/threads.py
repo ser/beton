@@ -50,6 +50,7 @@ class DBHandler(object):
         c = Impressions.query.filter_by(cid=cid).first()
         before = c.impressions
         c.impressions = Impressions.impressions + 1
+        Impressions.commit()
 
         return(before)
 

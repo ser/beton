@@ -1,6 +1,6 @@
 <div class="card border-light">
     <div class="card-header">
-        <h5><a href="{{ url_for('user.campaign', campaign_id=campaign.id) }}">#{{ campaign.id }} {{ campaign.name }}</a></h5>
+        <h5><a href="{{ url_for('user.campaign', campaign_id=campaign[0].id) }}">#{{ campaign[0].id }} {{ campaign[0].name }}</a></h5>
         {% if campaign.type == "text" %}
             <div class="card-header">
             <i class="{{ campaign.icon }}" aria-hidden="true"></i>&nbsp;
@@ -8,27 +8,27 @@
         </div>
         {% else %}
             <img class="img-thumbnail thumbmax" 
-                src="{{ urls[campaign.id] }}"
-                alt="[B{{ campaign.id }}]">
+                src="{{ urls[campaign[0].id] }}"
+                alt="[B{{ campaign[0].id }}]">
         {% endif %}
-        <p class="text-muted">Zone #{{ campaign.zoneid }}</p>
-        <p class="text-muted">{{ campaign.comments }}</p>
+        <p class="text-muted">Zone #{{ campaign[0].zoneid }}</p>
+        <p class="text-muted">{{ campaign[3].comments }}</p>
     </div>
     <div class="card-body">
         <div class="card-text">
             <p>
-                <b>From:</b> {{ campaign.begins_at.strftime('%Y-%m-%d') }}<br/>
-                <b>To:</b> {{ campaign.stops_at.strftime('%Y-%m-%d') }}
+                <b>From:</b> {{ campaign[0].begins_at.strftime('%Y-%m-%d') }}<br/>
+                <b>To:</b> {{ campaign[0].stops_at.strftime('%Y-%m-%d') }}
             </p>
 
-            {% if orders[campaign.id][0].confirmed_at != datemin %}
-                {% if campaign.begins_at <= now %}
+            {% if campaign[1].confirmed_at != datemin %}
+                {% if campaign[0].begins_at <= now %}
                     <p><b>Impressions:</b>&nbsp;
-                        {{ impressions[campaign.id] }}
+                        {{ campaign[6].impressions }}
                     </p>
                 {% else %}
                     <p>Campaign starts in 
-                        {{ ((campaign.begins_at - now).days + 1) }}
+                        {{ ((campaign[0].begins_at - now).days + 1) }}
                             day(s)
                     </p>
                 {% endif %}
@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="card-footer">
-        <a href="{{ url_for('user.campaign', campaign_id=campaign.id) }}"
+        <a href="{{ url_for('user.campaign', campaign_id=campaign[0].id) }}"
             class="btn btn-info btn-sm btn-block">More details</a>
     </div>
 </div>

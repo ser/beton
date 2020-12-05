@@ -15,6 +15,7 @@ beton/banners/
 beton/static/libs/
 beton/static/css/common.css
 beton/static/js/common.js
+beton/banners
 dev.db
 pip-selfcheck.json
 

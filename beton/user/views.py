@@ -429,23 +429,18 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
         # admin gets all campaigns for all users limited to requested time period
         sql = sql.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
         if amiadmin():
-            all_campaigns = sql.filter(Campaignes.o2c.any()).join(Zones).join(Banner).order_by(Campaignes.id).all()
+            #all_campaigns = sql.filter(Campaignes.o2c.any()).join(Zones).join(Banner).order_by(Campaignes.id).all()
+            #all_campaigns = sql.join((Orders.campaigne)).filter(Campaignes.o2c.any()).join(Zones).join(Banner).join(Websites).order_by(Campaignes.id)
+            all_campaigns = sql.join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
+            all_campaigns = all_campaigns.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).all()
         else:  # we want campaignes which belong to the logged in user only
             all_campaigns = sql.filter(Campaignes.o2c.any(user_id=current_user.id)).join(Zones).join(Banner).order_by(Campaignes.id).all()
         log.debug(f"CAMPAIGNES: {all_campaigns}")
 
         urls = {}
-        orders = {}
-        impressions = {}
         for campaign in all_campaigns:
-            urls[campaign.id] = images.url(campaign.banners.filename)
-            orders[campaign.id] = Orders.query.with_parent(campaign).join(Payments).add_columns(
-                Payments.confirmed_at
-            ).all()
-            #impressions[campaign.id] = Impressions.query.with_entities(Impressions.impressions).filter_by(cid=campaign.id).one()
-            impressions[campaign.id] = Impressions.query.filter_by(cid=campaign.id).one().impressions
+            urls[campaign[0].id] = images.url(campaign[4].filename)
         log.debug(f"URLS: {urls}")
-        log.debug(f"ORDERS: {orders}")
 
         # Render the page and quit
         return render_template(
@@ -456,8 +451,6 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
             datemin=datetime.min,
             no_weeks=no_weeks,
             urls=urls,
-            orders=orders,
-            impressions=impressions
         )
 
 
