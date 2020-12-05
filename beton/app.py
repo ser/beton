@@ -1,6 +1,8 @@
 """The app module, containing the app factory function."""
 
 import os
+import socketserver
+import threading
 
 from flask import Flask, current_app, render_template
 from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
@@ -10,7 +12,9 @@ from beton import commands
 from beton.assets import assets
 from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, kvstore
 from beton.extensions import mail, migrate, moment, scheduler, security, user_datastore
+from beton.logger import log
 from beton.settings import ProdConfig
+from beton.threads import DBHandler, Helper, MyUDPHandler, Parser
 from beton.user.forms import ExtendedConfirmRegisterForm
 
 
@@ -25,10 +29,12 @@ def create_app(config_object=ProdConfig):
     # app.config.from_envvar('BETON')
     register_extensions(app)
     register_configuration(app)
+    register_scheduler(app)
     register_blueprints(app)
     register_errorhandlers(app)
     register_shellcontext(app)
-    register_commands(app)
+    #register_commands(app)  # not ready to run yet
+    register_threads(app)
     return app
 
 
@@ -44,9 +50,9 @@ def register_extensions(app):
     mail.init_app(app)
     migrate.init_app(app, db)
     moment.init_app(app)
+    kvstore.init_app(app)
     scheduler.api_enabled = True
     scheduler.init_app(app)
-    kvstore.init_app(app)
     security.init_app(app,
                       user_datastore,
                       confirm_register_form=ExtendedConfirmRegisterForm)
@@ -56,23 +62,48 @@ def register_extensions(app):
 def register_configuration(app):
     images = UploadSet('images', IMAGES)
     configure_uploads(app, images)
+    # max banner weight
     patch_request_class(app, size=577216)
 
+    return None
+
+def register_scheduler(app):
+    '''
     # Setting up crontabs
     # To avoid running twice in WERKZEUG debug mode we need to make "if":
     # https://stackoverflow.com/questions/14874782/apscheduler-in-flask-executes-twice
     # If you are using uwsgi, leave it like it is.
     #
-    # @app.before_first_request
-    # def load_tasks():
-    #    from beton import tasks
-    # if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-    #   scheduler.start()
+    '''
+#        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+    @app.before_first_request
+    def load_tasks():
+        scheduler.start()
+        from beton import tasks
+    '''
+    # If you use uwsgi comment above  and commend this out:
+    '''
+    #scheduler.start()
+    #from beton import tasks
 
-    scheduler.start()
-    from beton import tasks
 
-    return None
+def register_threads(app):
+    '''
+    Running all additional threads accompany our Flask
+    '''
+    @app.before_first_request
+    def activate_syslogd():
+        def run_syslogd():
+            '''
+            Syslogd server listening for nginx submissions on all interfaces,
+            port 13131
+            '''
+            HOST, PORT = "0.0.0.0", 13131
+            with socketserver.UDPServer((HOST, PORT), MyUDPHandler) as server:
+                log.info("RUNNING syslogd for nginx submissions...")
+                server.serve_forever()
+        thread = threading.Thread(target=run_syslogd)
+        thread.start()
 
 
 def register_blueprints(app):

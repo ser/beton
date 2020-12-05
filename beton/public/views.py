@@ -16,7 +16,7 @@ from flask_security import current_user, login_required, logout_user
 from beton.logger import log
 from beton.extensions import csrf_protect, mail
 from beton.user.models import Orders, Payments, User, db
-from beton.utils import dblogger, reviveme
+from beton.utils import dblogger
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
@@ -159,3 +159,4 @@ def ipn():
                 invoice_confirmed(pay_db, ipn)
             else: pass
         return "YAY", status.HTTP_200_OK
+

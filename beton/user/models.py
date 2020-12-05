@@ -162,14 +162,13 @@ class Campaignes(SurrogatePK, Model):
     created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     begins_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    impressions = Column(db.Integer(), unique=False, nullable=True)
     comments = Column(db.Text, unique=False, nullable=False)
     active = Column(db.Boolean(), default=True)
     o2c = db.relationship('Orders', secondary=o2c, lazy='subquery',
                           backref=db.backref('campaigne', lazy='dynamic'))
 
     def __init__(self, name, zoneid, bannerid, ctype, created_at, begins_at,
-                 stops_at, impressions, comments, active):
+                 stops_at, comments, active):
         """Create instance."""
         self.name = name
         self.zoneid = zoneid
@@ -178,14 +177,13 @@ class Campaignes(SurrogatePK, Model):
         self.created_at = created_at
         self.begins_at = begins_at
         self.stops_at = stops_at
-        self.impressions = impressions
         self.comments = comments
         self.active = active
 
     def __repr__(self):
         """Represent instance as a unique string."""
         return '<id: {}, name: {}, zoneid: {}, bannerid: {}, ctype: {}, created_at: {}, \
-begins_at: {}, stops_at: {}, impressions: {}, comments: {}, active: {}>'.format(
+begins_at: {}, stops_at: {}, comments: {}, active: {}>'.format(
             self.id,
             self.name,
             self.zoneid,
@@ -194,7 +192,6 @@ begins_at: {}, stops_at: {}, impressions: {}, comments: {}, active: {}>'.format(
             self.created_at,
             self.begins_at,
             self.stops_at,
-            self.impressions,
             self.comments,
             self.active
         )
@@ -364,7 +361,7 @@ class Impressions(SurrogatePK, Model):
     __tablename__ = 'impressions'
     cid = Column(db.Integer(), db.ForeignKey('campaignes.id', ondelete='CASCADE'), nullable=False)
     impressions = Column(db.Integer(), unique=False, nullable=True)
-    path = Column(db.String(250), unique=True, nullable=False)
+    path = Column(db.String(250), unique=True, nullable=True)
 
     def __init__(self, cid, impressions, path):
         """Create instance."""

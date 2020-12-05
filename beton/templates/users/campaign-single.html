@@ -50,7 +50,7 @@
                                 <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ campaign[0].begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ campaign[0].stops_at.strftime('%Y-%m-%d') }}</li>
                                 <li class="list-group-item d-flex align-items-left">
                                     {% if campaign[0].begins_at <= now %}
-                                        <b>Impressions:</b>&nbsp; {{ campaign[0].impressions }}
+                                        <b>Impressions:</b>&nbsp; {{ campaign.impressions }}
                                     {% else %}
                                         Campaign starts in
                                         {{ ((campaign[0].begins_at - now).days) + 1 }}

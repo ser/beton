@@ -1,0 +1,14 @@
+[Unit]
+Description=Re-reading nginx configuration after beton changes
+After=nginx.service
+StartLimitIntervalSec=10
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+StartLimitBurst=5
+ExecStart=/root/nginx-config-watch.py
+
+[Install]
+WantedBy=multi-user.target

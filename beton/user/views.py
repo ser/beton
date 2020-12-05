@@ -19,7 +19,7 @@ from beton.extensions import cache
 from beton.logger import log
 from beton.user.forms import AddBannerForm, AddBannerTextForm, AddPairingTextForm, AddWebsiteForm, AddZoneForm, ChangeOffer
 from beton.user.models import Banner, Basket, Campaignes, Impressions, Log, Orders, Payments, Prices, User, Websites, Zones
-from beton.utils import dblogger, flash_errors, reviveme
+from beton.utils import dblogger, flash_errors
 
 blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../static')
 images = UploadSet('images', IMAGES)
@@ -381,12 +381,13 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
     if campaign_id is not None:
 
         # we check details of the order which campaing belongs to
-        campaign = sql.filter(Campaignes.id==campaign_id).join(Zones).join(Banner).join(Websites).add_columns(
-            Banner.filename,
-            Banner.height,
-            Banner.width,
-            Zones.name.label('zname'),
-            Websites.name.label('website')
+        campaign = sql.filter(Campaignes.id==campaign_id).join(Zones).join(Banner).join(Websites).join(Impressions).add_columns(
+                Banner.filename,
+                Banner.height,
+                Banner.width,
+                Zones.name.label('zname'),
+                Websites.name.label('website'),
+                Impressions.impressions
             ).first_or_404()
         log.debug(f"CAMPAIGN: {campaign}")
 
@@ -428,18 +429,21 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
         # admin gets all campaigns for all users limited to requested time period
         sql = sql.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
         if amiadmin():
-            all_campaigns = sql.filter(Campaignes.o2c.any()).join(Zones).join(Banner).all()
+            all_campaigns = sql.filter(Campaignes.o2c.any()).join(Zones).join(Banner).order_by(Campaignes.id).all()
         else:  # we want campaignes which belong to the logged in user only
-            all_campaigns = sql.filter(Campaignes.o2c.any(user_id=current_user.id)).join(Zones).join(Banner).all()
+            all_campaigns = sql.filter(Campaignes.o2c.any(user_id=current_user.id)).join(Zones).join(Banner).order_by(Campaignes.id).all()
         log.debug(f"CAMPAIGNES: {all_campaigns}")
 
         urls = {}
         orders = {}
+        impressions = {}
         for campaign in all_campaigns:
             urls[campaign.id] = images.url(campaign.banners.filename)
             orders[campaign.id] = Orders.query.with_parent(campaign).join(Payments).add_columns(
                 Payments.confirmed_at
             ).all()
+            #impressions[campaign.id] = Impressions.query.with_entities(Impressions.impressions).filter_by(cid=campaign.id).one()
+            impressions[campaign.id] = Impressions.query.filter_by(cid=campaign.id).one().impressions
         log.debug(f"URLS: {urls}")
         log.debug(f"ORDERS: {orders}")
 
@@ -452,7 +456,8 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
             datemin=datetime.min,
             no_weeks=no_weeks,
             urls=urls,
-            orders=orders
+            orders=orders,
+            impressions=impressions
         )
 
 
@@ -657,6 +662,10 @@ def order():
             impressions=0,
             comments="",
             active=True
+        )
+        # create assistance table impressions
+        Impressions.create(
+            cid = campaign.id
         )
         log.debug(campaign)
         dblogger(

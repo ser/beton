@@ -24,7 +24,7 @@
             {% if orders[campaign.id][0].confirmed_at != datemin %}
                 {% if campaign.begins_at <= now %}
                     <p><b>Impressions:</b>&nbsp;
-                        {{ campaign.impressions }}
+                        {{ impressions[campaign.id] }}
                     </p>
                 {% else %}
                     <p>Campaign starts in 
