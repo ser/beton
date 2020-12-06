@@ -12,7 +12,7 @@ from jinja2 import Template
 from beton.extensions import cache, kvstore, scheduler
 from beton.logger import log
 from beton.threads import Helper
-from beton.user.models import Banner, Campaignes, Orders, Websites, Zones
+from beton.user.models import Banner, Campaignes, Impressions, Orders, Payments, Websites, Zones
 from beton.utils import dblogger
 
 
@@ -61,17 +61,15 @@ location = {{ fname_uri }} {
     with scheduler.app.app_context():
         # we are checking all active campaignes and creating appropriate nginx
         # config
-        #sql = Campaignes.query.join((Orders.campaigne)).filter(Campaignes.o2c.any()).filter(Campaignes.active==True).join(Zones).join(Banner).join(Websites).order_by(Campaignes.id)
-        #sql = Campaignes.query.join((Orders.campaigne)).filter(Campaignes.active==True).join(Zones).join(Banner).join(Websites).join(Payments).order_by(Campaignes.id)
-        sql = Campaignes.query.join((Orders.campaigne)).filter(Campaignes.active==True).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
-        #all_campaigns = sql.with_entities(Campaignes, Payments, Orders, Banner, Zones, Websites).all()
+        sql = Campaignes.query.join((Orders.campaigne)).filter(Campaignes.active==True).join(
+            Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
         all_campaigns = sql.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).all()
-        log.debug(f"ALL CAMPAIGNES: {all_campaigns}")
+        #log.debug(f"ALL CAMPAIGNES: {all_campaigns}")
         for campaign in all_campaigns:
             # We want actually running campaignes only
-            log.debug(f"CAMPAIGN: {campaign}")
+            #log.debug(f"CAMPAIGN: {campaign}")
             is_running = campaign[0].begins_at < datetime.utcnow() and campaign[0].stops_at > datetime.utcnow()
-            log.debug(f"IS RUNNING?: {is_running}")
+            #log.debug(f"IS RUNNING?: {is_running}")
             if is_running is True:
                 is_paid = campaign[1].confirmed_at > datetime.min
-                log.debug(f"PAID: {is_paid}")
+                log.debug(f"CAMPAIGN: {campaign} - IS PAID?: {is_paid}")
