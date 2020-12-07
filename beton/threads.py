@@ -54,6 +54,15 @@ class DBHandler(object):
 
         return(before)
 
+    def getl(self, cid):
+        '''
+        Getting uri for location
+        '''
+        i = Impressions.query.filter_by(cid=cid).first()
+        path = i.path
+
+        return i
+
 
 class Parser(object):
     '''
