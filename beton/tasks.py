@@ -3,13 +3,13 @@
 
 import os
 
+from hashlib import blake2b
 from datetime import datetime, timedelta
 from dateutil.relativedelta import *
+from jinja2 import Template
 
 from flask import current_app
 from flask.helpers import get_debug_flag
-
-from jinja2 import Template
 
 from beton.extensions import cache, kvstore, scheduler
 from beton.logger import log
@@ -53,8 +53,8 @@ def nginx_conf():
     j2temp = """
 location = {{ fname_uri }} {
    alias {{ nginx_banner_dir }}/{{ banner_fname }};
-   access_log syslog:server=10.77.1.27:13131,facility=news,tag=kfasik,severity=info combined if=$log_ip;
-   # if you use pagespeeda, you should disallow any modifications
+   access_log syslog:server={{ syslogd_address }}:{{ syslogd_port }},facility=news,tag=kfasik,severity=info combined if=$log_ip;
+   # if you use mod_pagespeed, you should disallow any modifications
    pagespeed Disallow {{ fname_uri }};
 }  """
     template = Template(j2temp)
@@ -62,6 +62,8 @@ location = {{ fname_uri }} {
     with scheduler.app.app_context():
         nginxconfdir = current_app.config.get('NGINXCONFDIR')
         nginx_banner_dir = current_app.config.get('NGINXBANNERDIR')
+        syslogd_address = current_app.config.get('SYSLOGD_ADDRESS')
+        syslogd_port = current_app.config.get('SYSLOGD_PORT')
         # we are checking all active campaignes and creating appropriate nginx
         # configs
         # we need to have a seperate config for each domain
@@ -90,14 +92,23 @@ location = {{ fname_uri }} {
                         y, banner_suffix = os.path.splitext(banner_fname)
                         fname_uri = f"{fname_org}.{campaign[0].id}{banner_suffix}"
                         #log.debug(f"FNAME_URI: {fname_uri}")
-                        location = template.render(fname_uri=fname_uri,
-                                                nginx_banner_dir=nginx_banner_dir,
-                                                banner_fname=banner_fname)
+                        location = template.render(
+                                        fname_uri=fname_uri,
+                                        nginx_banner_dir=nginx_banner_dir,
+                                        banner_fname=banner_fname,
+                                        syslogd_address=syslogd_address,
+                                        syslogd_port=syslogd_port,
+                            )
                         nginxtmp += location
             log.debug(f"LOCATIONs: {nginxtmp}")
-            with open(nginxconfile, "w") as f:
-                f.write(nginxtmp)
-                log.info(f"NGINX: Writing configuration for website {website.name}.")
-
-
-
+            with open(nginxconfile, "r", encoding='utf-8') as r:
+                currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
+                log.debug(f"currenthash: {currenthash}")
+                newhash = blake2b(nginxtmp.encode('utf-8')).hexdigest()
+                log.debug(f"newhash: {newhash}")
+            if currenthash != newhash:
+                with open(nginxconfile, "w") as w:
+                    w.write(nginxtmp)
+                    log.info(f"NGINX: Writing configuration for website {website.name}.")
+            else:
+                log.info(f"NGINX: Keeping unchanged configuration for website {website.name}.")
