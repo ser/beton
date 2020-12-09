@@ -565,11 +565,7 @@ def api_all_campaigns(zone_id):
         starttime = order.begins_at
         endtime = order.stops_at
         tasks['start'] = starttime.strftime("%Y-%m-%d")
-        if (endtime - starttime).days < 1:
-            calendarend = endtime
-        else:
-            calendarend = endtime + timedelta(days=1)
-        tasks['end'] = calendarend.strftime("%Y-%m-%d")
+        tasks['end'] = endtime.strftime("%Y-%m-%d")
         ac.append(tasks)
 
     return jsonify(ac)
@@ -639,6 +635,7 @@ def order():
 
         try:
             begin = datetime.strptime(datestart, "%d/%m/%Y")
+            # end date is next date in calendar but midnight
             enddate = datetime.strptime(datend, "%d/%m/%Y")
         except BaseException:
             return render_template('users/date-problems.html')
@@ -715,7 +712,7 @@ def basket():
             begin = sql.begins_at
             enddate = sql.stops_at
             campaign_time = enddate - begin
-            currencyprice = sql.dayprice/100*(campaign_time.days+1)
+            currencyprice = (sql.dayprice/100)*campaign_time.days
             price[sql[0].id]=currencyprice
             totalprice += currencyprice
             urls[sql[0].id]=images.url(sql.filename)
@@ -734,7 +731,7 @@ def basket():
         price=price,
         totalprice=totalprice,
         urls=urls,
-        present=datetime.now()-timedelta(days=1)
+        present=datetime.now()
     )
 
 
@@ -855,7 +852,7 @@ def pay():
             begin = sql[0].begins_at
             enddate = sql[0].stops_at
             totaltime = enddate - begin
-            totalcurrencyprice = sql.dayprice/100*(totaltime.days+1)
+            totalcurrencyprice = (sql.dayprice/100)*totaltime.days
             total += totalcurrencyprice
             label = label + "[C#{} Z#{} B#{} {} ↦ {} {:.2f}{}] ※ ".format(
                 item.campaigno,
