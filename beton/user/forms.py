@@ -4,7 +4,7 @@ from flask_wtf import Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from flask_uploads import UploadSet, IMAGES
 from flask_security import ConfirmRegisterForm
-from wtforms import BooleanField, HiddenField, IntegerField, SelectField, StringField
+from wtforms import BooleanField, HiddenField, IntegerField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, NumberRange, Required, URL
 
 images = UploadSet('images', IMAGES)
@@ -39,15 +39,19 @@ class AddBannerTextForm(Form):
     banner_content_line1 = StringField('1st line',
                                  validators=[DataRequired(), Length(min=0, max=50)])
     banner_content_line2 = StringField('2nd line',
-                                 validators=[DataRequired(), Length(min=0, max=50)])
+                                 validators=[Length(min=0, max=50)])
     banner_content_line3 = StringField('3rd line',
-                                 validators=[DataRequired(), Length(min=0, max=50)])
+                                 validators=[Length(min=0, max=50)])
     banner_content_line4 = StringField('4th line',
-                                 validators=[DataRequired(), Length(min=0, max=50)])
+                                 validators=[Length(min=0, max=50)])
     banner_content_line5 = StringField('5th line',
-                                 validators=[DataRequired(), Length(min=0, max=50)])
+                                 validators=[Length(min=0, max=50)])
     banner_comments = StringField('Comments (optional)',
                                   validators=[Length(max=500)])
+    banner_submit_render = SubmitField(label='render')
+    banner_submit_save = SubmitField(label='save')
+    banner_tmpimage = HiddenField()
+
 
     def __init__(self, *args, **kwargs):
         """Create instance."""
