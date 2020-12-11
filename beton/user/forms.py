@@ -32,12 +32,22 @@ class AddBannerTextForm(Form):
 
     banner_url = StringField('URL to your advertised page - must include https:// or http://',
                              validators=[DataRequired(), Length(max=2000), URL()])
-    banner_content = StringField('Banner text content (20 to 255 characters)',
-                                 validators=[DataRequired(), Length(min=20, max=255)])
+    banner_width = IntegerField('Width (50-960)',
+                                validators=[DataRequired(), NumberRange(min=50, max=960)])
+    banner_height = IntegerField('Height (50-960)',
+                                validators=[DataRequired(), NumberRange(min=50, max=960)])
+    banner_content_line1 = StringField('1st line',
+                                 validators=[DataRequired(), Length(min=0, max=50)])
+    banner_content_line2 = StringField('2nd line',
+                                 validators=[DataRequired(), Length(min=0, max=50)])
+    banner_content_line3 = StringField('3rd line',
+                                 validators=[DataRequired(), Length(min=0, max=50)])
+    banner_content_line4 = StringField('4th line',
+                                 validators=[DataRequired(), Length(min=0, max=50)])
+    banner_content_line5 = StringField('5th line',
+                                 validators=[DataRequired(), Length(min=0, max=50)])
     banner_comments = StringField('Comments (optional)',
                                   validators=[Length(max=500)])
-    banner_icon = StringField('Web Icon',
-                              validators=[Length(max=120)])
 
     def __init__(self, *args, **kwargs):
         """Create instance."""

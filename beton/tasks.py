@@ -110,7 +110,6 @@ location = {{ fname_uri }} {
                             "img": fname_uri,
                             "url": campaign[4].url
                         }
-            log.debug(f"LOCATIONs: {nginxtmp}")
             with open(nginxconfile, "r", encoding='utf-8') as r:
                 currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
                 log.debug(f"NGINX currenthash: {currenthash}")
@@ -120,6 +119,7 @@ location = {{ fname_uri }} {
                 with open(nginxconfile, "w") as w:
                     w.write(nginxtmp)
                     log.info(f"NGINX: Writing configuration for website {website.name}.")
+                log.debug(f"LOCATIONs: {nginxtmp}")
             else:
                 log.info(f"NGINX: Keeping unchanged configuration for website {website.name}.")
         #

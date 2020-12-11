@@ -5,6 +5,7 @@ import socketserver
 import threading
 
 from flask import Flask, current_app, render_template
+from flask_colorpicker import colorpicker
 from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -43,6 +44,8 @@ def register_extensions(app):
     assets.init_app(app)
     bcrypt.init_app(app)
     cache.init_app(app)
+    colorpicker(app=app, local=['static/libs/spectrum/spectrum.js',
+                                'static/libs/spectrum/spectrum.css'])
     csrf_protect.init_app(app)
     db.app = app
     db.init_app(app)

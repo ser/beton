@@ -1,0 +1,63 @@
+
+{% extends "layout.html" %}
+{% block scripts %}
+  {{ super() }}
+  {{ colorpicker.loader() }}
+  {{ colorpicker.picker(ids=[".cp"]) }}
+{% endblock %}
+{% block content %}
+<div class="container-narrow">
+    <div class="jumbotron">
+        <h1>Create a text-only banner</h1>
+        <p class="lead">Text banner has maximum of 5 lines 25 characters each. You are able to use Unicode emoticons as well.</p>
+    </div>
+    <form id="uploadForm" action="" role="form" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="row g-2">
+        <div class="col-md">
+            <div class="input-group mb3">
+                {{ form.banner_width.label }}, {{ form.banner_height.label }}
+                {{ form.banner_width( placeholder="pixels", class_="form-control" ) }}
+                <span class="input-group-text">x</span>
+                {{ form.banner_height( placeholder="pixels", class_="form-control" ) }}
+            </div>
+            <div class="input-group">
+                {{ form.banner_url.label }}
+                {{ form.banner_url( placeholder="URL", class_="form-control" ) }}
+            </div>
+            <div class="input-group">
+                {{ form.banner_comments.label }}
+                {{ form.banner_comments( placeholder="Comments", class_="form-control" ) }}
+            </div>
+            <input type="text" class="form-control cp" />
+            <p><button class="btn btn-info btn-submit" type="submit">Preview this text banner</button></p>
+        </div>
+        <div class="col-md">
+            <h3>Banner wording</h3>
+            <p>Each line can have zero to 50 unicode characters. You don't need
+            to fill all lines.</p>
+            <div class="input-group">
+                <span class="input-group-text">{{ form.banner_content_line1.label }}</span>
+                {{ form.banner_content_line1( placeholder="banner text", class_="form-control" ) }}
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">{{ form.banner_content_line2.label }}</span>
+                {{ form.banner_content_line2( placeholder="banner text", class_="form-control" ) }}
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">{{ form.banner_content_line3.label }}</span>
+                {{ form.banner_content_line3( placeholder="banner text", class_="form-control" ) }}
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">{{ form.banner_content_line4.label }}</span>
+                {{ form.banner_content_line4( placeholder="banner text", class_="form-control" ) }}
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">{{ form.banner_content_line5.label }}</span>
+                {{ form.banner_content_line5( placeholder="banner text", class_="form-control" ) }}
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

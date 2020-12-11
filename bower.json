@@ -15,6 +15,7 @@
     "moment-timezone": "",
     "underscore": "",
     "fullcalendar": "=3.10.2",
-    "holderjs": ""
+    "holderjs": "",
+    "spectrum": ""
   }
 }

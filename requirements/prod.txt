@@ -9,6 +9,7 @@ itsdangerous
 click>=5.0
 flask_moment>=0.5.1
 Flask-API
+Flask-Colorpicker
 
 # Database
 Flask-SQLAlchemy

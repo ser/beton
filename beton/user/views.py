@@ -8,7 +8,7 @@ import uuid
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import *
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 from flask import Blueprint, current_app, flash, g, jsonify, redirect
 from flask import render_template, request, session, url_for
@@ -144,30 +144,35 @@ def add_bannerz():
 @login_required
 def add_text():
     """Add a text banner."""
+
+    def create_image_with_text(size, text):
+        img = Image.new('RGB', (600, 50), "yellow")
+        draw = ImageDraw.Draw(img)
+        draw.text((size[0], size[1]), text, font = fnt, fill="black")
+        return img
+
+    def roll(text):
+        for i in range(len(text)+1):
+            new_frame = create_image_with_text((0,0), text[:i])
+            frames.append(new_frame)
+
+    frames = []
     form = AddBannerTextForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            Banner.create(
-                filename="NULL",
-                owner=current_user.id,
-                url=form.banner_url.data,
-                created_at=datetime.utcnow(),
-                width="NULL",
-                height="NULL",
-                type="text",
-                content=form.banner_content.data,
-                icon=form.banner_icon.data,
-                comments=form.banner_comments.data
-            )
-            dblogger(
-                current_user.id,
-                "Text Banner set successfully. %s" % form.banner_content.data
-            )
-            flash('Your banner was set sucessfully.', 'success')  # TODO:size
-            return redirect(url_for('user.bannerz'))
+            # <<< ========== Customize font and text below ============== >>>>
+            fnt = ImageFont.truetype("arial", 36)
+            all_text = """ Pythonprogramming
+            Brought you this code
+            This text was made
+            with PIL and Python""".splitlines()
+            [roll(text) for text in all_text]
+            # <<< ======================================================== >>>
+            frames[0].save('banner1.gif', format='GIF',
+               append_images=frames[1:], save_all=True, duration=80, loop=0)
         else:
             flash_errors(form)
-    return render_template('users/upload_text.html', form=form)
+    return render_template('users/text_banner.html', form=form)
 
 
 @blueprint.route('/add/zone', methods=['GET', 'POST'])
