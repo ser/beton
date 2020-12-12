@@ -191,7 +191,7 @@ def add_text():
                 #fnt = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", form.banner_height.data)
                 fnt = ImageFont.truetype("/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
                                         encoding="unic",
-                                        size=form.banner_height.data)
+                                        size=form.banner_height.data - int(form.banner_height.data/10))
                 all_text.append(form.banner_content_line1.data)
                 if form.banner_content_line2.data:
                     all_text.append(form.banner_content_line2.data)
@@ -704,13 +704,14 @@ def order():
             created_at=datetime.utcnow(),
             begins_at=begin,
             stops_at=enddate,
-            impressions=0,
             comments="",
             active=True
         )
         # create assistance table impressions
         Impressions.create(
-            cid = campaign.id
+            cid=campaign.id,
+            impressions=0,
+            path=""
         )
         log.debug(campaign)
         dblogger(

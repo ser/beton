@@ -361,7 +361,7 @@ class Impressions(SurrogatePK, Model):
     __tablename__ = 'impressions'
     cid = Column(db.Integer(), db.ForeignKey('campaignes.id', ondelete='CASCADE'), nullable=False)
     impressions = Column(db.Integer(), unique=False, nullable=True)
-    path = Column(db.String(250), unique=True, nullable=True)
+    path = Column(db.String(250), unique=False, nullable=True)
 
     def __init__(self, cid, impressions, path):
         """Create instance."""
