@@ -2,6 +2,7 @@
 """Various cron jobs."""
 
 import os
+import random
 
 from configparser import ConfigParser
 from datetime import datetime, timedelta
@@ -48,9 +49,60 @@ frequency = 1
 @scheduler.task('interval', id='configs', minutes=frequency)
 def configs():
 
+    def do_nginx_conf(nginxdata, website, nginxconfile):
+        '''writes nginx.conf for every website'''
+
+        with open(nginxconfile, "r", encoding='utf-8') as r:
+            currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
+            #log.debug(f"NGINX currenthash: {currenthash}")
+            newhash = blake2b(nginxdata.encode('utf-8')).hexdigest()
+            #log.debug(f"NGINX newhash: {newhash}")
+        if currenthash != newhash:
+            with open(nginxconfile, "w") as w:
+                w.write(nginxdata)
+                log.info(f"NGINX: Writing configuration for website {website}.")
+            log.debug(f"LOCATIONs: {nginxdata}")
+        else:
+            log.info(f"NGINX: Keeping unchanged configuration for website {website}.")
+
+    def do_zones_ini(zones_ini, zones_current):
+        '''writes zone.ini file as a portable data source for websites'''
+
+        log.debug("Processing zone.ini...")
+        for zone in Zones.query.filter(Zones.active==True).order_by(Zones.id).all():
+            #log.debug(zone)
+            entries = [i for i, d in enumerate(zones_current) if d["zone"] == zone.id]
+            #log.debug(entries)
+            if len(entries) > 0:
+                entry = random.choice(entries)  # we want to have only one banner in each zone
+                #log.debug(entry)
+                curzone = f"ZONE_{zone.id}"
+                zones_object[curzone] = {
+                    "img": zones_current[entry]['img'],
+                    "url": zones_current[entry]['url']
+                }
+
+        with open(zones_ini, "r", encoding='utf-8') as r:
+            currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
+            #log.debug(f"INI currenthash: {currenthash}")
+            tempfile = MemoryTempfile()
+            with tempfile.TemporaryFile(mode = 'w+') as t:
+                zones_object.write(t)
+                t.seek(0)
+                newhash = blake2b(t.read().encode('utf-8')).hexdigest()
+                #log.debug(f"INI newhash: {newhash}")
+        if currenthash != newhash:
+            with open(zones_ini, "w", encoding='utf-8') as w:
+                zones_object.write(w)
+                log.info(f"INI: Writing configuration.")
+        else:
+            log.info(f"INI: Keeping old config.")
+
+    log.debug("Processing configs...")
     helper = Helper()
     dbhandler = DBHandler()
     outfile = ""
+    zones_current = []
     # jinja template for a single campaign entrance in nginx config
     j2temp = """
 location = {{ fname_uri }} {
@@ -58,7 +110,7 @@ location = {{ fname_uri }} {
    access_log syslog:server={{ syslogd_address }}:{{ syslogd_port }},facility=news,tag=beton,severity=info combined;
    # if you use mod_pagespeed, you should disallow any modifications
    pagespeed Disallow {{ fname_uri }};
-}  """
+}   """
     template = Template(j2temp)
     zones_object = ConfigParser()
 
@@ -105,34 +157,13 @@ location = {{ fname_uri }} {
                                         syslogd_port=syslogd_port,
                             )
                         nginxtmp += location
-                        curzone = f"ZONE_{campaign[3].id}"
-                        zones_object[curzone] = {
+                        curzone = campaign[3].id
+                        zones_current.append({
+                            "zone": curzone,
                             "img": fname_uri,
                             "url": campaign[4].url
-                        }
-            with open(nginxconfile, "r", encoding='utf-8') as r:
-                currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
-                log.debug(f"NGINX currenthash: {currenthash}")
-                newhash = blake2b(nginxtmp.encode('utf-8')).hexdigest()
-                log.debug(f"NGINX newhash: {newhash}")
-            if currenthash != newhash:
-                with open(nginxconfile, "w") as w:
-                    w.write(nginxtmp)
-                    log.info(f"NGINX: Writing configuration for website {website.name}.")
-                log.debug(f"LOCATIONs: {nginxtmp}")
-            else:
-                log.info(f"NGINX: Keeping unchanged configuration for website {website.name}.")
+                        })
+            #
+            do_nginx_conf(nginxtmp, website.name, nginxconfile)
         #
-        with open(zones_ini, "r", encoding='utf-8') as r:
-            currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
-            log.debug(f"INI currenthash: {currenthash}")
-            tempfile = MemoryTempfile()
-            with tempfile.TemporaryFile(mode = 'w+') as t:
-                zones_object.write(t)
-                t.seek(0)
-                newhash = blake2b(t.read().encode('utf-8')).hexdigest()
-                log.debug(f"INI newhash: {newhash}")
-        if currenthash != newhash:
-            with open(zones_ini, "w", encoding='utf-8') as w:
-                zones_object.write(w)
-                log.info(f"INI: Writing configuration.")
+        do_zones_ini(zones_ini, zones_current)
