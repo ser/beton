@@ -32,7 +32,7 @@ class AddBannerTextForm(Form):
 
     banner_url = StringField('URL to your advertised page - must include https:// or http://',
                              validators=[DataRequired(), Length(max=2000), URL()])
-    banner_width = IntegerField('Width (50-960)',
+    banner_width = IntegerField('Width',
                                 validators=[DataRequired(), NumberRange(min=50, max=960)])
     banner_height = IntegerField('Height (50-960)',
                                 validators=[DataRequired(), NumberRange(min=50, max=960)])

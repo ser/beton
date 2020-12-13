@@ -20,17 +20,19 @@
         <div class="row g-2">
             <div class="col-md">
                 <div class="input-group mb3">
-                    {{ form.banner_width.label }}, {{ form.banner_height.label }}
+                    <span class="input-group-text">
+                        {{ form.banner_width.label }}, {{ form.banner_height.label }}
+                    </span>
                     {{ form.banner_width( placeholder="pixels", class_="form-control" ) }}
                     <span class="input-group-text">x</span>
                     {{ form.banner_height( placeholder="pixels", class_="form-control" ) }}
                 </div>
                 <div class="input-group">
-                    {{ form.banner_url.label }}
+                    <span class="input-group-text">{{ form.banner_url.label }}</span>
                     {{ form.banner_url( placeholder="URL", class_="form-control" ) }}
                 </div>
                 <div class="input-group">
-                    {{ form.banner_comments.label }}
+                    <span class="input-group-text">{{ form.banner_comments.label }}</span>
                     {{ form.banner_comments( placeholder="Comments", class_="form-control" ) }}
                 </div>
                 <div class="input-group">
