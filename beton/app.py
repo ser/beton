@@ -44,8 +44,10 @@ def register_extensions(app):
     assets.init_app(app)
     bcrypt.init_app(app)
     cache.init_app(app)
-    colorpicker(app=app, local=['static/libs/spectrum/spectrum.js',
-                                'static/libs/spectrum/spectrum.css'])
+    # TODO: switch to local hosting
+#    colorpicker(app=app, local=['/static/libs/spectrum/spectrum.js',
+#                                '/static/libs/spectrum/spectrum.css'])
+    colorpicker(app)
     csrf_protect.init_app(app)
     db.app = app
     db.init_app(app)

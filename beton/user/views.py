@@ -203,8 +203,8 @@ def add_text():
                     all_text.append(form.banner_content_line5.data)
                 width = form.banner_width.data
                 height = form.banner_height.data
-                bg = "yellow"
-                fg = "black"
+                bg = form.banner_bg.data
+                fg = form.banner_fg.data
                 [roll(text, width, height, bg, fg) for text in all_text]
                 tmpf = tempfile.NamedTemporaryFile(
                     dir=imgdir,

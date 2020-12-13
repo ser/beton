@@ -51,6 +51,12 @@ class AddBannerTextForm(Form):
     banner_submit_render = SubmitField(label='render')
     banner_submit_save = SubmitField(label='save')
     banner_tmpimage = HiddenField()
+    banner_bg = StringField('Background colour',
+                            default='rgba(240, 255, 0, 1)',
+                            validators=[DataRequired()])
+    banner_fg = StringField('Text colour',
+                            default='rgba(0, 0, 0, 1)',
+                            validators=[DataRequired()])
 
 
     def __init__(self, *args, **kwargs):

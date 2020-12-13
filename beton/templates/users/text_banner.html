@@ -1,10 +1,5 @@
 
 {% extends "layout.html" %}
-{% block scripts %}
-  {{ super() }}
-  {{ colorpicker.loader() }}
-  {{ colorpicker.picker(ids=[".cp"]) }}
-{% endblock %}
 {% block content %}
 <div class="container-narrow">
     <div class="jumbotron">
@@ -38,33 +33,38 @@
                     {{ form.banner_comments.label }}
                     {{ form.banner_comments( placeholder="Comments", class_="form-control" ) }}
                 </div>
-                <input type="text" class="form-control cp" />
+                <div class="input-group">
+                    <span class="input-group-text">{{ form.banner_fg.label }}</span>
+                    {{ form.banner_fg( class_="fg form-control" ) }}
+                    <span class="input-group-text">{{ form.banner_bg.label }}</span>
+                    {{ form.banner_bg( class_="bg form-control" ) }}
+                </div>
                 <br/>
                 <p><button class="btn btn-info btn-submit" name="banner_submit_render" value="render" type="submit">Preview this text banner</button></p>
             </div>
             <div class="col-md">
                 <h3>Banner wording</h3>
                 <p>Each line can have zero to 50 unicode characters. You don't need
-                to fill all lines.</p>
+                to fill all lines, only first one is mandatory.</p>
                 <div class="input-group">
                     <span class="input-group-text">{{ form.banner_content_line1.label }}</span>
                     {{ form.banner_content_line1( placeholder="banner text", class_="form-control" ) }}
                 </div>
                 <div class="input-group">
                     <span class="input-group-text">{{ form.banner_content_line2.label }}</span>
-                    {{ form.banner_content_line2( placeholder="banner text", class_="form-control" ) }}
+                    {{ form.banner_content_line2( placeholder="banner text (optional)", class_="form-control" ) }}
                 </div>
                 <div class="input-group">
                     <span class="input-group-text">{{ form.banner_content_line3.label }}</span>
-                    {{ form.banner_content_line3( placeholder="banner text", class_="form-control" ) }}
+                    {{ form.banner_content_line3( placeholder="banner text (optional)", class_="form-control" ) }}
                 </div>
                 <div class="input-group">
                     <span class="input-group-text">{{ form.banner_content_line4.label }}</span>
-                    {{ form.banner_content_line4( placeholder="banner text", class_="form-control" ) }}
+                    {{ form.banner_content_line4( placeholder="banner text (optional)", class_="form-control" ) }}
                 </div>
                 <div class="input-group">
                     <span class="input-group-text">{{ form.banner_content_line5.label }}</span>
-                    {{ form.banner_content_line5( placeholder="banner text", class_="form-control" ) }}
+                    {{ form.banner_content_line5( placeholder="banner text (optional)", class_="form-control" ) }}
                 </div>
             </div>
         </div>
@@ -74,5 +74,8 @@
         {% endif %}
     </form>
 </div>
+
+{{ colorpicker.loader() }}
+{{ colorpicker.picker(ids=['.fg', '.bg']) }}
 
 {% endblock %}
