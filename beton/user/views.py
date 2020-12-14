@@ -606,20 +606,23 @@ def api_all_campaigns(zone_id):
     # end = request.args.get('end')
     # Get all orders from local database
     if zone_id == 0:
-        all_orders = Orders.query.all()
+        all_campaigns = Campaignes.query.join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
+        all_campaigns = all_campaigns.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).filter(Campaignes.active==True).all()
     else:
-        all_orders = Orders.query.filter_by(zoneid=zone_id).all()
+        all_campaigns = Campaignes.query.join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
+        all_campaigns = all_campaigns.filter(Campaignes.active==True).filter(Zones.id==zone_id)
+        all_campaigns = all_campaigns.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).all()
     ac = []
-    for order in all_orders:
+    for campaign in all_campaigns:
         tasks = {}
-        fullname = order.name
-        tasks['id'] = order.campaigno
+        fullname = campaign[0].name
+        tasks['id'] = campaign[0].id
         tasks['title'] = fullname
         tasks['allDay'] = "true"
         tasks['color'] = random_color()
-        tasks['resourceId'] = order.zoneid
-        starttime = order.begins_at
-        endtime = order.stops_at
+        tasks['resourceId'] = campaign[3].id
+        starttime = campaign[0].begins_at
+        endtime = campaign[0].stops_at
         tasks['start'] = starttime.strftime("%Y-%m-%d")
         tasks['end'] = endtime.strftime("%Y-%m-%d")
         ac.append(tasks)
