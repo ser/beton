@@ -67,18 +67,22 @@
 
         </div>
         <div class="col-sm-6">
-            <h6 class="card-header">This is an overview of all recent and ongoing campaigns on our websites</h6>
+            <h6 class="card-header">This is an overview of all recent and ongoing campaigns on our websites for all customers including you</h6>
             <div id="calendar"></div>
         </div>
     </div>
 {% endblock %}
 {% block js %}
 <script>
-    var events_source = "{{ config.SUBDIR  }}/api/all_campaigns_in_zone/0";
-    $('#calendar').fullCalendar(
-            {
-                events: events_source
-            }
-    );
+
+var events_source = "{{ config.SUBDIR  }}/api/all_campaigns_in_zone/0";
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar')
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        events: events_source,
+    });
+    calendar.render();
+})
+
 </script>
 {% endblock %}

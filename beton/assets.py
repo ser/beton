@@ -9,7 +9,7 @@ from flask_assets import Bundle, Environment
 
 
 css = Bundle(
-    'libs/fullcalendar/dist/fullcalendar.min.css',
+    'fullcalendar/main.css',
     'libs/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css',
     'css/style.css',
     filters='cssmin',
@@ -21,9 +21,8 @@ js = Bundle(
     'libs/jquery-timeago/jquery.timeago.js',
     'libs/gasparesganga-jquery-loading-overlay/src/loadingoverlay.js',
     'libs/underscore/underscore.js',
-#    'libs/moment/dist/moment.js',
-#    'libs/moment-timezone/builds/moment-timezone.min.js',
-#    'libs/fullcalendar/dist/fullcalendar.js',
+    'fullcalendar/main.js',
+    'fullcalendar/locales-all.js',
     'libs/bootstrap-datepicker/js/bootstrap-datepicker.js',
     'libs/enquire/dist/enquire.js',
     'libs/progresspiesvg/js/jquery-progresspiesvg.js',

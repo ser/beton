@@ -12,9 +12,8 @@
     "jquery-timeago": "",
     "font-awesome": "",
     "dripicons2": "",
-    "moment-timezone": "",
     "underscore": "",
-    "fullcalendar": "=3.10.2",
+    "fullcalendar": "",
     "holderjs": "",
     "spectrum": ""
   }
