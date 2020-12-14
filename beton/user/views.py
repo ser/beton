@@ -381,10 +381,9 @@ def offer():
 
             # get stats and ignore if none
             try:
-                ztatz = Impressions.query.filter_by(
-                            zoneid=zone.id
-                        ).first()
-                tmpdict['impressions'] = ztatz.impressions
+                # TODO: another two lines could be potentially replaced by func of sqlalchemy
+                all_impressions = Campaignes.query.join(Impressions).filter(Campaignes.zoneid==zone.id).with_entities(Impressions.impressions.label('i')).all()
+                tmpdict['impressions'] = sum(a.i for a in all_impressions)
             except Exception as e:
                 log.debug("Exception")
                 log.exception(e)
