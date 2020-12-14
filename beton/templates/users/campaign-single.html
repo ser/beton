@@ -2,11 +2,38 @@
 {% extends "layout.html" %}
 {% block content %}
     <div class="jumbotron">
-    <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
+        <h1>Hey, {{ current_user.username }} <i class="fab fa-gratipay"
             aria-hidden="true"></i></h1>
-    <p class="lead">Here are all details we know about your particular campaign.</p>
-    <a href="{{ url_for('user.campaign') }}"
-        class="btn btn-info btn-lg"><span class="icon dripicons-arrow-left"></span>&nbsp;See all your campaigns</a>
+        <div class="row">
+            <div class="col-sm-6">
+                <p class="lead">Here are all details we know about your particular campaign.</p>
+                <a href="{{ url_for('user.campaign') }}"
+                    class="btn btn-info btn-lg"><span class="icon dripicons-arrow-left"></span>&nbsp;See all your campaigns</a>
+            </div>
+            {% if isadmin == True %}
+            <div class="col-sm-6">
+                <p>
+                    Making campaign default is reserved for admins only. Default
+                    campaign runs even if is not paid or is already expired.
+                </p>
+                <ul class="list-group list-group-flush">
+                    {% if campaign[0].default != True %}
+                    <p><a href="{{ url_for('user.campaign_default', campaign_no=campaign[0].id)}}"
+                            class="btn btn-warning">
+                                Make this campaign default
+                        </a></p>
+                    {% else %}
+                        <li class="list-group-item d-flex list-group-item-warning">THIS CAMPAIGN IS DEFAULT! &nbsp;
+                                <a href="{{ url_for('user.campaign_default', campaign_no=campaign[0].id)}}"
+                                    class="btn btn-warning">
+                                        Reverse as NOT default
+                            </a></p>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
     </div>
     <div class="row">
         <div class="col-sm-12">
@@ -42,10 +69,11 @@
                                 {% endif %}
 
                                 {% if campaign[0].active == True %}
-                                    <li class="list-group-item d-flex list-group-item-success">ACTIVE</li>
+                                <li class="list-group-item d-flex list-group-item-success">ACTIVE &nbsp;
                                 {% else %}
-                                    <li class="list-group-item d-flex list-group-item-warning">INACTIVE</li>
+                                    <li class="list-group-item d-flex list-group-item-warning">INACTIVE &nbsp;
                                 {% endif %}
+                                    </li>
 
                                 <li class="list-group-item d-flex align-items-left"><b>Start:</b>&nbsp; {{ campaign[0].begins_at.strftime('%Y-%m-%d') }},&nbsp; <b>End:</b>&nbsp; {{ campaign[0].stops_at.strftime('%Y-%m-%d') }}</li>
                                 <li class="list-group-item d-flex align-items-left">
@@ -59,6 +87,17 @@
                                 </li>
 
                             </ul>
+                        </div>
+                        <div class="card-footer">
+                            {% if campaign[0].active == True %}
+                            <a href="{{ url_for('user.campaign_active', campaign_no=campaign[0].id)}}"
+                                class="btn btn-danger btn-sm btn btn-block">
+                                    Disactivate this campaign (you can change it back again later)</a>
+                            {% else %}
+                            <a href="{{ url_for('user.campaign_active', campaign_no=campaign[0].id)}}"
+                                class="btn btn-danger btn-sm btn btn-block">
+                                    Activate this campaign (you can change it back again later)</a>
+                            {% endif %}
                         </div>
                     </div></div><div class="col-sm-6"><div class="card">
                         <h5 class="card-header">Invoice
@@ -97,10 +136,6 @@
                     </div></div></div>
                 </div>
                 <div class="card-footer">
-                           <a href="{{ url_for('user.campaign_active',
-                               campaign_no=campaign[0].id)  }}"
-                                           class="btn btn-danger btn-sm
-                                           btn-block">Disactivate this campaign (you can activate it back again later)</a>
 
                 </div>
             </div>

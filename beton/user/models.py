@@ -164,6 +164,7 @@ class Campaignes(SurrogatePK, Model):
     stops_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
     comments = Column(db.Text, unique=False, nullable=False)
     active = Column(db.Boolean(), default=True)
+    default = Column(db.Boolean(), default=False)
     o2c = db.relationship('Orders', secondary=o2c, lazy='subquery',
                           backref=db.backref('campaigne', lazy='dynamic'))
 

@@ -472,7 +472,8 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
                 order=order,
                 is_running=is_running,
                 is_paid=is_paid,
-                url=images.url(campaign.filename)
+                url=images.url(campaign.filename),
+                isadmin=amiadmin()
             )
         else:
             # We politely redirecting 'hackers' to all campaigns
@@ -864,6 +865,39 @@ def campaign_active(campaign_no):
         dblogger(
             current_user.id,
             "Campaign #{} got {} by user.".format(
+                campaign_no,
+                text
+            )
+        )
+        flash(f'Your campaign was {text} sucessfully.', 'success')
+
+    except Exception as e:
+        log.debug("Exception")
+        log.exception(e)
+
+    return redirect(url_for("user.campaign", campaign_id=campaign_no), code=302)
+
+
+@blueprint.route('/default/campaign/<int:campaign_no>')
+@login_required
+@roles_accepted('admin')
+def campaign_default(campaign_no):
+    try:
+        # getting data about this campaign 
+        campaign = Campaignes.query.filter(Campaignes.id==campaign_no).first_or_404()
+
+        currently_default = campaign.default
+        if currently_default is True:
+            text = "removed as default"
+        else:
+            text = "made as default"
+
+        # activating / disactivating
+        campaign.default = not campaign.default
+        Campaignes.commit()
+        dblogger(
+            current_user.id,
+            "Campaign #{} got {} by admin.".format(
                 campaign_no,
                 text
             )
