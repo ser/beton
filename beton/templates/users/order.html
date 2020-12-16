@@ -97,7 +97,7 @@
                         <div id="zonecomments">{{ zone[0].comments }}</div>
                         <div id="zoneprice"><p>price: {{ zone.dayprice / 100 }} {{ zone.fiat }}/day</p></div>
                         {% if banner.type == "file" %}
-                            <div id="zonesizetxt"><p>size: {{ zone[0].width }}x{{ zone[0].height }}</p>
+                            <div id="zonesizetxt"><p>size: {{ zone[0].width }}x{{ zone[0].height }}</p></div>
                             <div id="zonesize"><img src="holder.js/{{ zone[0].width}}x{{ zone[0].height }}" class="img-thumbnail thumbmax"></div>
                         {% endif %}
                         <form action="{{ url_for('user.order') }}" method="post">

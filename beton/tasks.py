@@ -65,6 +65,7 @@ def configs():
         else:
             log.info(f"NGINX: Keeping unchanged configuration for website {website}.")
 
+
     def do_nginx_conf():
         websites = Websites.query.filter_by(active=True).all()
         for website in websites:
@@ -106,6 +107,7 @@ def configs():
                             "img": fname_uri,
                             "url": campaign[4].url
                         })
+                        # we need to know which zones have no running campaign atm
                         try:
                             all_zones.remove(curzone)
                         except ValueError:
@@ -113,11 +115,22 @@ def configs():
             #
             write_nginx_conf(nginxtmp, website.name, nginxconfile)
 
+
+    def do_empty_zones():
+        '''filling empty zones with default campaignes'''
+        pass
+
+
     def do_zones_ini(zones_ini, zones_current):
         '''writes zone.ini file as a portable data source for websites'''
 
         log.debug("Processing zone.ini...")
-        for zone in Zones.query.filter(Zones.active==True).order_by(Zones.id).all():
+        # default campaign will be used if there is no paid one for a zone
+        # that default campaign must be active!
+        all_default_campaignes = Campaignes.query.filter_by(default=True).filter_by(active=True).all()
+
+        # zone iteration
+        for zone in Zones.query.filter_by(active=True).order_by(Zones.id).all():
             #log.debug(zone)
             entries = [i for i, d in enumerate(zones_current) if d["zone"] == zone.id]
             #log.debug(entries)
@@ -129,6 +142,11 @@ def configs():
                     "img": zones_current[entry]['img'],
                     "url": zones_current[entry]['url']
                 }
+            else:
+                # we need to deploy default campaign(es) as there is no paid
+                # campaignes available for this zone
+                entries = [i for i, d in enumerate(all_default_campaignes) if d["zone"] == zone.id]
+                log.debug(f"default_intries: {entries}")
 
         with open(zones_ini, "r", encoding='utf-8') as r:
             currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
@@ -178,6 +196,8 @@ location = {{ fname_uri }} {
         log.debug(f"all_zones_before: {all_zones}")
         #
         do_nginx_conf()
+        #
+        do_empty_zones()
         #
         do_zones_ini(zones_ini, zones_current)
         log.debug(f"all_zones_after: {all_zones}")

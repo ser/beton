@@ -27,6 +27,15 @@ blueprint = Blueprint('user', __name__, url_prefix='/me', static_folder='../stat
 images = UploadSet('images', IMAGES)
 
 
+def get_randomname():
+    '''protects from (unlikely) repeating campaign name'''
+    while True:
+        randomname = names.get_full_name()
+        if Campaignes.query.filter_by(name=randomname).first() is None:
+            break
+    return randomname
+
+
 def amiadmin():
     if current_user.has_role('admin'):
         isadmin = True
@@ -676,8 +685,7 @@ def order():
 
     elif request.form['step'] == 'order':
 
-        # TODO just in case, we should be checking if unlikely we don't have a campaign with this name already
-        randomname = names.get_full_name()
+        randomname = get_randomname()
         #log.debug(randomname)
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
@@ -710,12 +718,14 @@ def order():
             comments="",
             active=True
         )
+        Campaignes.commit()
         # create assistance table impressions
         Impressions.create(
             cid=campaign.id,
             impressions=0,
             path=""
         )
+        Impressions.commit()
         log.debug(campaign)
         dblogger(
             current_user.id,
@@ -771,8 +781,8 @@ def basket():
             basket.append(sql)
             begin = sql.begins_at
             enddate = sql.stops_at
-            campaign_time = enddate - begin
-            currencyprice = (sql.dayprice/100)*campaign_time.days
+            campaign_duration = enddate - begin
+            currencyprice = (sql.dayprice/100) * (campaign_duration.days + 1)
             price[sql[0].id]=currencyprice
             totalprice += currencyprice
             urls[sql[0].id]=images.url(sql.filename)
@@ -945,7 +955,7 @@ def pay():
             begin = sql[0].begins_at
             enddate = sql[0].stops_at
             totaltime = enddate - begin
-            totalcurrencyprice = (sql.dayprice/100)*totaltime.days
+            totalcurrencyprice = (sql.dayprice/100) * (totaltime.days + 1)
             total += totalcurrencyprice
             label = label + "[C#{} Z#{} B#{} {} ↦ {} {:.2f}{}] ※ ".format(
                 item.campaigno,
