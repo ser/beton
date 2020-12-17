@@ -297,19 +297,22 @@ class Websites(SurrogatePK, Model):
     comments = Column(db.Text, unique=False, nullable=False)
     active = Column(db.Boolean(), default=True)
     zones = db.relationship('Zones', backref='website')
+    path = Column(db.String(250), unique=False, nullable=True)
 
-    def __init__(self, name, comments, active):
+    def __init__(self, name, comments, active, path):
         """Create instance."""
         self.name = name
         self.comments = comments
         self.active = active
+        self.path = path
 
     def __repr__(self):
         """Represent instance as a unique string."""
-        return '<name: {}, comments: {}, active: {}>'.format(
+        return '<name: {}, comments: {}, active: {}, path: {}>'.format(
             self.name,
             self.comments,
-            self.active
+            self.active,
+            self.path
         )
 
 
