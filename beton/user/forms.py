@@ -84,8 +84,7 @@ class AddZoneForm(Form):
                                              default=0)
     zone_y1 = IntegerField('y1', validators=[NumberRange(min=0, max=1500)],
                                              default=0)
-    zone_active = BooleanField('active')
-
+    zone_active = BooleanField('active', default=True)
     edited = HiddenField()
 
     def __init__(self, *args, **kwargs):
@@ -97,10 +96,13 @@ class AddWebsiteForm(Form):
     """Add website."""
 
     website_name = StringField('Website name (10 to 100 characters)',
-                            validators=[DataRequired(), Length(min=10, max=100)])
+                               validators=[DataRequired(), Length(min=10, max=100)])
     website_comments = StringField('Description (optional)',
-                                validators=[Length(max=500)])
-    website_active = BooleanField('active', default='checked')
+                                   validators=[Length(max=500)])
+    website_path = StringField('A default path for a banner',
+                               validators=[DataRequired(), Length(min=5, max=100)])
+    website_active = BooleanField('active', default=True)
+    edited = HiddenField()
 
     def __init__(self, *args, **kwargs):
         """Create instance."""

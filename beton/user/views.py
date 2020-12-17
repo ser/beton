@@ -315,26 +315,53 @@ def edit_zone():
 
 
 @blueprint.route('/add/website', methods=['GET', 'POST'])
+@blueprint.route('/edit/website/<int:websiteid>', methods=['GET', 'POST'])
 @roles_accepted('admin')
-def add_website():
+def add_website(websiteid=None):
     """Add a website."""
     all_websites = Websites.query.all()
     form = AddWebsiteForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            Websites.create(
-                name=form.website_name.data,
-                comments=form.website_comments.data,
-                active=True,
-            )
-            dblogger(
-                current_user.id,
-                "Zone {} added".format(form.website_name.data)
-            )
-            flash('Website added sucessfully.', 'success')
-            return redirect(url_for('user.offer'))
-    return render_template('users/add_website.html',
+            if form.edited.data == "yes":
+                website = Websites.query.filter_by(id=websiteid).one()
+                website.name=form.website_name.data,
+                website.comments=form.website_comments.data,
+                website.active=form.website_active.data
+                website.path=form.website_path.data
+                Websites.commit()
+                msg = "Website {} updated".format(form.website_name.data)
+                dblogger(
+                    current_user.id,
+                    msg
+                )
+                log.debug(msg)
+                flash('Website updated sucessfully.', 'success')
+            else:
+                Websites.create(
+                    name=form.website_name.data,
+                    comments=form.website_comments.data,
+                    path=form.website_path.data,
+                    active=True,
+                )
+                dblogger(
+                    current_user.id,
+                    "Zone {} added".format(form.website_name.data)
+                )
+                flash('Website added sucessfully.', 'success')
+            return redirect(url_for('user.add_website'))
+        else:
+            log.debug(form.errors)
+    else:
+        if websiteid is not None:
+            website = Websites.query.filter_by(id=websiteid).one()
+            form.website_name.data = website.name
+            form.website_path.data = website.path
+            form.website_comments.data = website.comments
+            form.website_active.data = website.active
+        return render_template('users/add_website.html',
                            form=form,
+                           websiteid=websiteid,
                            all_websites=all_websites)
 
 
