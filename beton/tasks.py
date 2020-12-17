@@ -110,13 +110,28 @@ def configs():
                             all_zones.remove(curzone)
                         except ValueError:
                             pass
-            #
+
+            # processing unfilled zones with default campaignes if exist
+            if len(all_zones) > 0:
+                for zone in all_zones:
+                    default_campaignes = Campaignes.query.filter_by(
+                        zoneid=zone).filter_by(default=True).filter_by(active=True).join(
+                            Zones).join(Banner).join(Impressions).with_entities(Campaignes.id,Banner.url,Banner.filename,Impressions.path).all()
+                    #log.debug(default_campaignes)
+                    if len(default_campaignes) > 0:
+                        for default_campaign in default_campaignes:
+                            fname_uri = filename_uri(default_campaign.id, default_campaign.filename, default_campaign.path)
+                            location = template.render(
+                                            fname_uri=fname_uri,
+                                            nginx_banner_dir=nginx_banner_dir,
+                                            banner_fname=default_campaign.filename,
+                                            syslogd_address=syslogd_address,
+                                            syslogd_port=syslogd_port,
+                                )
+                            nginxtmp += location
+
+            # finally, writing results to nginx config files
             write_nginx_conf(nginxtmp, website.name, nginxconfile)
-
-
-    def do_empty_zones():
-        '''filling empty zones with default campaignes'''
-        pass
 
 
     def do_zones_ini(zones_ini, zones_current):
@@ -142,7 +157,7 @@ def configs():
                 default_campaignes = Campaignes.query.filter_by(
                     zoneid=zone.id).filter_by(default=True).filter_by(active=True).join(
                         Zones).join(Banner).join(Impressions).with_entities(Campaignes.id,Banner.url,Banner.filename,Impressions.path).all()
-                log.debug(default_campaignes)
+                #log.debug(default_campaignes)
                 # we want to have only one banner in each zone in case if there
                 # are many default campaignes for this zone
                 if len(default_campaignes) > 0:
@@ -165,7 +180,7 @@ def configs():
         if currenthash != newhash:
             with open(zones_ini, "w", encoding='utf-8') as w:
                 zones_object.write(w)
-                log.info(f"INI: Writing configuration.")
+                log.info(f"INI: Writing new banners configuration.")
         else:
             log.info(f"INI: Keeping old config.")
 
@@ -198,11 +213,9 @@ location = {{ fname_uri }} {
         # we need to have a seperate config for each domain
         for zone in Zones.query.filter(Zones.active==True).order_by(Zones.id).all():
             all_zones.append(zone.id)
-        log.debug(f"all_zones_before: {all_zones}")
+        #log.debug(f"all_zones_before: {all_zones}")
         #
         do_nginx_conf()
         #
-        do_empty_zones()
-        #
         do_zones_ini(zones_ini, zones_current)
-        log.debug(f"all_zones_after: {all_zones}")
+        #log.debug(f"all_zones_after: {all_zones}")
