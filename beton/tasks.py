@@ -49,6 +49,11 @@ frequency = 1
 @scheduler.task('interval', id='configs', minutes=frequency)
 def configs():
 
+    def filename_uri(cid, filename, path):
+        y, banner_suffix = os.path.splitext(filename)
+        fname_uri = f"{path}.{cid}{banner_suffix}"
+        return fname_uri
+
     def write_nginx_conf(nginxdata, website, nginxconfile):
         '''writes nginx.conf for every website'''
 
@@ -64,7 +69,6 @@ def configs():
             log.debug(f"LOCATIONs: {nginxdata}")
         else:
             log.info(f"NGINX: Keeping unchanged configuration for website {website}.")
-
 
     def do_nginx_conf():
         websites = Websites.query.filter_by(active=True).all()
@@ -85,18 +89,12 @@ def configs():
                     is_paid = campaign[1].confirmed_at > datetime.min
                     #log.debug(f"CAMPAIGN: {campaign} - IS PAID?: {is_paid}")
                     if is_paid is True:
-                        banner_fname = campaign[4].filename
-                        #log.debug(f"BANNER_FNAME: {banner_fname}")
-                        # Preparing environment for jinja template
-                        fname_org = dbhandler.getl(campaign[0].id).path
-                        #log.debug(f"FNAME_ORG: {fname_org}")
-                        y, banner_suffix = os.path.splitext(banner_fname)
-                        fname_uri = f"{fname_org}.{campaign[0].id}{banner_suffix}"
+                        fname_uri = filename_uri(campaign[0].id, campaign[4].filename, campaign[6].path)
                         #log.debug(f"FNAME_URI: {fname_uri}")
                         location = template.render(
                                         fname_uri=fname_uri,
                                         nginx_banner_dir=nginx_banner_dir,
-                                        banner_fname=banner_fname,
+                                        banner_fname=campaign[4].filename,
                                         syslogd_address=syslogd_address,
                                         syslogd_port=syslogd_port,
                             )
@@ -125,19 +123,15 @@ def configs():
         '''writes zone.ini file as a portable data source for websites'''
 
         log.debug("Processing zone.ini...")
-        # default campaign will be used if there is no paid one for a zone
-        # that default campaign must be active!
-        all_default_campaignes = Campaignes.query.filter_by(default=True).filter_by(active=True).all()
-
         # zone iteration
         for zone in Zones.query.filter_by(active=True).order_by(Zones.id).all():
             #log.debug(zone)
             entries = [i for i, d in enumerate(zones_current) if d["zone"] == zone.id]
             #log.debug(entries)
+            curzone = f"ZONE_{zone.id}"
             if len(entries) > 0:
                 entry = random.choice(entries)  # we want to have only one banner in each zone
                 #log.debug(entry)
-                curzone = f"ZONE_{zone.id}"
                 zones_object[curzone] = {
                     "img": zones_current[entry]['img'],
                     "url": zones_current[entry]['url']
@@ -145,8 +139,19 @@ def configs():
             else:
                 # we need to deploy default campaign(es) as there is no paid
                 # campaignes available for this zone
-                entries = [i for i, d in enumerate(all_default_campaignes) if d["zone"] == zone.id]
-                log.debug(f"default_intries: {entries}")
+                default_campaignes = Campaignes.query.filter_by(
+                    zoneid=zone.id).filter_by(default=True).filter_by(active=True).join(
+                        Zones).join(Banner).join(Impressions).with_entities(Campaignes.id,Banner.url,Banner.filename,Impressions.path).all()
+                log.debug(default_campaignes)
+                # we want to have only one banner in each zone in case if there
+                # are many default campaignes for this zone
+                if len(default_campaignes) > 0:
+                    default_campaign = random.choice(default_campaignes)
+                    fname_uri = filename_uri(default_campaign.id, default_campaign.filename, default_campaign.path)
+                    zones_object[curzone] = {
+                        "img":  fname_uri,
+                        "url":  default_campaign.url
+                    }
 
         with open(zones_ini, "r", encoding='utf-8') as r:
             currenthash = blake2b(r.read().encode('utf-8')).hexdigest()
