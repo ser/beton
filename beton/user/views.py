@@ -240,7 +240,7 @@ def add_text():
 @roles_accepted('admin')
 def add_zone(zoneid=None):
     """Add a zone."""
-    all_zones = Zones.query.join(Websites).all()
+    all_zones = Zones.query.join(Websites).order_by(Zones.id).all()
     form = AddZoneForm()
     form.zone_website.choices = [(w.id, w.name) for w in
                                  Websites.query.order_by('name')]
@@ -308,18 +308,12 @@ def add_zone(zoneid=None):
                            all_zones=all_zones)
 
 
-@roles_accepted('admin')
-def edit_zone():
-    """edit a zone."""
-    form = AddZoneForm()
-
-
 @blueprint.route('/add/website', methods=['GET', 'POST'])
 @blueprint.route('/edit/website/<int:websiteid>', methods=['GET', 'POST'])
 @roles_accepted('admin')
 def add_website(websiteid=None):
     """Add a website."""
-    all_websites = Websites.query.all()
+    all_websites = Websites.query.order_by(Websites.id).all()
     form = AddWebsiteForm()
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -387,7 +381,7 @@ def offer():
     form = ChangeOffer()
     """Get and display all possible websites and zones in them."""
     all_zones = []
-    websites = Websites.query.all()
+    websites = Websites.query.order_by(Websites.id).all()
     for website in websites:
         zones = Zones.query.filter_by(websiteid=website.id).all()
         for zone in zones:
@@ -671,6 +665,7 @@ def api_all_campaigns(zone_id):
 def order():
     """Order a campaign."""
 
+    # Step one - decide which banner
     if ('step' not in request.form) or \
             ('submit' in request.form.values() and request.form['submit'] == 'cancel'):
         all_banners = Banner.query.filter_by(owner=current_user.id).all()
@@ -681,7 +676,9 @@ def order():
         return render_template('users/order.html', all_banners=all_banners,
                                all_urls=all_urls, step='chose-banner')
 
+    # Step two - decide which zone
     elif request.form['step'] == 'chose-zone':
+
         """Get and display all possible websites and zones in them."""
         # Get banner height and width
         banner_id = int(request.form['banner_id'])
@@ -693,12 +690,13 @@ def order():
             Websites.name, Prices.dayprice, Prices.fiat).filter(
             Zones.active==True).filter(
             Zones.width >= banner.width).filter(
-            Zones.height >= banner.height).all()
+            Zones.height >= banner.height).order_by(Zones.id).all()
         log.debug(zones)
         return render_template('users/order.html', banner=banner,
                                image_url=image_url,
                                all_zones=zones, step='chose-zone')
 
+    # Step three - chose dates
     elif request.form['step'] == 'chose-date':
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
@@ -710,10 +708,10 @@ def order():
                                zone_name=zone_name, banner=banner,
                                step='chose-date')
 
+    # and let the system create a campaign for you.
     elif request.form['step'] == 'order':
 
         randomname = get_randomname()
-        #log.debug(randomname)
         banner_id = int(request.form['banner_id'])
         banner = Banner.query.filter_by(id=banner_id).first()
         image_url = images.url(banner.filename)
@@ -724,7 +722,7 @@ def order():
         zone_name = request.form['zone_name']
         datestart = request.form['datestart']
         datend = request.form['datend']
-
+        website = Zones.query.filter(Zones.id==zone_id).join(Websites).with_entities(Websites.path).first()
         price = Prices.query.filter_by(zoneid=zone_id).first()
 
         try:
@@ -733,6 +731,7 @@ def order():
             enddate = datetime.strptime(datend, "%d/%m/%Y")
         except BaseException:
             return render_template('users/date-problems.html')
+
         totaltime = enddate - begin
         campaign = Campaignes.create(
             name=randomname,
@@ -746,14 +745,17 @@ def order():
             active=True
         )
         Campaignes.commit()
+        log.debug(f"Campaign: {campaign}")
+
         # create assistance table impressions
-        Impressions.create(
+        impressions = Impressions.create(
             cid=campaign.id,
             impressions=0,
-            path=""
+            path=website.path
         )
         Impressions.commit()
-        log.debug(campaign)
+        log.debug(f"Impression: {impressions}")
+
         dblogger(
             current_user.id,
             ("NEW Campaign #{} with name {} in zone #{}, starting at {}, " +
@@ -835,6 +837,8 @@ def basket():
 @blueprint.route('/clear/banner/<int:banner_id>')
 @login_required
 def clear_banner(banner_id):
+    '''Deleting banner on request. Banner is deleted from DB only, it stays in
+    your filesystem forever'''
     try:
         banner_data = Banner.query.filter_by(id=banner_id).first()
         if banner_data.owner == current_user.id:
@@ -857,6 +861,7 @@ def clear_banner(banner_id):
 @blueprint.route('/clear/basket/<int:campaign_id>')
 @login_required
 def clear_basket(campaign_id):
+    '''cleaning camapignes from basket on request'''
     try:
         if campaign_id == 0:
             all_basket = Basket.query.filter_by(user_id=current_user.id).all()
@@ -882,6 +887,7 @@ def clear_basket(campaign_id):
 @blueprint.route('/activation/campaign/<int:campaign_no>')
 @login_required
 def campaign_active(campaign_no):
+    '''temporarily disactivating campaign on request'''
     try:
         # getting data about this campaign 
         # and confirming it belongs to the user
@@ -919,6 +925,7 @@ def campaign_active(campaign_no):
 @login_required
 @roles_accepted('admin')
 def campaign_default(campaign_no):
+    '''admins can designate a campaign as default for particular zone.'''
     try:
         # getting data about this campaign 
         campaign = Campaignes.query.filter(Campaignes.id==campaign_no).first_or_404()
