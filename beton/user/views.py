@@ -803,18 +803,20 @@ def basket():
     if basket_sql:
         for item in basket_sql:
             sql = Campaignes.query.filter_by(
-                id=item.campaigno).join(Banner).join(Zones).join(Prices).add_columns(
+                id=item.campaigno).join(Banner).join(Zones).join(Prices).join(Websites).with_entities(
                     Banner.filename, Banner.url, Banner.width, Banner.height,
-                    Banner.content, Banner.icon, Banner.type, Prices.dayprice,
-                    Campaignes.begins_at, Campaignes.stops_at).first()
+                    Banner.content, Banner.type, Prices.dayprice,
+                    Websites.name.label('webname'),
+                    Campaignes.name, Campaignes.zoneid, Zones.name.label('zname'),
+                    Campaignes.id, Campaignes.begins_at, Campaignes.stops_at).first()
             basket.append(sql)
             begin = sql.begins_at
             enddate = sql.stops_at
             campaign_duration = enddate - begin
             currencyprice = (sql.dayprice/100) * (campaign_duration.days + 1)
-            price[sql[0].id]=currencyprice
+            price[sql.id]=currencyprice
             totalprice += currencyprice
-            urls[sql[0].id]=images.url(sql.filename)
+            urls[sql.id]=images.url(sql.filename)
     else:
         basket = 0
         price = 0
