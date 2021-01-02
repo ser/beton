@@ -29,8 +29,6 @@ from beton.utils import dblogger
 
 # In production we do it every 6 hours, but in debug mode every minute.
 frequency = 1 if get_debug_flag() else 360
-
-
 @scheduler.task('interval', id='cleanup_sessions', minutes=frequency)
 def cleanup_sessions():
     with scheduler.app.app_context():
@@ -44,8 +42,6 @@ def cleanup_sessions():
 
 # We want to have this data updated every minute for banner rotation
 frequency = 1
-
-
 @scheduler.task('interval', id='configs', minutes=frequency)
 def configs():
 

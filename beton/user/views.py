@@ -241,6 +241,8 @@ def add_text():
 def add_zone(zoneid=None):
     """Add a zone."""
     all_zones = Zones.query.join(Websites).order_by(Zones.id).all()
+    default_campaignes = Campaignes.query.filter_by(default=True).filter_by(active=True).join(
+            Zones).join(Banner).join(Impressions).with_entities(Zones.id,Campaignes.id,Banner.url,Banner.filename,Impressions.path).all()
     form = AddZoneForm()
     form.zone_website.choices = [(w.id, w.name) for w in
                                  Websites.query.order_by('name')]
@@ -305,6 +307,7 @@ def add_zone(zoneid=None):
     return render_template('users/add_zone.html',
                            form=form,
                            zoneid=zoneid,
+                           default_campaignes=default_campaignes,
                            all_zones=all_zones)
 
 

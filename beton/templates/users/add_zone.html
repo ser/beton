@@ -18,6 +18,7 @@
                     <th scope="col">Size</th>
                     <th scope="col">Square</th>
                     <th scope="col">Is active?</th>
+                    <th scope="col">Default?</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -31,6 +32,13 @@
                     <td>{{ zone.width }}x{{ zone.height }}</td>
                     <td>{{ zone.x0 }}x{{ zone.y0 }} {{ zone.x1 }}x{{ zone.y1 }}</td>
                     <td>{{ zone.active }}</td>
+                    <td>
+                    {% for x in default_campaignes %}
+                        {% if x[0] == zone.id %}
+                            {{ x }}<br/>
+                        {% endif %}
+                    {% endfor %}
+                    </td>
                     <td><a href="{{ url_for('user.add_zone', zoneid=zone.id) }}"><button type="button" class="btn btn-secondary btn-sm">edit</button></a></td>
                 </tr>
             {% endfor %}
