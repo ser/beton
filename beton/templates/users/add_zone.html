@@ -4,7 +4,7 @@
 <div class="container-narrow">
     <div class="jumbotron">
         {% if zoneid is none %}
-            <h1>Add a new zone</h1>
+            <h1>Zones</h1>
         {% else %}
             <h1>Modify existing zone #{{ zoneid }}</h1>
         {% endif %}
@@ -45,6 +45,9 @@
             </tbody>
         </table>
     </div>
+    {% if zoneid is none %}
+    <h3>Add a new one:</h3>
+    {% endif %}
     <form id="uploadForm" action="" role="form" method="post" enctype="multipart/form-data">
         {{ form.csrf_token }}
         <div class="input-group">
