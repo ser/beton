@@ -33,11 +33,17 @@
                     <td>{{ zone.x0 }}x{{ zone.y0 }} {{ zone.x1 }}x{{ zone.y1 }}</td>
                     <td>{{ zone.active }}</td>
                     <td>
-                    {% for x in default_campaignes %}
-                        {% if x[0] == zone.id %}
-                            {{ x }}<br/>
-                        {% endif %}
-                    {% endfor %}
+                        <div class="row">
+                        {% for x in default_campaignes %}
+                            {% if x[0] == zone.id %}
+                                <div class="col">
+                                    <a href="{{ url_for('user.campaign', campaign_id=x.id) }}">
+                                        <img class="img-thumbnail thumbmax" src="{{ urls[x.id] }}">
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        </div>
                     </td>
                     <td><a href="{{ url_for('user.add_zone', zoneid=zone.id) }}"><button type="button" class="btn btn-secondary btn-sm">edit</button></a></td>
                 </tr>

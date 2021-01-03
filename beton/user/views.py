@@ -242,7 +242,11 @@ def add_zone(zoneid=None):
     """Add a zone."""
     all_zones = Zones.query.join(Websites).order_by(Zones.id).all()
     default_campaignes = Campaignes.query.filter_by(default=True).filter_by(active=True).join(
-            Zones).join(Banner).join(Impressions).with_entities(Zones.id,Campaignes.id,Banner.url,Banner.filename,Impressions.path).all()
+            Zones).join(Banner).with_entities(Zones.id, Campaignes.id, Banner.filename).all()
+    urls = {}
+    for x in default_campaignes:
+        url = images.url(x.filename)
+        urls[x.id]=images.url(x.filename)
     form = AddZoneForm()
     form.zone_website.choices = [(w.id, w.name) for w in
                                  Websites.query.order_by('name')]
@@ -250,16 +254,16 @@ def add_zone(zoneid=None):
         if form.validate_on_submit():
             if form.edited.data == "yes":
                 zone = Zones.query.filter_by(id=zoneid).one()
-                zone.websiteid=form.zone_website.data,
-                zone.name=form.zone_name.data,
-                zone.comments=form.zone_comments.data,
-                zone.width=form.zone_width.data,
-                zone.height=form.zone_height.data,
-                zone.x0=form.zone_x0.data,
-                zone.y0=form.zone_y0.data,
-                zone.x1=form.zone_x1.data,
-                zone.y1=form.zone_y1.data,
-                zone.active=form.zone_active.data
+                zone.websiteid = form.zone_website.data,
+                zone.name = form.zone_name.data,
+                zone.comments = form.zone_comments.data,
+                zone.width = form.zone_width.data,
+                zone.height = form.zone_height.data,
+                zone.x0 = form.zone_x0.data,
+                zone.y0 = form.zone_y0.data,
+                zone.x1 = form.zone_x1.data,
+                zone.y1 = form.zone_y1.data,
+                zone.active = form.zone_active.data
                 Zones.commit()
                 msg = "Zone {} updated".format(form.zone_name.data)
                 dblogger(
@@ -308,6 +312,7 @@ def add_zone(zoneid=None):
                            form=form,
                            zoneid=zoneid,
                            default_campaignes=default_campaignes,
+                           urls=urls,
                            all_zones=all_zones)
 
 
