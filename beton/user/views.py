@@ -524,10 +524,9 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
         sql = sql.filter(Campaignes.stops_at > datetime.utcnow() - timedelta(weeks=no_weeks))
         if amiadmin():
             all_campaigns = sql.join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
-            all_campaigns = all_campaigns.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).all()
         else:  # we want campaignes which belong to the logged in user only
-            #all_campaigns = sql.filter(Campaignes.o2c.any(user_id=current_user.id)).join(Zones).join(Banner).order_by(Campaignes.id).all()
-            all_campaigns = sql.join((Orders.campaigne)).filter(Campaignes.o2c.any(user_id=current_user.id)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id).all()
+            all_campaigns = sql.join((Orders.campaigne)).filter(Campaignes.o2c.any(user_id=current_user.id)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
+        all_campaigns = all_campaigns.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).all()
         log.debug(f"CAMPAIGNES: {all_campaigns}")
 
         urls = {}
