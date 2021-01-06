@@ -902,7 +902,9 @@ def campaign_active(campaign_no):
         # and confirming it belongs to the user
         campaign = Campaignes.query.filter(Campaignes.id==campaign_no).first_or_404()
         order = Orders.query.with_parent(campaign).first_or_404()
-        if order.user_id != current_user.id or not amiadmin():
+        log.debug(order.user_id)
+        if (order.user_id != current_user.id) and not amiadmin():
+            flash(f'Problems with privileges. Could not change activation.', 'warning')
             return redirect(url_for("user.campaign"), code=302)
 
         currently_active = campaign.active
