@@ -49,11 +49,13 @@
             <div class="card border-warning mb-3">
                 <h4 class="card-header"><span class="icon
                         dripicons-wrong"></span> Unpaid campaigns</h4>
-                    <p class="card-header">Unpaid campaigns
-                    are removed from the list after seven days. If you paid a
-                    campaign, the blockchainn transaction has more than one
-                    confirmation, and it is still listed here, contact us as
-                    soon as possible to check what's wrong.</p>
+                    <p class="card-header">
+                    If you paid a campaign, your wallet says that blockchain
+                    transaction has more than one confirmation, and it is still
+                    listed here, contact us as soon as possible to let us check
+                    what's wrong.</p>
+                    <p class="alert-info card-header">You can't pay an expired invoice. If you did not pay on
+                    time, just make another order and pay it, on time, please.</p>
                 <div class="card-body">
                     <div class="card-columns">
                     {% for campaign in all_campaigns|reverse %}

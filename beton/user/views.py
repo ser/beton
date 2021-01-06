@@ -749,7 +749,7 @@ def order():
             begins_at=begin,
             stops_at=enddate,
             comments="",
-            active=True
+            active=False
         )
         Campaignes.commit()
         log.debug(f"Campaign: {campaign}")
@@ -901,10 +901,20 @@ def campaign_active(campaign_no):
         # getting data about this campaign 
         # and confirming it belongs to the user
         campaign = Campaignes.query.filter(Campaignes.id==campaign_no).first_or_404()
-        order = Orders.query.with_parent(campaign).first_or_404()
-        log.debug(order.user_id)
+        order = Orders.query.with_parent(campaign).join(Payments).with_entities(
+                Orders.user_id,
+                Payments.confirmed_at
+            ).first_or_404()
+        log.debug(f"ORDER ACTIVATION: {order}")
+
+        # we are saying good bye to unprivileged users
         if (order.user_id != current_user.id) and not amiadmin():
             flash(f'Problems with privileges. Could not change activation.', 'warning')
+            return redirect(url_for("user.campaign"), code=302)
+
+        # we are saying good bye ifd campaign is not paid
+        if order.confirmed_at == datetime.min:
+            flash(f'This campaign is not fully paid. Could not change activation.', 'warning')
             return redirect(url_for("user.campaign"), code=302)
 
         currently_active = campaign.active

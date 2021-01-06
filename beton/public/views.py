@@ -15,7 +15,7 @@ from flask_security import current_user, login_required, logout_user
 
 from beton.logger import log
 from beton.extensions import csrf_protect, mail
-from beton.user.models import Orders, Payments, User, db
+from beton.user.models import Campaignes, Orders, Payments, User, db
 from beton.utils import dblogger
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
@@ -98,6 +98,14 @@ def ipn():
             posdata=ipn['data']['posData']).update(
                 {"confirmed_at": datetime.utcnow()})
         Payments.commit()
+        # We are activating campaign and recording payment
+        sql = Campaignes.query.join((Orders.campaigne)).join(Payments).filter(
+            Payments.posdata==ipn['data']['posData']).first()
+        log.debug(f"Payments sql: {sql}")
+        Campaignes.query.filter_by(
+            id=sql.id).update(
+                   {"active": True})
+        Campaignes.commit()
 
         # If configuration sets pushover.net, we send it in there
         if current_app.config.get('PUSHOVER') is True:
