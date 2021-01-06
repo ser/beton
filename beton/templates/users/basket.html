@@ -31,7 +31,7 @@
                     <kbd>{{ loop.index }}</kbd> Campaign #{{ order.id }} <i>{{ order.name }}</i>
                 </div>
                 <div class="card-body">
-                    {% if order.stops_at < present %}
+                    {% if (order.stops_at - present).days < -1 %}
                         <div class="alert alert-warning">
                             <h4 class="alert-heading">Campaign already expired!</h4>
                             <p>We advise you to remove it from the basket.</p>
