@@ -100,11 +100,12 @@ def ipn():
         Payments.commit()
         # We are activating campaign and recording payment
         sql = Campaignes.query.join((Orders.campaigne)).join(Payments).filter(
-            Payments.posdata==ipn['data']['posData']).first()
+            Payments.posdata==ipn['data']['posData']).all()
         log.debug(f"Payments sql: {sql}")
-        Campaignes.query.filter_by(
-            id=sql.id).update(
-                   {"active": True})
+        for campaign in sql:
+            Campaignes.query.filter_by(
+                id=campaign.id).update(
+                       {"active": True})
         Campaignes.commit()
 
         # If configuration sets pushover.net, we send it in there
