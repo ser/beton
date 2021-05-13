@@ -9,7 +9,6 @@ from datetime import datetime
 from oslo_concurrency import lockutils
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
-from flask_api import status
 from flask_mail import Message
 from flask_security import current_user, login_required, logout_user
 
@@ -64,7 +63,7 @@ def ipn():
         pay_db = Payments.query.filter_by(posdata=posdata).join(Orders).first()
         if pay_db is None:
             log.info("There is no payment related to IPN. Aborting")
-            return "NAY", status.HTTP_412_PRECONDITION_FAILED
+            return "NAY", 412
         else:
             return pay_db
 
@@ -133,7 +132,7 @@ def ipn():
     except Exception as e:
         log.debug("Exception as we did not get JSON request:")
         log.exception(e)
-        return "NAY", status.HTTP_405_METHOD_NOT_ALLOWED
+        return "NAY", 405
 
     # There are two sorts of IPNs, full and extended ones.
     # Extended has one level of JSON, full two of them.
@@ -146,7 +145,7 @@ def ipn():
         if 'posData' in ipn['data']:
             posdata = ipn['data']['posData']
     else:
-        return "NAY", status.HTTP_501_NOT_IMPLEMENTED
+        return "NAY", 501
 
     # Wedo not want to process the same transaction concurrently, so we lock it
     lockutils.set_defaults(current_app.config.get('CACHE_DIR'))
@@ -167,5 +166,5 @@ def ipn():
                 # We received invoice_confirmed
                 invoice_confirmed(pay_db, ipn)
             else: pass
-        return "YAY", status.HTTP_200_OK
+        return "YAY", 200
 

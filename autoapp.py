@@ -32,5 +32,5 @@ def start_runner():
     thread = threading.Thread(target=start_loop)
     thread.start()
 
-start_runner()
+#start_runner()
 app = create_app(CONFIG)

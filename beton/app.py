@@ -6,7 +6,7 @@ import threading
 
 from flask import Flask, current_app, render_template
 from flask_colorpicker import colorpicker
-from flask_uploads import configure_uploads, patch_request_class, IMAGES, UploadSet
+from flask_uploads import configure_uploads, IMAGES, UploadSet
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from beton import commands
@@ -67,8 +67,6 @@ def register_extensions(app):
 def register_configuration(app):
     images = UploadSet('images', IMAGES)
     configure_uploads(app, images)
-    # max banner weight
-    patch_request_class(app, size=577216)
 
     return None
 

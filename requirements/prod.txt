@@ -1,15 +1,15 @@
 # Everything needed in production
 
 # Flask
-Flask>=1.0.2
-MarkupSafe
+Flask>=2.0.0
+MarkupSafe>=2.0.0
 Werkzeug
-Jinja2>=2.10
+Jinja2>=3.0.0
 itsdangerous
 click>=5.0
 flask_moment>=0.5.1
-Flask-API
 Flask-Colorpicker
+memory-tempfile>=2.2.3
 
 # Database
 Flask-SQLAlchemy
@@ -34,7 +34,7 @@ jsmin>=2.0.11
 
 # File upload and images
 #flask-uploads>=0.2.1
-Flask-Reuploaded
+Flask-Reuploaded>=1.1.0
 Pillow>=4.1.0
 
 # Auth
