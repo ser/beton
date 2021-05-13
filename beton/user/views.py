@@ -420,7 +420,7 @@ def offer():
             # get stats and ignore if none
             try:
                 # TODO: another two lines could be potentially replaced by func of sqlalchemy
-                all_impressions = Campaignes.query.join(Impressions).filter(Campaignes.zoneid==zone.id).with_entities(Impressions.impressions.label('i')).all()
+                all_impressions = Campaignes.query.select_from(Campaignes).join(Impressions).filter(Campaignes.zoneid==zone.id).with_entities(Impressions.impressions.label('i')).all()
                 tmpdict['impressions'] = sum(a.i for a in all_impressions)
             except Exception as e:
                 log.debug("Exception")
@@ -467,7 +467,7 @@ def campaign(no_weeks=None, campaign_id=None, invoice_uuid=None):
     Get and display all campaigns belonging to user.
     """
     # And now we are checking campaigns
-    sql = Campaignes.query
+    sql = Campaignes.query.select_from(Campaignes)
 
     # We want details related to one campaign, not a list of all so we will
     # display that data and quit this function
@@ -643,10 +643,10 @@ def api_all_campaigns(zone_id):
     # end = request.args.get('end')
     # Get all orders from local database
     if zone_id == 0:
-        all_campaigns = Campaignes.query.join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
+        all_campaigns = Campaignes.query.select_from(Campaignes).join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
         all_campaigns = all_campaigns.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).filter(Campaignes.active==True).all()
     else:
-        all_campaigns = Campaignes.query.join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
+        all_campaigns = Campaignes.query.select_from(Campaignes).join((Orders.campaigne)).join(Payments).join(Zones).join(Banner).join(Websites).join(Impressions).order_by(Campaignes.id)
         all_campaigns = all_campaigns.filter(Campaignes.active==True).filter(Zones.id==zone_id)
         all_campaigns = all_campaigns.with_entities(Campaignes, Payments, Orders, Zones, Banner, Websites, Impressions).all()
     ac = []
@@ -729,7 +729,7 @@ def order():
         zone_name = request.form['zone_name']
         datestart = request.form['datestart']
         datend = request.form['datend']
-        website = Zones.query.filter(Zones.id==zone_id).join(Websites).with_entities(Websites.path).first()
+        website = Zones.query.select_from(Zones).filter(Zones.id==zone_id).join(Websites).with_entities(Websites.path).first()
         price = Prices.query.filter_by(zoneid=zone_id).first()
 
         try:
@@ -1002,7 +1002,7 @@ def pay():
     # Checks to see if the user has already started a cart.
     if basket_sql:
         for item in basket_sql:
-            sql = Campaignes.query.filter_by(
+            sql = Campaignes.query.select_from(Campaignes).filter_by(
                 id=item.campaigno).join(Zones).join(Prices).join(Banner).add_columns(
                     Banner.filename, Banner.url, Banner.width, Banner.height, Prices.dayprice).one()
             log.debug(sql)

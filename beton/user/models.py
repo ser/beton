@@ -166,7 +166,8 @@ class Campaignes(SurrogatePK, Model):
     active = Column(db.Boolean(), default=True)
     default = Column(db.Boolean(), default=False)
     o2c = db.relationship('Orders', secondary=o2c, lazy='subquery',
-                          backref=db.backref('campaigne', lazy='dynamic'))
+                          backref=db.backref('campaigne', lazy='dynamic'),
+                         )
 
     def __init__(self, name, zoneid, bannerid, ctype, created_at, begins_at,
                  stops_at, comments, active):
@@ -230,7 +231,8 @@ class Orders(SurrogatePK, Model):
     comments = Column(db.Text, unique=False, nullable=False)
     payment = db.relationship("Payments", backref="orders")
     o2c = db.relationship('Campaignes', secondary=o2c, lazy='subquery',
-                          backref=db.backref('orders', lazy='dynamic'))
+                          backref=db.backref('orders', lazy='dynamic'),
+                          viewonly=True)
 
     def __init__(self, comments, user_id):
         """Create instance."""

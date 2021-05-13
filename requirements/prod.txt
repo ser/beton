@@ -62,7 +62,7 @@ python-pushover
 # Other
 names>=0.3.0
 pymysql
-requests
+requests>=2.25.1
 python-dateutil
 oslo_concurrency
 lars
