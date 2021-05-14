@@ -27,8 +27,8 @@ def create_app(config_object=ProdConfig):
     app = Flask(__name__.split('.')[0])
     app.wsgi_app = ProxyFix(app.wsgi_app)
     app.config.from_object(config_object)
-    # app.config.from_envvar('BETON')
     register_extensions(app)
+
     register_configuration(app)
     register_scheduler(app)
     register_blueprints(app)
@@ -70,6 +70,7 @@ def register_configuration(app):
 
     return None
 
+
 def register_scheduler(app):
     '''
     # Setting up crontabs
@@ -78,16 +79,10 @@ def register_scheduler(app):
     # If you are using uwsgi, leave it like it is.
     #
     '''
-#        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     @app.before_first_request
     def load_tasks():
         scheduler.start()
         from beton import tasks
-    '''
-    # If you use uwsgi comment above  and commend this out:
-    '''
-    #scheduler.start()
-    #from beton import tasks
 
 
 def register_threads(app):
@@ -102,9 +97,12 @@ def register_threads(app):
             port 13131
             '''
             HOST, PORT = "0.0.0.0", 13131
-            with socketserver.UDPServer((HOST, PORT), MyUDPHandler) as server:
-                log.info("RUNNING syslogd for nginx submissions...")
-                server.serve_forever()
+            try:
+                with socketserver.UDPServer((HOST, PORT), MyUDPHandler) as server:
+                    log.info("RUNNING syslogd for nginx submissions...")
+                    server.serve_forever()
+            except OSError:
+                log.debug("Syslogd server is running already.")
         thread = threading.Thread(target=run_syslogd)
         thread.start()
 
