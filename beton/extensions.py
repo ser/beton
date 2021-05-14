@@ -5,7 +5,6 @@ import os.path
 
 from simplekv.fs import FilesystemStore
 
-from flask_apscheduler import APScheduler
 from flask_bcrypt import Bcrypt
 from flask_caching import Cache
 from flask_debugtoolbar import DebugToolbarExtension
@@ -27,7 +26,6 @@ debug_toolbar = DebugToolbarExtension()
 mail = Mail()
 migrate = Migrate()
 moment = Moment()
-scheduler = APScheduler()
 sesstore = FilesystemStore(app_dir + '/data')
 kvstore = KVSessionExtension(sesstore)
 

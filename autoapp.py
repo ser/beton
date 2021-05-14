@@ -5,14 +5,17 @@ import threading
 import requests
 import time
 
+from dotenv import load_dotenv
 from flask.helpers import get_debug_flag
 
 from beton.app import create_app
 from beton.logger import log
 from beton.settings import DevConfig, ProdConfig
 
+load_dotenv()
 CONFIG = DevConfig if get_debug_flag() else ProdConfig
 
+# this function warms up flask when run in devel mode
 def start_runner():
     def start_loop():
         not_started = True

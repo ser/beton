@@ -9,15 +9,14 @@ from flask_colorpicker import colorpicker
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from beton import commands
+from beton import commands, public, user
 from beton.assets import assets
 from beton.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, kvstore
-from beton.extensions import mail, migrate, moment, scheduler, security, user_datastore
+from beton.extensions import mail, migrate, moment, security, user_datastore
 from beton.logger import log
 from beton.settings import ProdConfig
 from beton.threads import DBHandler, Helper, MyUDPHandler, Parser
 from beton.user.forms import ExtendedConfirmRegisterForm
-
 
 def create_app(config_object=ProdConfig):
     """An application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
@@ -30,11 +29,10 @@ def create_app(config_object=ProdConfig):
     register_extensions(app)
 
     register_configuration(app)
-    register_scheduler(app)
     register_blueprints(app)
     register_errorhandlers(app)
     register_shellcontext(app)
-    #register_commands(app)  # not ready to run yet
+    register_commands(app)  # not ready to run yet
     register_threads(app)
     return app
 
@@ -56,8 +54,6 @@ def register_extensions(app):
     migrate.init_app(app, db)
     moment.init_app(app)
     kvstore.init_app(app)
-    scheduler.api_enabled = True
-    scheduler.init_app(app)
     security.init_app(app,
                       user_datastore,
                       confirm_register_form=ExtendedConfirmRegisterForm)
@@ -69,20 +65,6 @@ def register_configuration(app):
     configure_uploads(app, images)
 
     return None
-
-
-def register_scheduler(app):
-    '''
-    # Setting up crontabs
-    # To avoid running twice in WERKZEUG debug mode we need to make "if":
-    # https://stackoverflow.com/questions/14874782/apscheduler-in-flask-executes-twice
-    # If you are using uwsgi, leave it like it is.
-    #
-    '''
-    @app.before_first_request
-    def load_tasks():
-        scheduler.start()
-        from beton import tasks
 
 
 def register_threads(app):
@@ -143,8 +125,10 @@ def register_shellcontext(app):
 
 def register_commands(app):
     """Register Click commands."""
-    app.cli.add_command(commands.test)
-    app.cli.add_command(commands.lint)
-    app.cli.add_command(commands.clean)
-    app.cli.add_command(commands.urls)
+    #app.cli.add_command(commands.test)
+    #app.cli.add_command(commands.lint)
+    #app.cli.add_command(commands.clean)
+    app.cli.add_command(commands.cleanup_sessions)
+    app.cli.add_command(commands.ngrotate)
+    #app.cli.add_command(commands.urls)
     return None

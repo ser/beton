@@ -1,10 +1,13 @@
 import logging
 
-_console_handler = logging.StreamHandler()
-_console_handler.setLevel(logging.DEBUG)
-_formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
-_console_handler.setFormatter(_formatter)
+from flask.helpers import get_debug_flag
 
-log = logging.getLogger('beton')
-log.setLevel(logging.DEBUG)
-log.addHandler(_console_handler)
+FORMAT = '[%(asctime)s] [%(levelname)s] %(message)s'
+logging.basicConfig(format=FORMAT)
+
+log = logging.getLogger(__name__)
+
+if get_debug_flag():
+    log.setLevel(logging.DEBUG)
+else:
+    log.setLevel(logging.INFO)

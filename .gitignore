@@ -1,5 +1,7 @@
 # app settings which should be secret!
 beton/settings.py
+.env
+.flaskenv
 
 # files with a dot at the end
 *.*\.
