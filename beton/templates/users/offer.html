@@ -6,7 +6,6 @@
         {% if isadmin == True %}
         <p class="lead">You are an admin. You can add <a class="btn btn-secondary btn-sm" role="button" href="{{ url_for('user.add_website') }}">
         websites</a> and <a class="btn btn-secondary btn-sm" role="button" href="{{ url_for('user.add_zone') }}">zones</a></p>
-        <p>{{ allzones }}</p>
         {% endif %}
         <p class="lead">These are all zones in our offer. When you are decided, please <a class="btn btn-primary btn-sm" role="button" href="{{ url_for('user.order') }}">order a new campaign</a></p>
     </div>

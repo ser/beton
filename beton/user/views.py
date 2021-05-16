@@ -411,6 +411,7 @@ def offer():
             tmpdict['website'] = website.name
             tmpdict['id'] = zone.id
             tmpdict['name'] = zone.name
+            tmpdict['comments'] = zone.comments
             tmpdict['price'] = price.dayprice
             tmpdict['x0'] = zone.x0
             tmpdict['x1'] = zone.x1
